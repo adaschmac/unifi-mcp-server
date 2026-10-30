@@ -358,7 +358,7 @@ COPY --chown=mcpuser:mcpuser . .
 USER mcpuser
 
 # Run application
-CMD ["python", "src/main.py"]
+CMD ["python", "src/unifi_mcp_server/main.py"]
 ```
 
 ## Security Features
@@ -380,7 +380,7 @@ CMD ["python", "src/main.py"]
 - **Encrypted Controller Credentials:** With the Postgres fleet registry, controller and cloud-account API keys are Fernet-encrypted with `UNIFI_FLEET_CREDENTIAL_KEY` before they reach the database; the key never does. The server refuses to start without it, a key that cannot decrypt a credential skips that controller instead of failing the fleet, and `rotate_fleet_credentials` re-encrypts under a new key
 - **Role-Based Access Control:** With the fleet registry, callers use server-issued API tokens (only SHA-256 hashes stored, 90-day default lifetime) with a role (`viewer`, `operator`, `admin`, `fleet-admin`) that grants tool risk tiers, optionally narrowed by tool-module patterns and controller labels. Enforcement happens in the tool wrapper before any controller is contacted, and every refusal is audited. Revocation takes effect within 30 seconds; a database error refuses the token. `MCP_AUTH_TOKEN` and stdio remain break-glass `fleet-admin` callers, flagged in audit records. With or without the registry, an `MCP_AUTH_TOKEN` entry written `<role>:<token>` (for example `viewer:<token>`) gets that role and the same tier enforcement
 - **Append-Only Postgres Audit Store:** With DATABASE_URL, audit records go to `audit_log`, where a trigger refuses UPDATE, DELETE and TRUNCATE for every role, and each server's hash chain is kept with its head in `audit_chain_heads`. `verify_audit_chain` and `search_audit_log` are `fleet-admin` tools, and every query is audited
-- **Tamper-Evident Audit Log:** Records are hash-chained, HMAC-keyed with `UNIFI_AUDIT_CHAIN_KEY`; `python -m src.utils.audit_verify` detects edited, deleted, inserted and reordered records, and with an anchored head (`--head`, or `--anchors` for the SIEM's anchor events) also records removed from the end. `verify_audit_chain` checks each Postgres chain against its `audit_chain_heads` entry (a chain with records but no head is reported too), so deleting the newest records, a whole chain or the whole table is caught, and checks every searchable column (operation, result, principal, controller, time, seq, hash) against the sealed record, so a record cannot be hidden from `search_audit_log` by editing its columns. A drill (`tests/unit/fleet/test_drill_tamper.py`) makes each of these changes as the database superuser with triggers disabled and expects every one to be caught
+- **Tamper-Evident Audit Log:** Records are hash-chained, HMAC-keyed with `UNIFI_AUDIT_CHAIN_KEY`; `python -m unifi_mcp_server.utils.audit_verify` detects edited, deleted, inserted and reordered records, and with an anchored head (`--head`, or `--anchors` for the SIEM's anchor events) also records removed from the end. `verify_audit_chain` checks each Postgres chain against its `audit_chain_heads` entry (a chain with records but no head is reported too), so deleting the newest records, a whole chain or the whole table is caught, and checks every searchable column (operation, result, principal, controller, time, seq, hash) against the sealed record, so a record cannot be hidden from `search_audit_log` by editing its columns. A drill (`tests/unit/fleet/test_drill_tamper.py`) makes each of these changes as the database superuser with triggers disabled and expects every one to be caught
 
 - **Debug Passthrough Behind `DEBUG`:** `debug_api_request` (raw GET or DELETE to any controller endpoint) is registered only when `DEBUG` is truthy. It goes through the same tool wrapper as every other tool: `UNIFI_READ_ONLY` removes it, `UNIFI_DRY_RUN` previews it, every call needs the `destructive` tier and is audited, and a DELETE needs `confirm=true`. The endpoint must be a controller-relative path; absolute and scheme-relative URLs are refused so the API key never leaves for another host. Leave `DEBUG` unset in production
 
@@ -439,7 +439,7 @@ CMD ["python", "src/main.py"]
 
    | | MCP audit log | A2A audit facility | Application log |
    |---|---|---|---|
-   | Source | Tool wrapper (`src/utils/audit.py`) | `/a2a/delegate` handler (`src/a2a/audit.py`) | Python `logging`, `LOG_LEVEL` |
+   | Source | Tool wrapper (`src/unifi_mcp_server/utils/audit.py`) | `/a2a/delegate` handler (`src/unifi_mcp_server/a2a/audit.py`) | Python `logging`, `LOG_LEVEL` |
    | Where | `UNIFI_AUDIT_LOG_PATH`, or Postgres `audit_log` with `DATABASE_URL` | `logs/a2a-audit.jsonl` plus an in-memory list | stdout/stderr |
    | Covers | Mutating, refused and (with `UNIFI_AUDIT_READS`) read MCP tool calls; admin and system events | A2A delegations only; MCP tool calls never appear here | Whatever the code logs |
    | Redaction | Credentials redacted in arguments and error text; payload encryption with `UNIFI_AUDIT_LOG_KEY` | None: parameters and the tool **result** are written as received | Not guaranteed |
@@ -505,7 +505,7 @@ CMD ["python", "src/main.py"]
    **Decrypting a log file** (operators / forensics):
 
    ```bash
-   UNIFI_AUDIT_LOG_KEY=... python -m src.utils.audit_decrypt /var/log/unifi-mcp/audit.log
+   UNIFI_AUDIT_LOG_KEY=... python -m unifi_mcp_server.utils.audit_decrypt /var/log/unifi-mcp/audit.log
    # filters: --operation create_wlan --limit 50
    ```
 
@@ -522,7 +522,7 @@ CMD ["python", "src/main.py"]
    record, so verifying needs the chain key but not the payload key:
 
    ```bash
-   UNIFI_AUDIT_CHAIN_KEY=... python -m src.utils.audit_verify /var/log/unifi-mcp/audit.log
+   UNIFI_AUDIT_CHAIN_KEY=... python -m unifi_mcp_server.utils.audit_verify /var/log/unifi-mcp/audit.log
    ```
 
    Removing the last records of a chain is not detectable from the file
@@ -530,7 +530,7 @@ CMD ["python", "src/main.py"]
    there:
 
    ```bash
-   python -m src.utils.audit_verify audit.log --head CHAIN_ID:SEQ:HASH
+   python -m unifi_mcp_server.utils.audit_verify audit.log --head CHAIN_ID:SEQ:HASH
    ```
 
    In Postgres, `verify_audit_chain` compares every chain with its
@@ -572,7 +572,7 @@ CMD ["python", "src/main.py"]
    anchor events is an error, not a pass):
 
    ```bash
-   UNIFI_AUDIT_CHAIN_KEY=... python -m src.utils.audit_verify audit.log --anchors anchors.jsonl
+   UNIFI_AUDIT_CHAIN_KEY=... python -m unifi_mcp_server.utils.audit_verify audit.log --anchors anchors.jsonl
    ```
 
    Records rewritten together with their heads in Postgres no longer match
@@ -585,8 +585,8 @@ CMD ["python", "src/main.py"]
    daily from cron or a Kubernetes CronJob:
 
    ```bash
-   python -m src.fleet.cli audit-retention            # dry run: what would go
-   python -m src.fleet.cli audit-retention --confirm  # archive, then delete
+   python -m unifi_mcp_server.fleet.cli audit-retention            # dry run: what would go
+   python -m unifi_mcp_server.fleet.cli audit-retention --confirm  # archive, then delete
    ```
 
    It refuses to delete anything unless the whole store verifies. Expired
@@ -596,7 +596,7 @@ CMD ["python", "src/main.py"]
    storage of their own; check one with:
 
    ```bash
-   UNIFI_AUDIT_CHAIN_KEY=... python -m src.utils.audit_verify \
+   UNIFI_AUDIT_CHAIN_KEY=... python -m unifi_mcp_server.utils.audit_verify \
      audit-before-....jsonl.gz --manifest audit-before-....jsonl.gz.manifest.json
    ```
 
@@ -618,7 +618,7 @@ CMD ["python", "src/main.py"]
    mounting the file itself:
 
    ```bash
-   python -m src.utils.audit_verify /var/log/unifi-mcp/audit.log.[0-9]* /var/log/unifi-mcp/audit.log
+   python -m unifi_mcp_server.utils.audit_verify /var/log/unifi-mcp/audit.log.[0-9]* /var/log/unifi-mcp/audit.log
    ```
 
    Retention removes rotated files whose records are all past
@@ -627,8 +627,8 @@ CMD ["python", "src/main.py"]
    `audit.log.checkpoints.jsonl`:
 
    ```bash
-   python -m src.utils.audit_retention /var/log/unifi-mcp/audit.log --confirm
-   python -m src.utils.audit_verify /var/log/unifi-mcp/audit.log.[0-9]* /var/log/unifi-mcp/audit.log \
+   python -m unifi_mcp_server.utils.audit_retention /var/log/unifi-mcp/audit.log --confirm
+   python -m unifi_mcp_server.utils.audit_verify /var/log/unifi-mcp/audit.log.[0-9]* /var/log/unifi-mcp/audit.log \
      --checkpoints /var/log/unifi-mcp/audit.log.checkpoints.jsonl
    ```
 

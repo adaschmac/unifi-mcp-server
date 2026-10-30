@@ -1,4 +1,4 @@
-"""Unit tests for src/memory.py (optional Supermemory-backed notes)."""
+"""Unit tests for src/unifi_mcp_server/memory.py (optional Supermemory-backed notes)."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src import memory
-from src.memory import MemoryClient
+from unifi_mcp_server import memory
+from unifi_mcp_server.memory import MemoryClient
 
 
 def _settings(

@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
-protect_views = pytest.importorskip("src.tools.protect_views")
+protect_views = pytest.importorskip("unifi_mcp_server.tools.protect_views")
 
 
 def _tool(*names: str):

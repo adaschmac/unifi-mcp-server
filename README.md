@@ -422,7 +422,7 @@ make help       # list every target
 
 Without `make`, the same commands run through `uv run --locked`, for example `uv run --locked pytest tests/unit/ -m "not integration"`. Integration tests (`-m integration`) need real UniFi hardware.
 
-Layout: `src/main.py` builds the server, `src/tools/` holds the tool modules, `src/api/` the UniFi clients, `src/models/` the Pydantic models, `src/fleet/` the fleet stack, and `tests/unit/` the unit tests. [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) describe the conventions in detail, and [commands.md](commands.md) lists the development commands.
+Layout: `src/unifi_mcp_server/main.py` builds the server, `src/unifi_mcp_server/tools/` holds the tool modules, `src/unifi_mcp_server/api/` the UniFi clients, `src/unifi_mcp_server/models/` the Pydantic models, `src/unifi_mcp_server/fleet/` the fleet stack, and `tests/unit/` the unit tests. [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) describe the conventions in detail, and [commands.md](commands.md) lists the development commands.
 
 ## Contributing
 

@@ -1,7 +1,7 @@
 """Checks that the A2A layer and the server's RBAC agree.
 
 The A2A authorization layer restates the server's role table in its own
-vocabulary, because it cannot import ``src.access`` (that module reads the
+vocabulary, because it cannot import ``unifi_mcp_server.access`` (that module reads the
 request context). The restatement is a copy, and a copy can drift. These
 tests make the drift visible.
 """
@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import pytest
 
-from src.a2a.auth import _ROLE_TIERS, AuthManager, _tiers_for_role
-from src.access import ROLE_TIERS, ROLES
+from unifi_mcp_server.a2a.auth import _ROLE_TIERS, AuthManager, _tiers_for_role
+from unifi_mcp_server.access import ROLE_TIERS, ROLES
 
 
 class TestRoleTablesAgree:
@@ -68,7 +68,7 @@ class TestTierParityWithTheRegistry:
         """No registered tool may be reachable over A2A by a weaker role.
 
         The registry is read in a subprocess: importing the server
-        in-process would reuse whatever ``src.main`` another test module
+        in-process would reuse whatever ``unifi_mcp_server.main`` another test module
         already cached under a different environment.
         """
         import os
@@ -79,10 +79,10 @@ class TestTierParityWithTheRegistry:
         root = Path(__file__).resolve().parents[3]
         script = (
             "import json\n"
-            "import src.main as main\n"
-            "from src.a2a.auth import AuthManager\n"
-            "from src.a2a.capabilities import iter_registered_tools\n"
-            "from src.tool_registry import TOOL_TIERS, tool_tier\n"
+            "import unifi_mcp_server.main as main\n"
+            "from unifi_mcp_server.a2a.auth import AuthManager\n"
+            "from unifi_mcp_server.a2a.capabilities import iter_registered_tools\n"
+            "from unifi_mcp_server.tool_registry import TOOL_TIERS, tool_tier\n"
             "auth = AuthManager()\n"
             "auth.register_tools({t.name: t for t in iter_registered_tools(main.mcp)})\n"
             "out = []\n"

@@ -1,7 +1,7 @@
-"""Runtime paths of src/main.py: resource handlers, debug tool registration, the
+"""Runtime paths of src/unifi_mcp_server/main.py: resource handlers, debug tool registration, the
 lifespan, the start-up audit record, and main()'s transport branches.
 
-``src.main`` builds its server at import time from the environment, so each
+``unifi_mcp_server.main`` builds its server at import time from the environment, so each
 test reloads it with the environment it needs. ``mcp.run`` is always patched:
 nothing here opens a socket or talks to a controller.
 """
@@ -27,10 +27,10 @@ _LOCAL_ENV = {
 
 def _reload_main(**overrides: str) -> ModuleType:
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", {**_LOCAL_ENV, **overrides}, clear=False):
-        return importlib.import_module("src.main")
+        return importlib.import_module("unifi_mcp_server.main")
 
 
 def _fn(component):
@@ -214,7 +214,7 @@ class TestLifespan:
         registry.start = registry_start
         # Imported here so the patch below does not depend on test order.
         pytest.importorskip("sqlalchemy")
-        from src.fleet.db import audit_store
+        from unifi_mcp_server.fleet.db import audit_store
 
         with (
             patch.object(main_mod, "start_siem_forwarder", start_forwarder),
@@ -235,7 +235,7 @@ class TestLifespan:
         registry.start = AsyncMock(side_effect=lambda: order.append("registry.start"))
         registry.stop = AsyncMock()
         pytest.importorskip("sqlalchemy")
-        from src.fleet.db import audit_store
+        from unifi_mcp_server.fleet.db import audit_store
 
         async def warn() -> None:
             order.append("warn")
@@ -263,7 +263,7 @@ class TestRegisterWebhookRoute:
         self, main_mod: ModuleType
     ) -> None:
         """The lifespan drains whatever this sets, so the global must be set."""
-        from src.fleet import bus
+        from unifi_mcp_server.fleet import bus
 
         settings = MagicMock()
         settings.webhook_secret = "a-secret"  # pragma: allowlist secret
@@ -528,7 +528,7 @@ class TestImportTimeBranches:
 
     @pytest.mark.asyncio
     async def test_debug_tool_registered_destructive_under_debug(self) -> None:
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         mod = _reload_main(DEBUG="true")
         names = {tool.name for tool in await mod.mcp.list_tools()}
@@ -557,7 +557,7 @@ class TestToolModuleSets:
 
     @pytest.mark.parametrize("api_type", ["cloud-v1", "cloud-ea", "local"])
     def test_cloud_api_modules_register_in_every_mode(self, api_type: str) -> None:
-        from src.tool_registry import _get_registered_tool_names
+        from unifi_mcp_server.tool_registry import _get_registered_tool_names
 
         mod = _reload_main(UNIFI_API_TYPE=api_type)
         names = _get_registered_tool_names(mod.mcp)
@@ -565,7 +565,7 @@ class TestToolModuleSets:
             assert tool in names, f"{tool} not registered with UNIFI_API_TYPE={api_type}"
 
     def test_cloud_api_profiles_work_in_cloud_mode(self) -> None:
-        from src.tool_registry import _get_registered_tool_names
+        from unifi_mcp_server.tool_registry import _get_registered_tool_names
 
         mod = _reload_main(UNIFI_API_TYPE="cloud-v1", UNIFI_PROFILE="mobility")
         assert mod._TOOL_MODULES == [mod.mobility_tools]
@@ -589,7 +589,7 @@ class TestToolModuleSets:
 
 
 def teardown_module() -> None:
-    # Leave a default (local, stdio) src.main behind for later test modules.
+    # Leave a default (local, stdio) unifi_mcp_server.main behind for later test modules.
     _reload_main()
 
 

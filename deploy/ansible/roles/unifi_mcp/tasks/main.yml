@@ -169,7 +169,7 @@
       - "{{ unifi_mcp_image_ref }}"
       - sh
       - -c
-      - python -m src.fleet.cli status || python -m src.fleet.cli migrate
+      - python -m unifi_mcp_server.fleet.cli status || python -m unifi_mcp_server.fleet.cli migrate
   register: unifi_mcp_migrate
   changed_when: "'this server needs' in unifi_mcp_migrate.stdout"
   run_once: true
@@ -224,7 +224,7 @@
   loop: "{{ range(unifi_mcp_replicas | int) | list }}"
   no_log: true
 
-# Health checks and site/inventory snapshots (python -m src.worker).
+# Health checks and site/inventory snapshots (python -m unifi_mcp_server.worker).
 - name: Run the workers
   community.docker.docker_container:
     name: "unifi-mcp-worker-{{ item }}"
@@ -232,7 +232,7 @@
     restart_policy: unless-stopped
     networks:
       - name: "{{ unifi_mcp_network }}"
-    command: [python, -m, src.worker]
+    command: [python, -m, unifi_mcp_server.worker]
     env_file: "{{ unifi_mcp_root }}/server.env"
   loop: "{{ range(unifi_mcp_workers | int) | list if unifi_mcp_fleet | bool else [] }}"
   no_log: true

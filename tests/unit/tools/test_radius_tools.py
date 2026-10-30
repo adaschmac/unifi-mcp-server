@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.radius import (
+from unifi_mcp_server.tools.radius import (
     configure_guest_portal,
     create_hotspot_package,
     create_radius_account,
@@ -23,12 +23,12 @@ from src.tools.radius import (
     update_radius_account,
     update_radius_profile,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 def test_radius_profile_without_auth_server():
     """Local API may return auth_servers (plural) instead of auth_server."""
-    from src.models.radius import RADIUSProfile
+    from unifi_mcp_server.models.radius import RADIUSProfile
 
     data = {
         "_id": "profile-1",
@@ -80,7 +80,7 @@ async def test_list_radius_profiles_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -114,7 +114,7 @@ async def test_get_radius_profile_success(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -144,7 +144,7 @@ async def test_create_radius_profile_success(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -170,7 +170,7 @@ async def test_create_radius_profile_success(mock_settings):
 @pytest.mark.asyncio
 async def test_create_radius_profile_dry_run(mock_settings):
     """Test create RADIUS profile dry run."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -223,7 +223,7 @@ async def test_update_radius_profile_success(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -249,7 +249,7 @@ async def test_update_radius_profile_success(mock_settings):
 @pytest.mark.asyncio
 async def test_delete_radius_profile_success(mock_settings):
     """Test deleting a RADIUS profile."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -294,7 +294,7 @@ async def test_list_radius_accounts_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -327,7 +327,7 @@ async def test_create_radius_account_success(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -366,7 +366,7 @@ async def test_create_radius_account_success(mock_settings):
 @pytest.mark.asyncio
 async def test_delete_radius_account_success(mock_settings):
     """Test deleting a RADIUS account."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -415,7 +415,7 @@ async def test_get_guest_portal_config_success(mock_settings):
     """Reads setting/guest_access and translates the section."""
     mock_response = {"data": [_guest_access_section()]}
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -439,9 +439,9 @@ async def test_get_guest_portal_config_success(mock_settings):
 @pytest.mark.asyncio
 async def test_get_guest_portal_config_missing_section(mock_settings):
     """An empty data list must raise, not crash or fabricate defaults."""
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.utils.exceptions import APIError
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -462,7 +462,7 @@ async def test_configure_guest_portal_disable_portal(mock_settings):
     current = _guest_access_section()
     updated = _guest_access_section(portal_enabled=False)
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -493,7 +493,7 @@ async def test_configure_guest_portal_auth_method_clears_siblings(mock_settings)
     current = _guest_access_section()
     updated = _guest_access_section(password_enabled=True, voucher_enabled=False)
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -569,7 +569,7 @@ async def test_configure_guest_portal_password_switch_needs_a_password(mock_sett
     current = _guest_access_section()
     current.pop("x_password", None)
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.get = AsyncMock(return_value={"data": [current]})
@@ -591,7 +591,7 @@ async def test_configure_guest_portal_password_without_method_change_rejected(mo
     """A new password while the portal is on another method needs the switch."""
     current = _guest_access_section(voucher_enabled=True, password_enabled=False)
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.get = AsyncMock(return_value={"data": [current]})
@@ -613,7 +613,7 @@ async def test_configure_guest_portal_dry_run(mock_settings):
     """Dry run previews the legacy-field payload with secrets redacted."""
     current = _guest_access_section()
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -660,7 +660,7 @@ async def test_list_hotspot_packages_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -690,7 +690,7 @@ async def test_create_hotspot_package_success(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -722,7 +722,7 @@ async def test_create_hotspot_package_success(mock_settings):
 @pytest.mark.asyncio
 async def test_create_hotspot_package_rejects_nonpositive_duration(mock_settings):
     """duration_minutes < 1 must be rejected, not rounded up to a paid hour."""
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     for bad in (0, -30):
         with pytest.raises(ValidationError, match="duration_minutes"):
@@ -738,7 +738,7 @@ async def test_create_hotspot_package_rejects_nonpositive_duration(mock_settings
 @pytest.mark.asyncio
 async def test_update_hotspot_package_rejects_currency_without_price(mock_settings):
     """currency rides alongside amount; alone it changes nothing."""
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     with pytest.raises(ValidationError, match="currency"):
         await update_hotspot_package(
@@ -753,7 +753,7 @@ async def test_update_hotspot_package_rejects_currency_without_price(mock_settin
 @pytest.mark.asyncio
 async def test_update_hotspot_package_rejects_nonpositive_duration(mock_settings):
     """duration_minutes < 1 must be rejected on update too."""
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     with pytest.raises(ValidationError, match="duration_minutes"):
         await update_hotspot_package(
@@ -770,7 +770,7 @@ async def test_create_hotspot_package_rounds_duration_up_to_hours(mock_settings)
     """The classic surface stores whole hours; partial hours round up."""
     mock_response = {"data": {"_id": "package-rounded", "name": "90 minutes", "hours": 2}}
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -794,7 +794,7 @@ async def test_create_hotspot_package_rounds_duration_up_to_hours(mock_settings)
 @pytest.mark.asyncio
 async def test_delete_hotspot_package_success(mock_settings):
     """Test deleting a hotspot package."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -830,7 +830,7 @@ async def test_list_radius_profiles_list_response(mock_settings):
         },
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -858,7 +858,7 @@ async def test_get_radius_profile_list_response(mock_settings):
         },
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -875,7 +875,7 @@ async def test_get_radius_profile_list_response(mock_settings):
 @pytest.mark.asyncio
 async def test_get_radius_profile_empty_list_response(mock_settings):
     """Test getting profile when API returns an empty list."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -904,7 +904,7 @@ async def test_create_radius_profile_list_response(mock_settings):
         },
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -940,7 +940,7 @@ async def test_create_radius_profile_with_acct_server(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -970,7 +970,7 @@ async def test_create_radius_profile_with_acct_server(mock_settings):
 @pytest.mark.asyncio
 async def test_create_radius_profile_dry_run_with_acct(mock_settings):
     """Test dry run includes redacted acct_secret."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1008,7 +1008,7 @@ async def test_update_radius_profile_list_response(mock_settings):
         },
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1031,7 +1031,7 @@ async def test_update_radius_profile_list_response(mock_settings):
 @pytest.mark.asyncio
 async def test_update_radius_profile_dry_run(mock_settings):
     """Test update RADIUS profile dry run with all optional fields."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1083,7 +1083,7 @@ async def test_update_radius_profile_with_all_fields(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1137,7 +1137,7 @@ async def test_update_radius_profile_no_confirm(mock_settings):
 @pytest.mark.asyncio
 async def test_delete_radius_profile_dry_run(mock_settings):
     """Test delete RADIUS profile dry run."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1170,7 +1170,7 @@ async def test_list_radius_accounts_list_response(mock_settings):
         },
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1188,7 +1188,7 @@ async def test_list_radius_accounts_list_response(mock_settings):
 @pytest.mark.asyncio
 async def test_create_radius_account_dry_run(mock_settings):
     """Test create RADIUS account dry run."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1223,7 +1223,7 @@ async def test_create_radius_account_list_response(mock_settings):
         }
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1257,7 +1257,7 @@ async def test_create_radius_account_without_vlan(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1297,7 +1297,7 @@ async def test_create_radius_account_with_note(mock_settings):
         }
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1323,7 +1323,7 @@ async def test_create_radius_account_with_note(mock_settings):
 @pytest.mark.asyncio
 async def test_delete_radius_account_dry_run(mock_settings):
     """Test delete RADIUS account dry run."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1350,7 +1350,7 @@ async def test_configure_guest_portal_put_not_echoed(mock_settings):
     current = _guest_access_section()
     stored = _guest_access_section(portal_enabled=False)
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1377,7 +1377,7 @@ async def test_configure_guest_portal_versioned_fields(mock_settings):
     # Controller knows portal_customized_title but not the ToS keys.
     current = _guest_access_section(portal_customized_title="Old title")
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1436,7 +1436,7 @@ async def test_list_hotspot_packages_list_response(mock_settings):
         },
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1454,7 +1454,7 @@ async def test_list_hotspot_packages_list_response(mock_settings):
 @pytest.mark.asyncio
 async def test_create_hotspot_package_dry_run(mock_settings):
     """Test create hotspot package dry run."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1494,7 +1494,7 @@ async def test_create_hotspot_package_list_response(mock_settings):
         }
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1530,7 +1530,7 @@ async def test_create_hotspot_package_no_confirm(mock_settings):
 @pytest.mark.asyncio
 async def test_delete_hotspot_package_dry_run(mock_settings):
     """Test delete hotspot package dry run."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1583,7 +1583,7 @@ async def test_get_radius_account_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1616,7 +1616,7 @@ async def test_get_radius_account_list_response(mock_settings):
         }
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1640,7 +1640,7 @@ async def test_get_radius_account_empty_response(mock_settings):
     """Test get radius account when API returns empty list."""
     mock_response = {"data": []}
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1673,7 +1673,7 @@ async def test_update_radius_account_username_only(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1711,7 +1711,7 @@ async def test_update_radius_account_vlan(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1749,7 +1749,7 @@ async def test_update_radius_account_no_confirm(mock_settings):
 @pytest.mark.asyncio
 async def test_update_radius_account_dry_run(mock_settings):
     """Test update radius account dry run does not call API."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1793,7 +1793,7 @@ async def test_update_radius_account_all_fields(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1847,7 +1847,7 @@ async def test_get_hotspot_package_success(mock_settings):
     """Test successful retrieval of a single hotspot package."""
     mock_response = {"data": [{"_id": "package-1", "name": "1 Hour", "hours": 1}]}
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1880,7 +1880,7 @@ async def test_get_hotspot_package_list_response(mock_settings):
         }
     ]
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1914,7 +1914,7 @@ async def test_update_hotspot_package_name_only(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1941,7 +1941,7 @@ async def test_update_hotspot_package_price_and_duration(mock_settings):
     """Updates map to the classic amount/hours fields."""
     mock_response = {"data": [{"_id": "package-1", "name": "Limited", "hours": 2, "amount": 9.99}]}
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -1980,7 +1980,7 @@ async def test_update_hotspot_package_no_confirm(mock_settings):
 @pytest.mark.asyncio
 async def test_update_hotspot_package_dry_run(mock_settings):
     """Test update hotspot package dry run does not call API."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -2032,7 +2032,7 @@ async def test_update_hotspot_package_all_fields(mock_settings):
         ]
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -2067,7 +2067,7 @@ async def test_get_hotspot_package_empty_response(mock_settings):
     """Test get hotspot package when API returns empty list."""
     mock_response = {"data": []}
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -2101,7 +2101,7 @@ async def test_get_radius_account_already_authenticated(mock_settings):
         "site_id": "default",
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.authenticate = AsyncMock()
@@ -2121,7 +2121,7 @@ async def test_get_radius_account_already_authenticated(mock_settings):
 @pytest.mark.asyncio
 async def test_update_radius_account_dry_run_no_password(mock_settings):
     """Cover False branch of 'if x_password in payload_safe' in dry_run."""
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -2153,7 +2153,7 @@ async def test_update_radius_account_already_auth_dict_response(mock_settings):
         "site_id": "default",
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.authenticate = AsyncMock()
@@ -2186,7 +2186,7 @@ async def test_get_hotspot_package_already_authenticated(mock_settings):
         "site_id": "default",
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.authenticate = AsyncMock()
@@ -2215,7 +2215,7 @@ async def test_update_hotspot_package_already_auth_dict_response(mock_settings):
         "site_id": "default",
     }
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.authenticate = AsyncMock()
@@ -2247,7 +2247,7 @@ async def test_get_guest_portal_config_radius_method(mock_settings):
     section = _guest_access_section(
         password_enabled=False, voucher_enabled=False, radius_enabled=True
     )
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         client = MagicMock()
         client.is_authenticated = True
         client.get = AsyncMock(return_value={"data": [section]})
@@ -2266,7 +2266,7 @@ async def test_get_guest_portal_config_ambiguous_hotspot(mock_settings):
     section = _guest_access_section(
         password_enabled=False, voucher_enabled=False, radius_enabled=False
     )
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         client = MagicMock()
         client.is_authenticated = True
         client.get = AsyncMock(return_value={"data": [section]})
@@ -2284,7 +2284,7 @@ async def test_get_guest_portal_config_external_and_none(mock_settings):
     """auth=custom maps to external; anything else maps to none."""
     for auth, expected in (("custom", "external"), ("none", "none"), ("", "none")):
         section = _guest_access_section(auth=auth)
-        with patch("src.tools.radius.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
             client = MagicMock()
             client.is_authenticated = True
             client.get = AsyncMock(return_value={"data": [section]})
@@ -2300,9 +2300,9 @@ async def test_get_guest_portal_config_external_and_none(mock_settings):
 @pytest.mark.asyncio
 async def test_configure_guest_portal_missing_section_raises(mock_settings):
     """A response with no settings id cannot be written to."""
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.utils.exceptions import APIError
 
-    with patch("src.tools.radius.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
         client = MagicMock()
         client.is_authenticated = True
         client.get = AsyncMock(return_value={"data": []})
@@ -2323,7 +2323,7 @@ async def test_configure_guest_portal_missing_section_raises(mock_settings):
 async def test_configure_guest_portal_external_and_none_payloads(mock_settings):
     """external writes auth=custom; none writes auth=none."""
     for method, expected in (("external", "custom"), ("none", "none")):
-        with patch("src.tools.radius.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.radius.UniFiClient") as mock_client_class:
             client = MagicMock()
             client.is_authenticated = True
             client.get = AsyncMock(return_value={"data": [_guest_access_section()]})
@@ -2332,7 +2332,7 @@ async def test_configure_guest_portal_external_and_none_payloads(mock_settings):
             client.__aexit__ = AsyncMock(return_value=False)
             mock_client_class.return_value = client
 
-            with patch("src.tools.radius.audit_action", new_callable=AsyncMock):
+            with patch("unifi_mcp_server.tools.radius.audit_action", new_callable=AsyncMock):
                 await configure_guest_portal(
                     site_id="site-1",
                     settings=mock_settings,
@@ -2346,7 +2346,7 @@ async def test_configure_guest_portal_external_and_none_payloads(mock_settings):
 
 def test_first_item_handles_bare_list_and_scalars():
     """The unwrap helper accepts a bare list and refuses scalars."""
-    from src.tools.radius import _first_item
+    from unifi_mcp_server.tools.radius import _first_item
 
     assert _first_item([{"_id": "a"}]) == {"_id": "a"}
     assert _first_item([]) == {}

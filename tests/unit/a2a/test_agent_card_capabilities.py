@@ -14,8 +14,8 @@ import pytest
 from fastmcp.resources.function_resource import FunctionResource
 from fastmcp.tools.function_tool import FunctionTool
 
-from src.a2a.agent_card import build_agent_card
-from src.a2a.capabilities import (
+from unifi_mcp_server.a2a.agent_card import build_agent_card
+from unifi_mcp_server.a2a.capabilities import (
     A2A_PROTOCOL_VERSION,
     advertised_api_modes,
     advertised_capabilities,
@@ -23,8 +23,8 @@ from src.a2a.capabilities import (
     summarize_capabilities,
     tool_tier,
 )
-from src.a2a.executor import UnknownToolError, execute_tool_call
-from src.config import Settings
+from unifi_mcp_server.a2a.executor import UnknownToolError, execute_tool_call
+from unifi_mcp_server.config import Settings
 
 
 class FakeProvider:
@@ -91,7 +91,7 @@ class TestAgentCardShape:
         self, local_settings: Settings, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setitem(
-            __import__("src.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS,
+            __import__("unifi_mcp_server.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS,
             "list_site_clients",
             "read",
         )
@@ -213,7 +213,7 @@ class TestCardReflectsTheDeployment:
         self, local_settings: Settings, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """A write tool is not advertised as destructive when the registry says otherwise."""
-        tiers = __import__("src.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
+        tiers = __import__("unifi_mcp_server.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
         monkeypatch.setitem(tiers, "create_site_network", "write")
         monkeypatch.setitem(tiers, "list_site_clients", "read")
 
@@ -236,11 +236,11 @@ class TestCardReflectsTheDeployment:
         call the server would allow, or believe a call is safe when the
         server treats it as destructive.
         """
-        import src.main as main
-        from src.a2a.auth import AuthManager
-        from src.a2a.capabilities import iter_registered_tools, tool_tier
-        from src.tool_registry import TOOL_TIERS
-        from src.tool_registry import tool_tier as registry_tool_tier
+        import unifi_mcp_server.main as main
+        from unifi_mcp_server.a2a.auth import AuthManager
+        from unifi_mcp_server.a2a.capabilities import iter_registered_tools, tool_tier
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.tool_registry import tool_tier as registry_tool_tier
 
         auth = AuthManager()
         auth.register_tools({tool.name: tool for tool in iter_registered_tools(main.mcp)}, main.mcp)
@@ -257,7 +257,7 @@ class TestCardReflectsTheDeployment:
     def test_destructive_tools_require_confirmation(
         self, local_settings: Settings, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        tiers = __import__("src.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
+        tiers = __import__("unifi_mcp_server.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
         monkeypatch.setitem(tiers, "delete_site_device", "destructive")
 
         mcp = self._mcp_with(make_tool(delete_site_device, name="delete_site_device"))
@@ -276,7 +276,7 @@ class TestCardReflectsTheDeployment:
             """A tool with several parameter names."""
             return {}
 
-        tiers = __import__("src.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
+        tiers = __import__("unifi_mcp_server.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
         monkeypatch.setitem(tiers, "tool_with_fields", "read")
         mcp = self._mcp_with(make_tool(tool_with_fields, name="tool_with_fields"))
         card = build_agent_card(mcp, local_settings)
@@ -324,7 +324,7 @@ class TestCapabilitySummary:
     def test_counts_split_by_tier(
         self, local_settings: Settings, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        tiers = __import__("src.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
+        tiers = __import__("unifi_mcp_server.tool_registry", fromlist=["TOOL_TIERS"]).TOOL_TIERS
         monkeypatch.setitem(tiers, "list_site_clients", "read")
         monkeypatch.setitem(tiers, "create_site_network", "write")
         monkeypatch.setitem(tiers, "delete_site_device", "destructive")
@@ -367,7 +367,7 @@ class TestDomainMapping:
         def sample() -> None:
             """A sample tool."""
 
-        sample.__module__ = "src.tools.firewall_policies"
+        sample.__module__ = "unifi_mcp_server.tools.firewall_policies"
         tool = make_tool(sample, name="sample")
         assert domain_for_tool(tool) == "security"
 
@@ -375,7 +375,7 @@ class TestDomainMapping:
         def sample() -> None:
             """A sample tool."""
 
-        sample.__module__ = "src.fleet.tools"
+        sample.__module__ = "unifi_mcp_server.fleet.tools"
         tool = make_tool(sample, name="sample")
         assert domain_for_tool(tool) == "fleet"
 
@@ -419,7 +419,7 @@ class TestLiveServerCard:
         os.environ.setdefault("UNIFI_LOCAL_HOST", "192.0.2.1")
         os.environ.setdefault("AGNOST_ENABLED", "false")
         sys.path.insert(0, ".")
-        import src.main as main
+        import unifi_mcp_server.main as main
 
         card = build_agent_card(main.mcp, main.settings)
 
@@ -439,10 +439,10 @@ class TestLiveServerCard:
         os.environ.setdefault("UNIFI_LOCAL_HOST", "192.0.2.1")
         os.environ.setdefault("AGNOST_ENABLED", "false")
         sys.path.insert(0, ".")
-        import src.main as main
+        import unifi_mcp_server.main as main
 
         card = build_agent_card(main.mcp, main.settings)
-        from src.a2a.capabilities import iter_registered_tools
+        from unifi_mcp_server.a2a.capabilities import iter_registered_tools
 
         registered = {tool.name for tool in iter_registered_tools(main.mcp)}
         assert {skill["name"] for skill in card["skills"]} == registered
@@ -457,7 +457,7 @@ class TestLiveServerCard:
         os.environ.setdefault("UNIFI_LOCAL_HOST", "192.0.2.1")
         os.environ.setdefault("AGNOST_ENABLED", "false")
         sys.path.insert(0, ".")
-        import src.main as main
+        import unifi_mcp_server.main as main
 
         card = build_agent_card(main.mcp, main.settings)
         rendered = str(card)

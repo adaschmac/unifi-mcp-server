@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/auth.py."""
+"""Unit tests for src/unifi_mcp_server/a2a/auth.py."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from src.a2a.auth import AuthContext, AuthManager, CloudAuthProvider, LocalAuthProvider
-from src.config import APIType
+from unifi_mcp_server.a2a.auth import AuthContext, AuthManager, CloudAuthProvider, LocalAuthProvider
+from unifi_mcp_server.config import APIType
 
 
 class TestAuthContext:

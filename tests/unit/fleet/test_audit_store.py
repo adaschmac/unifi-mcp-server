@@ -14,17 +14,21 @@ from fastmcp import Client, FastMCP  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.exc import DBAPIError  # noqa: E402
 
-from src.config.config import Settings  # noqa: E402
-from src.fleet.admin_tools import register_admin_tools  # noqa: E402
-from src.fleet.db import audit_store  # noqa: E402
-from src.fleet.db.audit_store import PostgresAuditSink  # noqa: E402
-from src.fleet.db.schema import make_engine  # noqa: E402
-from src.fleet.postgres_registry import PostgresRegistry  # noqa: E402
-from src.fleet.router import FleetRouter  # noqa: E402
-from src.tool_registry import _make_tool_wrapper  # noqa: E402
-from src.utils import tool_kind
-from src.utils.audit import AuditLogger, AuditUnavailableError, get_audit_logger  # noqa: E402
-from src.utils.audit_verify import verify_records  # noqa: E402
+from unifi_mcp_server.config.config import Settings  # noqa: E402
+from unifi_mcp_server.fleet.admin_tools import register_admin_tools  # noqa: E402
+from unifi_mcp_server.fleet.db import audit_store  # noqa: E402
+from unifi_mcp_server.fleet.db.audit_store import PostgresAuditSink  # noqa: E402
+from unifi_mcp_server.fleet.db.schema import make_engine  # noqa: E402
+from unifi_mcp_server.fleet.postgres_registry import PostgresRegistry  # noqa: E402
+from unifi_mcp_server.fleet.router import FleetRouter  # noqa: E402
+from unifi_mcp_server.tool_registry import _make_tool_wrapper  # noqa: E402
+from unifi_mcp_server.utils import tool_kind
+from unifi_mcp_server.utils.audit import (  # noqa: E402
+    AuditLogger,
+    AuditUnavailableError,
+    get_audit_logger,
+)
+from unifi_mcp_server.utils.audit_verify import verify_records  # noqa: E402
 
 CHAIN_KEY = "audit-chain-key"  # pragma: allowlist secret
 
@@ -40,7 +44,7 @@ def settings(
     monkeypatch.setenv("UNIFI_AUDIT_CHAIN_KEY", CHAIN_KEY)
     monkeypatch.setenv("DATABASE_URL", database_url)
     monkeypatch.delenv("UNIFI_AUDIT_LOG_KEY", raising=False)
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 
@@ -216,7 +220,7 @@ class TestThroughTheWrapper:
         monkeypatch.setenv("UNIFI_AUDIT_LOG_KEY", Fernet.generate_key().decode())
         audit = AuditLogger(log_file=settings.audit_log_file)
         audit.sink = PostgresAuditSink(migrated_engine, chain_id="c" * 32)
-        monkeypatch.setattr("src.utils.audit._audit_logger", audit)
+        monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", audit)
 
         await _make_tool_wrapper(change_vlan, settings, FleetRouter(settings, registry))(
             "secret-site", confirm=True
@@ -295,8 +299,8 @@ async def test_documented_least_privilege_grants_run_the_server(
     """The grants in SECURITY.md must be exactly enough for everything the server does."""
     import re
 
-    from src.config.config import APIType
-    from src.fleet.tokens import FleetTokenVerifier, TokenStore
+    from unifi_mcp_server.config.config import APIType
+    from unifi_mcp_server.fleet.tokens import FleetTokenVerifier, TokenStore
 
     security = (Path(__file__).parents[3] / "SECURITY.md").read_text()
     block = re.search(r"Least-privilege database role.*?```sql\n(.*?)```", security, re.S).group(1)

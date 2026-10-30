@@ -9,7 +9,7 @@ The UniFi MCP Server is a Model Context Protocol (MCP) server that exposes the U
 - **Version**: v0.6.3 (`pyproject.toml`; see `DEVELOPMENT_PLAN.md` §5 for release-versioning notes)
 - **Python**: 3.11+
 - **Framework**: FastMCP, with httpx for HTTP and Pydantic v2 for models
-- **Size**: 343 tools in local mode and 71 in cloud mode, from 60 tool modules in `src/tools/`. Over 3,500 unit tests; the CI coverage gate is 80% (`pyproject.toml`), and total coverage is about 94%.
+- **Size**: 343 tools in local mode and 71 in cloud mode, from 60 tool modules in `src/unifi_mcp_server/tools/`. Over 3,500 unit tests; the CI coverage gate is 80% (`pyproject.toml`), and total coverage is about 94%.
 
 ## Before Starting Work
 
@@ -26,25 +26,25 @@ The UniFi MCP Server is a Model Context Protocol (MCP) server that exposes the U
 
 | Path | What it holds |
 |------|---------------|
-| `src/main.py` | Server entry point. Builds the tool module lists per API mode and profile, and registers them |
-| `src/tool_registry.py` | Wraps every tool: routing, risk tier, read-only and dry-run modes, audit, cache |
-| `src/config/config.py` | `Settings` (all environment variables) and the URL path helpers |
-| `src/api/` | `UniFiClient` (Network), `ProtectClient`, `SiteManagerClient`, the connection pool and the rate limiter |
-| `src/tools/` | One module per feature area. Every public async function is a tool |
-| `src/models/` | Pydantic models |
-| `src/resources/` | MCP resources |
-| `src/fleet/`, `src/worker/` | Multi-controller fleet: registry, router, tokens, `fleet_*` tools, background workers |
-| `src/a2a/` | A2A agent card and endpoints |
-| `src/utils/` | Validators, exceptions, the hash-chained audit log, metrics |
+| `src/unifi_mcp_server/main.py` | Server entry point. Builds the tool module lists per API mode and profile, and registers them |
+| `src/unifi_mcp_server/tool_registry.py` | Wraps every tool: routing, risk tier, read-only and dry-run modes, audit, cache |
+| `src/unifi_mcp_server/config/config.py` | `Settings` (all environment variables) and the URL path helpers |
+| `src/unifi_mcp_server/api/` | `UniFiClient` (Network), `ProtectClient`, `SiteManagerClient`, the connection pool and the rate limiter |
+| `src/unifi_mcp_server/tools/` | One module per feature area. Every public async function is a tool |
+| `src/unifi_mcp_server/models/` | Pydantic models |
+| `src/unifi_mcp_server/resources/` | MCP resources |
+| `src/unifi_mcp_server/fleet/`, `src/unifi_mcp_server/worker/` | Multi-controller fleet: registry, router, tokens, `fleet_*` tools, background workers |
+| `src/unifi_mcp_server/a2a/` | A2A agent card and endpoints |
+| `src/unifi_mcp_server/utils/` | Validators, exceptions, the hash-chained audit log, metrics |
 | `tests/unit/` | Unit tests (`tests/unit/tools/` for tool modules) |
 
 ## How Tools Work
 
-- **Registration.** There is no `@mcp.tool()` decorator. `register_module_tools()` in `src/tool_registry.py` registers every public `async def` in a module that `src/main.py` lists. A leading `_` keeps a function private. The wrapper hides the `settings` argument and adds a keyword-only `controller` argument.
-- **Modes and profiles.** `_CLOUD_TOOL_MODULES` and `_LOCAL_TOOL_MODULES` in `src/main.py` decide which modules load for `UNIFI_API_TYPE`, and `UNIFI_PROFILE` narrows the set. A new module must be added to the right list and to the matching profile.
-- **Read or write.** Every tool carries `@read_tool` or `@write_tool` (`src/utils/tool_kind.py`). Registration fails on a tool with neither, and `UNIFI_READ_ONLY` registers only `@read_tool` tools. `tests/unit/test_tool_declarations.py` fails if a `@read_tool` reaches a controller write.
-- **Write tools.** Declare them `@write_tool`. Use `confirm: bool | str = False, dry_run: bool | str = False`, and call `validate_confirmation(confirm, "<operation>", dry_run)` (`src/utils/validators.py`) before any request. On a dry run, return the planned payload without calling the API.
-- **Risk tiers.** `tool_tier()` gives each tool `read`, `write` or `destructive`. Names that start with `delete_`, `remove_` or `bulk_delete_`, and names in `DESTRUCTIVE_TOOLS`, are destructive. Roles map to tiers in `src/access.py`.
+- **Registration.** There is no `@mcp.tool()` decorator. `register_module_tools()` in `src/unifi_mcp_server/tool_registry.py` registers every public `async def` in a module that `src/unifi_mcp_server/main.py` lists. A leading `_` keeps a function private. The wrapper hides the `settings` argument and adds a keyword-only `controller` argument.
+- **Modes and profiles.** `_CLOUD_TOOL_MODULES` and `_LOCAL_TOOL_MODULES` in `src/unifi_mcp_server/main.py` decide which modules load for `UNIFI_API_TYPE`, and `UNIFI_PROFILE` narrows the set. A new module must be added to the right list and to the matching profile.
+- **Read or write.** Every tool carries `@read_tool` or `@write_tool` (`src/unifi_mcp_server/utils/tool_kind.py`). Registration fails on a tool with neither, and `UNIFI_READ_ONLY` registers only `@read_tool` tools. `tests/unit/test_tool_declarations.py` fails if a `@read_tool` reaches a controller write.
+- **Write tools.** Declare them `@write_tool`. Use `confirm: bool | str = False, dry_run: bool | str = False`, and call `validate_confirmation(confirm, "<operation>", dry_run)` (`src/unifi_mcp_server/utils/validators.py`) before any request. On a dry run, return the planned payload without calling the API.
+- **Risk tiers.** `tool_tier()` gives each tool `read`, `write` or `destructive`. Names that start with `delete_`, `remove_` or `bulk_delete_`, and names in `DESTRUCTIVE_TOOLS`, are destructive. Roles map to tiers in `src/unifi_mcp_server/access.py`.
 - **When you add or rename a tool**, regenerate the tier snapshot: `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py`. A mutating tool whose name has a risky word ("disable", "block", "reset" and others) must be in `DESTRUCTIVE_TOOLS` or in `RISKY_NAME_EXEMPTIONS` with a reason.
 - **Audit.** The registry wrapper audits every mutating call. Do not add a second audit path to a new tool.
 
@@ -83,7 +83,7 @@ Project skills are in `.claude/skills/` (Claude Code loads them here). Their sou
 
 | Skill | Use it when you change |
 |-------|------------------------|
-| `unifi-protect-tools` | Any `src/tools/protect_*.py` module |
+| `unifi-protect-tools` | Any `src/unifi_mcp_server/tools/protect_*.py` module |
 | `unifi-network-config-tools` | Networks, WiFi, WAN, DHCP, DNS, QoS, port profiles, switching, VPN |
 | `unifi-security-tools` | Firewall rules and policies, zones, groups, ACLs, content filtering, port forwarding, RADIUS |
 | `unifi-cloud-fleet-tools` | Site Manager, connector, integration API, Mobility, InnerSpace, Carrier, or the fleet stack |
@@ -126,10 +126,10 @@ A tool or resource change must update every surface that names it:
 1. `API.md` — tool entry with parameters and example.
 2. `skills/<name>/SKILL.md` — the relevant operator or developer skill.
 3. Developer skill copies — `.claude/skills/<name>/` and `.agents/skills/<name>/` (except `mintlify-docs`, whose source is `.mintlify/skills/mintlify-docs/SKILL.md`).
-4. `src/prompts/catalog.py` and `docs/PROMPTS.md` — if a prompt workflow reads the tool.
+4. `src/unifi_mcp_server/prompts/catalog.py` and `docs/PROMPTS.md` — if a prompt workflow reads the tool.
 5. `agent-card.json` — regenerate with `python scripts/generate_agent_card.py` when the tool surface changes.
 
-When you add or change an MCP resource (`@mcp.resource("scheme://...")` in `src/main.py`):
+When you add or change an MCP resource (`@mcp.resource("scheme://...")` in `src/unifi_mcp_server/main.py`):
 
 1. Add or update tests under `tests/unit/resources/`.
 2. Update `docs/UNIFI_API.md` "Supporting Resources" with the URI template and endpoint mapping.
@@ -146,8 +146,8 @@ Generated files:
 
 | File | Source | Regenerate | Gate |
 |---|---|---|---|
-| `agent-card.json` | `src/a2a/capabilities.py` + live registry | `python scripts/generate_agent_card.py` | `tests/unit/a2a/test_agent_card.py` |
-| Tool-tier snapshot | `src/tool_registry.py` | `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py` | `tests/unit/fleet/test_tiers.py` |
+| `agent-card.json` | `src/unifi_mcp_server/a2a/capabilities.py` + live registry | `python scripts/generate_agent_card.py` | `tests/unit/a2a/test_agent_card.py` |
+| Tool-tier snapshot | `src/unifi_mcp_server/tool_registry.py` | `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py` | `tests/unit/fleet/test_tiers.py` |
 | Developer skill copies | `skills/<name>/SKILL.md` | `cp` to `.claude/skills/<name>/` and `.agents/skills/<name>/` | `tests/unit/test_agent_docs.py` |
 
 Key pitfalls:

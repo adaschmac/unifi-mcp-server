@@ -8,22 +8,22 @@ import pytest
 from cryptography.fernet import Fernet
 from fastmcp.server.auth import AccessToken
 
-from src.config.config import APIType, Settings
-from src.fleet import ControllerProfile
-from src.fleet.router import FleetRouter
-from src.tool_registry import _make_tool_wrapper
-from src.tools.wifi import delete_wlan
-from src.utils import tool_kind
-from src.utils.audit import AuditUnavailableError, get_audit_logger
-from src.utils.audit_verify import verify_file
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet import ControllerProfile
+from unifi_mcp_server.fleet.router import FleetRouter
+from unifi_mcp_server.tool_registry import _make_tool_wrapper
+from unifi_mcp_server.tools.wifi import delete_wlan
+from unifi_mcp_server.utils import tool_kind
+from unifi_mcp_server.utils.audit import AuditUnavailableError, get_audit_logger
+from unifi_mcp_server.utils.audit_verify import verify_file
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 from .test_router import StaticRegistry
 
 
 @pytest.fixture(autouse=True)
 def _fresh_audit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     for name in ("UNIFI_AUDIT_CHAIN_KEY", "UNIFI_AUDIT_LOG_KEY", "UNIFI_AUDIT_ENCRYPTION_KEY"):
         monkeypatch.delenv(name, raising=False)
 
@@ -117,7 +117,7 @@ class TestWhatIsRecorded:
 
     async def test_env_token_caller_is_recorded(self, settings, log_path, monkeypatch):
         token = AccessToken(token="t0ken", client_id="mcp-client", scopes=[])  # noqa: S106
-        monkeypatch.setattr("src.access.get_access_token", lambda: token)
+        monkeypatch.setattr("unifi_mcp_server.access.get_access_token", lambda: token)
 
         await _make_tool_wrapper(write_tool, settings)("default", confirm=True)
 
@@ -279,7 +279,7 @@ class TestAuditReads:
         self, settings, log_path, monkeypatch
     ):
         token = AccessToken(token="t0ken", client_id="mcp-client", scopes=[])  # noqa: S106
-        monkeypatch.setattr("src.access.get_access_token", lambda: token)
+        monkeypatch.setattr("unifi_mcp_server.access.get_access_token", lambda: token)
         inventory = self.INVENTORY
 
         @tool_kind.read_tool

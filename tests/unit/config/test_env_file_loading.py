@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from src.config import Settings
-from src.config.config import AuditMaintenanceSettings
+from unifi_mcp_server.config import Settings
+from unifi_mcp_server.config.config import AuditMaintenanceSettings
 
 PLANTED = (
     "UNIFI_API_KEY=planted-key\n"

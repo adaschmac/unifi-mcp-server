@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 
-from src.tools import traffic_flows
-from src.utils import ValidationError
 from tests.integration.test_harness import TestEnvironment, TestSuite
+from unifi_mcp_server.tools import traffic_flows
+from unifi_mcp_server.utils import ValidationError
 
 
 @pytest.mark.integration
@@ -345,7 +345,7 @@ async def test_get_client_flow_aggregation(settings, env: TestEnvironment) -> di
 
     try:
         # First, discover a client
-        from src.tools import clients
+        from unifi_mcp_server.tools import clients
 
         client_list = await clients.list_active_clients(
             site_id=env.site_id,

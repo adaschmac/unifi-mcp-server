@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.protect_nvr import get_protect_nvr, list_protect_nvrs
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.tools.protect_nvr import get_protect_nvr, list_protect_nvrs
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ async def test_list_protect_nvrs_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.protect_nvr.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_nvr.ProtectClient", return_value=mock_client):
         result = await list_protect_nvrs(mock_settings)
 
     mock_client.authenticate.assert_awaited_once()
@@ -66,7 +66,7 @@ async def test_get_protect_nvr_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.protect_nvr.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_nvr.ProtectClient", return_value=mock_client):
         result = await get_protect_nvr("nvr-1", mock_settings)
 
     mock_client.authenticate.assert_awaited_once()
@@ -87,7 +87,7 @@ async def test_list_protect_nvrs_top_level_array(mock_settings, mock_client):
         return_value=[{"id": "nvr-1", "name": "Protect NVR", "model": "UNVR"}]
     )
 
-    with patch("src.tools.protect_nvr.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_nvr.ProtectClient", return_value=mock_client):
         result = await list_protect_nvrs(mock_settings)
 
     assert result["count"] == 1
@@ -99,6 +99,6 @@ async def test_list_protect_nvrs_top_level_array(mock_settings, mock_client):
 async def test_list_protect_nvrs_unexpected_response_raises(mock_settings, mock_client):
     mock_client.get = AsyncMock(return_value=None)
 
-    with patch("src.tools.protect_nvr.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_nvr.ProtectClient", return_value=mock_client):
         with pytest.raises(ValueError, match="Unexpected Protect inventory response type"):
             await list_protect_nvrs(mock_settings)

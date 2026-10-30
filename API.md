@@ -129,10 +129,10 @@ Configure the MCP server using environment variables:
 | `UNIFI_AUDIT_SIEM_BUFFER_DIR` | On-disk buffer for undelivered records | No | `siem-buffer` next to the audit log |
 | `UNIFI_AUDIT_SIEM_BUFFER_MAX_MB` | Most undelivered data kept per target; the oldest is dropped beyond it | No | `100` |
 | `UNIFI_AUDIT_LOG_ROTATE_MB` | Rotate the JSONL audit file at this size into `<log>.<UTC time>Z` files; the chain continues across them | No | unset (never rotate) |
-| `UNIFI_AUDIT_RETENTION_DAYS` | Archive and delete audit records older than this: Postgres with `python -m src.fleet.cli audit-retention --confirm`, rotated JSONL files with `python -m src.utils.audit_retention LOG --confirm` (see SECURITY.md) | No | unset (keep forever) |
+| `UNIFI_AUDIT_RETENTION_DAYS` | Archive and delete audit records older than this: Postgres with `python -m unifi_mcp_server.fleet.cli audit-retention --confirm`, rotated JSONL files with `python -m unifi_mcp_server.utils.audit_retention LOG --confirm` (see SECURITY.md) | No | unset (keep forever) |
 | `UNIFI_AUDIT_ARCHIVE_DIR` | Where retention writes its archives | No | `audit-archive` next to the audit log |
 | `UNIFI_AUDIT_SIEM_ANCHOR_SECONDS` | How often each chain's head is sent to the SIEM as an anchor | No | `300` |
-| `DATABASE_URL` | Postgres URL of the fleet controller registry. When set, controllers come from Postgres instead of the `UNIFI_*` settings (needs the `[fleet]` extra and `python -m src.fleet.cli migrate`) | No | unset |
+| `DATABASE_URL` | Postgres URL of the fleet controller registry. When set, controllers come from Postgres instead of the `UNIFI_*` settings (needs the `[fleet]` extra and `python -m unifi_mcp_server.fleet.cli migrate`) | No | unset |
 | `UNIFI_FLEET_CREDENTIAL_KEY` | Encrypts the controller API keys stored in Postgres; required with `DATABASE_URL` | With `DATABASE_URL` | unset |
 | `UNIFI_FLEET_REGISTRY_REFRESH_SECONDS` | How often each server reloads the registry from Postgres | No | `30` |
 | `UNIFI_FLEET_MAX_OPEN_CLIENTS` | Most controller connections each server keeps open; least recently used idle ones are closed beyond this (controller state such as cached auth is kept) | No | `256` |
@@ -140,12 +140,12 @@ Configure the MCP server using environment variables:
 | `UNIFI_FLEET_FANOUT_CONCURRENCY` | Most controllers one `fleet_fanout` call reaches at once | No | `20` |
 | `UNIFI_FLEET_FANOUT_TIMEOUT_SECONDS` | Default per-controller timeout of `fleet_fanout` | No | `15` |
 | `UNIFI_FLEET_FANOUT_DEADLINE_SECONDS` | Default overall deadline of `fleet_fanout`; controllers not done by then are reported as timed out | No | `60` |
-| `UNIFI_FLEET_WORKER_HEALTH_SECONDS` | Worker (`python -m src.worker`): how often each controller is health-checked | No | `60` |
+| `UNIFI_FLEET_WORKER_HEALTH_SECONDS` | Worker (`python -m unifi_mcp_server.worker`): how often each controller is health-checked | No | `60` |
 | `UNIFI_FLEET_WORKER_SYNC_SECONDS` | Worker: how often each controller's sites and device inventory are refreshed | No | `900` |
 | `UNIFI_FLEET_WORKER_CONCURRENCY` | Worker: most controller jobs one worker runs at once | No | `20` |
 | `UNIFI_FLEET_WORKER_LEASE_SECONDS` | Worker: how long membership and controller leases last without renewal; a dead worker's controllers move to the others after this | No | `30` |
 | `UNIFI_FLEET_WORKER_DOWN_AFTER` | Worker: consecutive failed health checks before a controller is `down` (earlier failures mark it `degraded`) | No | `3` |
-| `MIGRATION_DATABASE_URL` | Used by `python -m src.fleet.cli migrate`/`status` instead of `DATABASE_URL`, so the schema owner can differ from the server's least-privilege role | No | unset |
+| `MIGRATION_DATABASE_URL` | Used by `python -m unifi_mcp_server.fleet.cli migrate`/`status` instead of `DATABASE_URL`, so the schema owner can differ from the server's least-privilege role | No | unset |
 | `UNIFI_STDIO_ROLE` | Role of the local stdio caller: `viewer`, `operator`, `admin` or `fleet-admin` | No | `fleet-admin` |
 | `UNIFI_METRICS_ENABLED` | Enable Prometheus metrics server | No | `false` |
 | `WEBHOOK_SECRET` | HMAC-SHA256 key verifying `X-UniFi-Signature` on `POST /webhooks/unifi`; without it the receiver refuses every request | To receive webhooks | unset |
@@ -223,7 +223,7 @@ the cloud ones.
 ### 2. Several controllers, from Postgres (fleet mode)
 
 Set `DATABASE_URL` and `UNIFI_FLEET_CREDENTIAL_KEY`, run
-`python -m src.fleet.cli migrate`, then register each controller. Any mix of
+`python -m unifi_mcp_server.fleet.cli migrate`, then register each controller. Any mix of
 local gateways and cloud controllers is allowed, each with **its own API key,
 stored encrypted in the database** — not in the environment:
 
@@ -452,7 +452,7 @@ docker run -i \
   "mcpServers": {
     "unifi": {
       "command": "uv",
-      "args": ["--directory", "/path/to/unifi-mcp-server", "run", "mcp", "run", "src/main.py"],
+      "args": ["--directory", "/path/to/unifi-mcp-server", "run", "mcp", "run", "src/unifi_mcp_server/main.py"],
       "env": {
         "UNIFI_API_KEY": "your-api-key-here",
         "UNIFI_API_TYPE": "cloud",
@@ -701,24 +701,24 @@ Check every server's hash chain for edited, missing or reordered records, that e
 
 #### `export_audit_log`
 
-Export stored records (payloads still encrypted) as JSON lines, verifiable with `python -m src.utils.audit_verify`. **Parameters:** `since`, `until`, `limit` (max 1000)
+Export stored records (payloads still encrypted) as JSON lines, verifiable with `python -m unifi_mcp_server.utils.audit_verify`. **Parameters:** `since`, `until`, `limit` (max 1000)
 
 **Operator CLI** (needs only `DATABASE_URL`, except `import`):
 
 ```bash
-python -m src.fleet.cli migrate              # create or upgrade the schema
-python -m src.fleet.cli status               # exit 1 if the schema is behind
-python -m src.fleet.cli import --name hq     # register the UNIFI_* controller
-python -m src.fleet.cli tokens create --name first-admin --role fleet-admin
-python -m src.fleet.cli tokens list
-python -m src.fleet.cli tokens revoke --name first-admin
+python -m unifi_mcp_server.fleet.cli migrate              # create or upgrade the schema
+python -m unifi_mcp_server.fleet.cli status               # exit 1 if the schema is behind
+python -m unifi_mcp_server.fleet.cli import --name hq     # register the UNIFI_* controller
+python -m unifi_mcp_server.fleet.cli tokens create --name first-admin --role fleet-admin
+python -m unifi_mcp_server.fleet.cli tokens list
+python -m unifi_mcp_server.fleet.cli tokens revoke --name first-admin
 ```
 
 ### Fleet-Wide Reads
 
 Available when `DATABASE_URL` is set. All six are `read` tier, from the module `fleet` (so `deny_modules: ["fleet"]` removes them), take no `controller` argument, and cover only the controllers inside the caller's `controller_labels` scope. Naming a controller that is unknown, disabled or out of scope is refused without saying which.
 
-`fleet_health`, `fleet_sites` and `fleet_inventory` answer from the worker's snapshots (`python -m src.worker`, see `MULTI_CONTROLLER.md`) with one database query and no controller calls; `fleet_compare_versions` and `fleet_compare_sites` also read those snapshots but return comparison summaries without per-entry age fields. Without a running worker, these snapshot tools return unknown health or no sites/devices as applicable.
+`fleet_health`, `fleet_sites` and `fleet_inventory` answer from the worker's snapshots (`python -m unifi_mcp_server.worker`, see `MULTI_CONTROLLER.md`) with one database query and no controller calls; `fleet_compare_versions` and `fleet_compare_sites` also read those snapshots but return comparison summaries without per-entry age fields. Without a running worker, these snapshot tools return unknown health or no sites/devices as applicable.
 
 #### `fleet_health`
 
@@ -3604,11 +3604,11 @@ stdio there is no HTTP surface.
 send one). Each request must carry `X-UniFi-Signature`: the hex HMAC-SHA256 of
 the raw request body, keyed with `WEBHOOK_SECRET`.
 
-The receiver (`src/webhooks/`) is a Starlette endpoint and can also be mounted
+The receiver (`src/unifi_mcp_server/webhooks/`) is a Starlette endpoint and can also be mounted
 on another app:
 
 ```python
-from src.webhooks import WebhookEventHandler, WebhookReceiver
+from unifi_mcp_server.webhooks import WebhookEventHandler, WebhookReceiver
 
 receiver = WebhookReceiver(settings, app=starlette_app)  # POST /webhooks/unifi
 WebhookEventHandler(settings).register_default_handlers(receiver)

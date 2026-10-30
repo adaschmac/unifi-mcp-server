@@ -14,9 +14,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import APIType, Settings
-from src.tools import device_migration as dm
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.config import APIType, Settings
+from unifi_mcp_server.tools import device_migration as dm
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 DEVICE_ID = "507f191e810c19729de860ea"  # pragma: allowlist secret
 MAC = "aa:bb:cc:dd:ee:01"
@@ -73,7 +73,7 @@ def _mock_client(devices: list[dict[str, Any]] | None = None, sites: Any = None)
 
 
 def _patch(client: AsyncMock):
-    return patch("src.tools.device_migration.UniFiClient", return_value=client)
+    return patch("unifi_mcp_server.tools.device_migration.UniFiClient", return_value=client)
 
 
 # --------------------------------------------------------------------------- #
@@ -151,7 +151,7 @@ class TestGates:
     async def test_failure_is_audited_and_reraised(self, local_settings: MagicMock) -> None:
         client = _mock_client()
         client.post.side_effect = RuntimeError("boom")
-        with _patch(client), patch("src.tools.device_migration.log_audit") as audit:
+        with _patch(client), patch("unifi_mcp_server.tools.device_migration.log_audit") as audit:
             with pytest.raises(RuntimeError):
                 await dm.cancel_device_migration("default", MAC, local_settings, confirm=True)
         assert audit.call_args.kwargs["result"] == "failed"
@@ -169,7 +169,7 @@ class TestMoveDeviceToSite:
         self, local_settings: MagicMock, target: str
     ) -> None:
         client = _mock_client()
-        with _patch(client), patch("src.tools.device_migration.log_audit") as audit:
+        with _patch(client), patch("unifi_mcp_server.tools.device_migration.log_audit") as audit:
             result = await dm.move_device_to_site(
                 "default", MAC, target, local_settings, confirm=True
             )
@@ -254,7 +254,7 @@ class TestMigrateDevice:
     @pytest.mark.asyncio
     async def test_migrates(self, local_settings: MagicMock) -> None:
         client = _mock_client()
-        with _patch(client), patch("src.tools.device_migration.log_audit") as audit:
+        with _patch(client), patch("unifi_mcp_server.tools.device_migration.log_audit") as audit:
             result = await dm.migrate_device(
                 "default",
                 MAC,
@@ -350,7 +350,7 @@ class TestCancelDeviceMigration:
 
 class TestRegistration:
     def test_all_tools_are_classified_mutating(self) -> None:
-        from src.tool_registry import is_mutating_tool
+        from unifi_mcp_server.tool_registry import is_mutating_tool
 
         for fn in (dm.move_device_to_site, dm.migrate_device, dm.cancel_device_migration):
             assert is_mutating_tool(fn)

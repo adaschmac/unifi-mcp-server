@@ -11,12 +11,12 @@ import pytest
 
 pytest.importorskip("sqlalchemy")
 
-from src.api.pool import ClientPool  # noqa: E402
-from src.config.config import APIType, Settings  # noqa: E402
-from src.fleet.db.snapshots import SnapshotStore  # noqa: E402
-from src.fleet.postgres_registry import PostgresRegistry  # noqa: E402
-from src.worker.runner import Worker  # noqa: E402
-from src.worker.shards import SoloShards  # noqa: E402
+from unifi_mcp_server.api.pool import ClientPool  # noqa: E402
+from unifi_mcp_server.config.config import APIType, Settings  # noqa: E402
+from unifi_mcp_server.fleet.db.snapshots import SnapshotStore  # noqa: E402
+from unifi_mcp_server.fleet.postgres_registry import PostgresRegistry  # noqa: E402
+from unifi_mcp_server.worker.runner import Worker  # noqa: E402
+from unifi_mcp_server.worker.shards import SoloShards  # noqa: E402
 
 KEY = "fleet-key-0123456789"  # pragma: allowlist secret
 
@@ -56,7 +56,7 @@ def settings(
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(tmp_path / "audit.log"))
     monkeypatch.setenv("UNIFI_FLEET_WORKER_DOWN_AFTER", "1")
     monkeypatch.setenv("DATABASE_URL", database_url)
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 

@@ -15,10 +15,10 @@ from typing import Any
 
 import pytest
 
-import src.tools
-from src.a2a.auth import AuthManager
-from src.a2a.route_policy import SafetyController
-from src.tool_registry import (
+import unifi_mcp_server.tools
+from unifi_mcp_server.a2a.auth import AuthManager
+from unifi_mcp_server.a2a.route_policy import SafetyController
+from unifi_mcp_server.tool_registry import (
     DESTRUCTIVE_TOOLS,
     TOOL_TIERS,
     is_mutating_tool,
@@ -57,8 +57,8 @@ RISKY_NAME_EXEMPTIONS = {
 
 def _all_tools() -> dict[str, Any]:
     tools: dict[str, Any] = {}
-    for info in pkgutil.iter_modules(src.tools.__path__):
-        module = importlib.import_module(f"src.tools.{info.name}")
+    for info in pkgutil.iter_modules(unifi_mcp_server.tools.__path__):
+        module = importlib.import_module(f"unifi_mcp_server.tools.{info.name}")
         for name, fn in inspect.getmembers(module, inspect.iscoroutinefunction):
             if not name.startswith("_") and fn.__module__ == module.__name__:
                 tools.setdefault(name, fn)
@@ -142,7 +142,7 @@ FIREWALL_POLICY_TOOLS = (
 
 @pytest.mark.parametrize("name", FIREWALL_POLICY_TOOLS)
 def test_firewall_policy_changes_need_admin(name: str):
-    from src.access import Principal
+    from unifi_mcp_server.access import Principal
 
     tier = tool_tier(_all_tools()[name])
     assert tier == "destructive"
@@ -151,7 +151,7 @@ def test_firewall_policy_changes_need_admin(name: str):
 
 
 def test_registration_records_tiers():
-    from src.tools import backups
+    from unifi_mcp_server.tools import backups
 
     class _FakeMCP:
         def tool(self):

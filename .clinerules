@@ -97,7 +97,7 @@ tests/
 
 ### Error Handling
 ```python
-from src.utils.exceptions import (
+from unifi_mcp_server.utils.exceptions import (
     APIError,
     AuthenticationError,
     RateLimitError,
@@ -131,13 +131,13 @@ except APIError as e:
 ```python
 from typing import Optional
 from fastmcp import FastMCP
-from src.utils.exceptions import (
+from unifi_mcp_server.utils.exceptions import (
     ConfirmationRequiredError,
     ValidationError,
     APIError
 )
-from src.utils import get_logger
-from src.cache import cache
+from unifi_mcp_server.utils import get_logger
+from unifi_mcp_server.cache import cache
 
 mcp = FastMCP("UniFi MCP Server")
 logger = get_logger(__name__)
@@ -199,7 +199,7 @@ async def example_tool(
 ### Pydantic Model Usage
 ```python
 from pydantic import BaseModel, Field, validator
-from src.models.device import Device
+from unifi_mcp_server.models.device import Device
 
 class DeviceResponse(BaseModel):
     """Response model for device operations."""
@@ -275,16 +275,16 @@ mypy src/                       # Type check
 bandit -r src/                  # Security scan
 
 # Development server
-uv run mcp dev src/main.py      # With MCP Inspector (http://localhost:5173)
+uv run mcp dev src/unifi_mcp_server/main.py      # With MCP Inspector (http://localhost:5173)
 
 # Production server
-uv run python src/main.py       # Standard MCP server
+uv run python src/unifi_mcp_server/main.py       # Standard MCP server
 ```
 
 ### Testing with MCP Inspector
 ```bash
 # Start development server
-uv run mcp dev src/main.py
+uv run mcp dev src/unifi_mcp_server/main.py
 
 # MCP Inspector opens at http://localhost:5173
 # Use to interactively test tools and resources
@@ -318,8 +318,8 @@ pre-commit run mypy --all-files
 
 ### API Client Usage
 ```python
-from src.api.client import UniFiClient
-from src.config import Settings
+from unifi_mcp_server.api.client import UniFiClient
+from unifi_mcp_server.config import Settings
 
 # Load settings from environment
 settings = Settings()
@@ -375,8 +375,8 @@ async def list_devices_resource(site_id: str) -> str:
 ```python
 import hmac
 import hashlib
-from src.webhooks.receiver import WebhookReceiver
-from src.webhooks.handlers import handle_device_event
+from unifi_mcp_server.webhooks.receiver import WebhookReceiver
+from unifi_mcp_server.webhooks.handlers import handle_device_event
 
 # Webhook receiver with HMAC verification
 receiver = WebhookReceiver(
@@ -412,7 +412,7 @@ async def on_device_connected(event: dict):
 
 ### When Adding New Features
 1. Review existing patterns in similar tools (e.g., check `devices.py` when adding device features)
-2. Check `src/models/` for existing Pydantic models - reuse or extend them
+2. Check `src/unifi_mcp_server/models/` for existing Pydantic models - reuse or extend them
 3. Follow the MCP tool implementation pattern above
 4. Add comprehensive tests (both unit and integration) targeting 80%+ coverage
 5. Update API.md with new tool documentation
@@ -424,7 +424,7 @@ async def on_device_connected(event: dict):
 2. Fix the bug using minimal changes
 3. Verify all tests pass
 4. Add regression test if needed
-5. Check exception types match expected behavior (use custom exceptions from `src.utils.exceptions`)
+5. Check exception types match expected behavior (use custom exceptions from `unifi_mcp_server.utils.exceptions`)
 
 ### When Refactoring
 1. Ensure tests provide adequate coverage before refactoring
@@ -445,7 +445,7 @@ async def on_device_connected(event: dict):
 ### Security & Safety
 - **NEVER** commit API keys, passwords, or sensitive data
 - **ALWAYS** use `confirm=True` for operations that modify network state
-- **NEVER** expose sensitive data in logs (use masking utilities from `src.utils`)
+- **NEVER** expose sensitive data in logs (use masking utilities from `unifi_mcp_server.utils`)
 - **ALWAYS** verify webhook HMAC signatures when `WEBHOOK_SECRET` is set
 - **NEVER** hardcode credentials - always use environment variables
 
@@ -454,8 +454,8 @@ async def on_device_connected(event: dict):
 - **NEVER** merge code that fails type checking (`mypy`) or linting (`ruff`)
 - **ALWAYS** update documentation (API.md, docstrings) alongside code changes
 - **NEVER** use synchronous blocking calls in async contexts
-- **ALWAYS** validate inputs using Pydantic models (from `src.models/`)
-- **ALWAYS** use custom exception types from `src.utils.exceptions`
+- **ALWAYS** validate inputs using Pydantic models (from `unifi_mcp_server.models/`)
+- **ALWAYS** use custom exception types from `unifi_mcp_server.utils.exceptions`
 
 ### Development Workflow
 - **ALWAYS** run pre-commit hooks before committing

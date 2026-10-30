@@ -13,12 +13,12 @@ _BASE_ENV = {
 
 
 def _reload_main() -> object:
-    """Re-import src.main with a clean module cache."""
+    """Re-import unifi_mcp_server.main with a clean module cache."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", _BASE_ENV, clear=False):
-        return importlib.import_module("src.main")
+        return importlib.import_module("unifi_mcp_server.main")
 
 
 class TestHealthCheck:
@@ -101,7 +101,7 @@ async def test_server_start_is_audited(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("UNIFI_API_KEY", "test-key")  # pragma: allowlist secret
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(log_path))
     monkeypatch.setenv("UNIFI_READ_ONLY", "true")
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     main_mod = _reload_main()
 
     await main_mod.audit_server_start()

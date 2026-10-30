@@ -1,9 +1,9 @@
-"""Unit tests for src/config/config.py Settings class."""
+"""Unit tests for src/unifi_mcp_server/config/config.py Settings class."""
 
 import certifi
 import pytest
 
-from src.config.config import APIType, Settings, TransportMode
+from unifi_mcp_server.config.config import APIType, Settings, TransportMode
 
 
 class TestAPITypeEnum:

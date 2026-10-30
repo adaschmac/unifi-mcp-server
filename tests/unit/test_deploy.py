@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from src.config import Settings
+from unifi_mcp_server.config import Settings
 
 ROOT = Path(__file__).resolve().parents[2]
 ANSIBLE = ROOT / "deploy" / "ansible"

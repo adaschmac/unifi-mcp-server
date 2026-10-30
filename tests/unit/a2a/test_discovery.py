@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/discovery.py."""
+"""Unit tests for src/unifi_mcp_server/a2a/discovery.py."""
 
 from __future__ import annotations
 
@@ -7,15 +7,15 @@ from types import ModuleType
 
 import pytest
 
-from src.a2a import discovery
-from src.a2a.discovery import (
+from unifi_mcp_server.a2a import discovery
+from unifi_mcp_server.a2a.discovery import (
     _iter_components,
     _resolve_active_mcp,
     build_agent_card,
     get_resource_endpoints,
     get_skills_manifest,
 )
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 from .conftest import FakeMCP, delete_site_device, list_site_clients, make_resource, make_tool
 
@@ -67,7 +67,7 @@ class TestResolveActiveMcp:
     def only_marker_counts_as_a_server(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Narrow the isinstance check so unrelated imports cannot match.
 
-        src/main.py holds a module-level FastMCP, so scanning the real
+        src/unifi_mcp_server/main.py holds a module-level FastMCP, so scanning the real
         sys.modules would otherwise make these tests depend on import order.
         """
         monkeypatch.setattr(discovery, "FastMCP", Marker)

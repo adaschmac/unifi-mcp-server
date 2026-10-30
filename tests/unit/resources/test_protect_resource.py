@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.resources.protect import ProtectResource
+from unifi_mcp_server.resources.protect import ProtectResource
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ class TestProtectResource:
             "data": [{"id": "nvr-1", "name": "Main NVR", "model": "UNVR"}],
         }
 
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value=response)
             resource = ProtectResource(mock_settings)
             result = await resource.list_nvrs()
@@ -54,7 +54,7 @@ class TestProtectResource:
     async def test_get_nvr_success(self, mock_settings, mock_client):
         response = {"id": "nvr-1", "name": "Main NVR", "model": "UNVR"}
 
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value=response)
             resource = ProtectResource(mock_settings)
             result = await resource.get_nvr("nvr-1")
@@ -67,7 +67,7 @@ class TestProtectResource:
 
     @pytest.mark.asyncio
     async def test_list_nvrs_non_dict_response(self, mock_settings, mock_client):
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value=[])
             result = await ProtectResource(mock_settings).list_nvrs()
 
@@ -75,7 +75,7 @@ class TestProtectResource:
 
     @pytest.mark.asyncio
     async def test_get_nvr_empty_returns_none(self, mock_settings, mock_client):
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value={"data": {}})
             result = await ProtectResource(mock_settings).get_nvr("nvr-1")
 
@@ -87,7 +87,7 @@ class TestProtectResource:
             "data": [{"id": "cam-1", "name": "Front Door"}, {"id": "cam-2", "name": "Yard"}]
         }
 
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value=response)
             result = await ProtectResource(mock_settings).list_cameras()
 
@@ -97,7 +97,7 @@ class TestProtectResource:
 
     @pytest.mark.asyncio
     async def test_list_cameras_non_dict_response(self, mock_settings, mock_client):
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value=None)
             result = await ProtectResource(mock_settings).list_cameras()
 
@@ -107,7 +107,7 @@ class TestProtectResource:
     async def test_get_camera_unwraps_data(self, mock_settings, mock_client):
         response = {"data": {"id": "cam-1", "name": "Front Door"}}
 
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value=response)
             result = await ProtectResource(mock_settings).get_camera("cam-1")
 
@@ -117,7 +117,7 @@ class TestProtectResource:
 
     @pytest.mark.asyncio
     async def test_get_camera_empty_returns_none(self, mock_settings, mock_client):
-        with patch("src.resources.protect.ProtectClient", return_value=mock_client):
+        with patch("unifi_mcp_server.resources.protect.ProtectClient", return_value=mock_client):
             mock_client.get = AsyncMock(return_value={})
             result = await ProtectResource(mock_settings).get_camera("cam-1")
 

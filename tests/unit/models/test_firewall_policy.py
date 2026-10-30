@@ -1,6 +1,6 @@
 """Unit tests for FirewallPolicy models.
 
-TDD: Write these tests FIRST, then implement src/models/firewall_policy.py
+TDD: Write these tests FIRST, then implement src/unifi_mcp_server/models/firewall_policy.py
 Based on API discovery in docs/research/TRAFFIC_RULES_API_DISCOVERY.md
 """
 
@@ -12,19 +12,19 @@ class TestPolicyAction:
 
     def test_allow_value(self):
         """ALLOW should have value 'ALLOW'."""
-        from src.models.firewall_policy import PolicyAction
+        from unifi_mcp_server.models.firewall_policy import PolicyAction
 
         assert PolicyAction.ALLOW.value == "ALLOW"
 
     def test_block_value(self):
         """BLOCK should have value 'BLOCK'."""
-        from src.models.firewall_policy import PolicyAction
+        from unifi_mcp_server.models.firewall_policy import PolicyAction
 
         assert PolicyAction.BLOCK.value == "BLOCK"
 
     def test_invalid_action_raises(self):
         """Invalid action string should not be convertible."""
-        from src.models.firewall_policy import PolicyAction
+        from unifi_mcp_server.models.firewall_policy import PolicyAction
 
         with pytest.raises(ValueError):
             PolicyAction("invalid")
@@ -35,43 +35,43 @@ class TestMatchingTarget:
 
     def test_any_value(self):
         """ANY should be a valid matching target."""
-        from src.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
 
         assert MatchingTarget.ANY.value == "ANY"
 
     def test_ip_value(self):
         """IP should be a valid matching target."""
-        from src.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
 
         assert MatchingTarget.IP.value == "IP"
 
     def test_network_value(self):
         """NETWORK should be a valid matching target."""
-        from src.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
 
         assert MatchingTarget.NETWORK.value == "NETWORK"
 
     def test_region_value(self):
         """REGION should be a valid matching target."""
-        from src.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
 
         assert MatchingTarget.REGION.value == "REGION"
 
     def test_client_value(self):
         """CLIENT should be a valid matching target."""
-        from src.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
 
         assert MatchingTarget.CLIENT.value == "CLIENT"
 
     def test_app_value(self):
         """APP should be a valid matching target (Bug #72 fix)."""
-        from src.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
 
         assert MatchingTarget.APP.value == "APP"
 
     def test_web_value(self):
         """WEB should be a valid matching target (Bug #106 fix)."""
-        from src.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
 
         assert MatchingTarget.WEB.value == "WEB"
 
@@ -81,19 +81,19 @@ class TestConnectionStateType:
 
     def test_all_value(self):
         """ALL should be a valid connection state type."""
-        from src.models.firewall_policy import ConnectionStateType
+        from unifi_mcp_server.models.firewall_policy import ConnectionStateType
 
         assert ConnectionStateType.ALL.value == "ALL"
 
     def test_custom_value(self):
         """CUSTOM should be a valid connection state type."""
-        from src.models.firewall_policy import ConnectionStateType
+        from unifi_mcp_server.models.firewall_policy import ConnectionStateType
 
         assert ConnectionStateType.CUSTOM.value == "CUSTOM"
 
     def test_respond_only_value(self):
         """RESPOND_ONLY should be a valid connection state type."""
-        from src.models.firewall_policy import ConnectionStateType
+        from unifi_mcp_server.models.firewall_policy import ConnectionStateType
 
         assert ConnectionStateType.RESPOND_ONLY.value == "RESPOND_ONLY"
 
@@ -103,19 +103,19 @@ class TestIPVersion:
 
     def test_both_value(self):
         """BOTH should be the default IP version."""
-        from src.models.firewall_policy import IPVersion
+        from unifi_mcp_server.models.firewall_policy import IPVersion
 
         assert IPVersion.BOTH.value == "BOTH"
 
     def test_ipv4_value(self):
         """IPV4 should be a valid IP version."""
-        from src.models.firewall_policy import IPVersion
+        from unifi_mcp_server.models.firewall_policy import IPVersion
 
         assert IPVersion.IPV4.value == "IPV4"
 
     def test_ipv6_value(self):
         """IPV6 should be a valid IP version."""
-        from src.models.firewall_policy import IPVersion
+        from unifi_mcp_server.models.firewall_policy import IPVersion
 
         assert IPVersion.IPV6.value == "IPV6"
 
@@ -125,7 +125,7 @@ class TestMatchTarget:
 
     def test_any_target(self):
         """Should create target with matching_target='ANY'."""
-        from src.models.firewall_policy import MatchingTarget, MatchTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget, MatchTarget
 
         target = MatchTarget(zone_id="zone-123", matching_target=MatchingTarget.ANY)
         assert target.zone_id == "zone-123"
@@ -135,7 +135,7 @@ class TestMatchTarget:
 
     def test_ip_target(self):
         """Should create target with IP addresses."""
-        from src.models.firewall_policy import MatchingTarget, MatchTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget, MatchTarget
 
         target = MatchTarget(
             zone_id="zone-123",
@@ -147,7 +147,7 @@ class TestMatchTarget:
 
     def test_network_target(self):
         """Should create target with network IDs."""
-        from src.models.firewall_policy import MatchingTarget, MatchTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget, MatchTarget
 
         target = MatchTarget(
             zone_id="zone-123",
@@ -159,7 +159,7 @@ class TestMatchTarget:
 
     def test_region_target(self):
         """Should create target with region codes."""
-        from src.models.firewall_policy import MatchingTarget, MatchTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget, MatchTarget
 
         target = MatchTarget(
             zone_id="zone-123",
@@ -171,7 +171,7 @@ class TestMatchTarget:
 
     def test_client_target(self):
         """Should create target with client MACs (source only)."""
-        from src.models.firewall_policy import MatchingTarget, MatchTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget, MatchTarget
 
         target = MatchTarget(
             zone_id="zone-123",
@@ -183,7 +183,7 @@ class TestMatchTarget:
 
     def test_port_matching(self):
         """Should support port matching."""
-        from src.models.firewall_policy import MatchingTarget, MatchTarget
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget, MatchTarget
 
         target = MatchTarget(
             zone_id="zone-123",
@@ -200,7 +200,7 @@ class TestSchedule:
 
     def test_always_schedule(self):
         """Should create always-active schedule."""
-        from src.models.firewall_policy import Schedule
+        from unifi_mcp_server.models.firewall_policy import Schedule
 
         schedule = Schedule(mode="ALWAYS")
         assert schedule.mode == "ALWAYS"
@@ -208,7 +208,7 @@ class TestSchedule:
 
     def test_time_based_schedule(self):
         """Should create time-based schedule."""
-        from src.models.firewall_policy import Schedule
+        from unifi_mcp_server.models.firewall_policy import Schedule
 
         schedule = Schedule(
             mode="CUSTOM",
@@ -277,7 +277,7 @@ class TestFirewallPolicy:
 
     def test_parses_api_response(self, sample_api_response):
         """Model should parse actual API response JSON."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         policy = FirewallPolicy(**sample_api_response)
         assert policy.name == "Block IOT to Internal"
@@ -287,14 +287,14 @@ class TestFirewallPolicy:
 
     def test_id_alias(self, sample_api_response):
         """Model should accept _id and expose as id."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         policy = FirewallPolicy(**sample_api_response)
         assert policy.id == "682a0e42220317278bb0b2cb"
 
     def test_action_passthrough(self, sample_api_response):
         """Action string passes through verbatim (permissive read, issue #183)."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         policy = FirewallPolicy(**sample_api_response)
         assert policy.action == "BLOCK"
@@ -302,7 +302,7 @@ class TestFirewallPolicy:
 
     def test_unknown_action_preserved(self, sample_api_response):
         """Unknown action values must not fail parsing (issue #183)."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         sample_api_response["action"] = "INVALID"
         policy = FirewallPolicy(**sample_api_response)
@@ -310,7 +310,11 @@ class TestFirewallPolicy:
 
     def test_source_destination_parsing(self, sample_api_response):
         """Source and destination should be parsed as MatchTarget."""
-        from src.models.firewall_policy import FirewallPolicy, MatchingTarget, MatchTarget
+        from unifi_mcp_server.models.firewall_policy import (
+            FirewallPolicy,
+            MatchingTarget,
+            MatchTarget,
+        )
 
         policy = FirewallPolicy(**sample_api_response)
         assert isinstance(policy.source, MatchTarget)
@@ -320,7 +324,7 @@ class TestFirewallPolicy:
 
     def test_connection_states(self, sample_api_response):
         """Connection states should be parsed correctly."""
-        from src.models.firewall_policy import ConnectionStateType, FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import ConnectionStateType, FirewallPolicy
 
         policy = FirewallPolicy(**sample_api_response)
         assert policy.connection_state_type == ConnectionStateType.CUSTOM
@@ -328,7 +332,7 @@ class TestFirewallPolicy:
 
     def test_predefined_rule(self, predefined_rule_response):
         """Should correctly parse predefined rules."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         policy = FirewallPolicy(**predefined_rule_response)
         assert policy.predefined is True
@@ -336,7 +340,7 @@ class TestFirewallPolicy:
 
     def test_serialization_roundtrip(self, sample_api_response):
         """model_dump() output should be re-parseable."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         policy = FirewallPolicy(**sample_api_response)
         dumped = policy.model_dump(by_alias=True)
@@ -347,7 +351,7 @@ class TestFirewallPolicy:
 
     def test_optional_fields_default(self):
         """Optional fields should have sensible defaults."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         minimal = {
             "_id": "123",
@@ -364,14 +368,14 @@ class TestFirewallPolicy:
 
     def test_ip_version_default(self, sample_api_response):
         """IP version should default to BOTH."""
-        from src.models.firewall_policy import FirewallPolicy, IPVersion
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy, IPVersion
 
         policy = FirewallPolicy(**sample_api_response)
         assert policy.ip_version == IPVersion.BOTH
 
     def test_region_block_rule(self):
         """Should parse region-based blocking rule."""
-        from src.models.firewall_policy import FirewallPolicy, MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy, MatchingTarget
 
         region_rule = {
             "_id": "region-001",
@@ -390,7 +394,7 @@ class TestFirewallPolicy:
 
     def test_port_forward_origin(self):
         """Should parse rules created from port forwards."""
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         port_forward_rule = {
             "_id": "pf-001",
@@ -413,7 +417,7 @@ class TestFirewallPolicy:
 
     def test_app_matching_target_rule(self):
         """Should parse rules with APP matching target (Bug #72 fix)."""
-        from src.models.firewall_policy import FirewallPolicy, MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy, MatchingTarget
 
         app_rule = {
             "_id": "app-001",
@@ -432,7 +436,7 @@ class TestFirewallPolicy:
 
     def test_web_matching_target_rule(self):
         """Should parse rules with WEB matching target (Bug #106 fix)."""
-        from src.models.firewall_policy import FirewallPolicy, MatchingTarget
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy, MatchingTarget
 
         web_rule = {
             "_id": "web-001",
@@ -455,7 +459,7 @@ class TestFirewallPolicyCreate:
 
     def test_create_minimal_policy(self):
         """Should create policy with minimal required fields."""
-        from src.models.firewall_policy import FirewallPolicyCreate
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicyCreate
 
         create_data = FirewallPolicyCreate(
             name="Test Rule",
@@ -468,7 +472,7 @@ class TestFirewallPolicyCreate:
 
     def test_create_excludes_id(self):
         """Create model should not include _id field."""
-        from src.models.firewall_policy import FirewallPolicyCreate
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicyCreate
 
         create_data = FirewallPolicyCreate(
             name="Test",
@@ -486,7 +490,7 @@ class TestFirewallPolicyUpdate:
 
     def test_update_name_only(self):
         """Should allow updating just the name."""
-        from src.models.firewall_policy import FirewallPolicyUpdate
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicyUpdate
 
         update_data = FirewallPolicyUpdate(name="New Name")
         dumped = update_data.model_dump(exclude_none=True)
@@ -494,7 +498,7 @@ class TestFirewallPolicyUpdate:
 
     def test_update_enabled(self):
         """Should allow toggling enabled state."""
-        from src.models.firewall_policy import FirewallPolicyUpdate
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicyUpdate
 
         update_data = FirewallPolicyUpdate(enabled=False)
         dumped = update_data.model_dump(exclude_none=True)
@@ -502,7 +506,7 @@ class TestFirewallPolicyUpdate:
 
     def test_update_action(self):
         """Should allow changing action."""
-        from src.models.firewall_policy import FirewallPolicyUpdate
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicyUpdate
 
         update_data = FirewallPolicyUpdate(action="BLOCK")
         dumped = update_data.model_dump(exclude_none=True)
@@ -520,7 +524,7 @@ class TestPermissiveReadParsing:
     """
 
     def _policy(self, **overrides):
-        from src.models.firewall_policy import FirewallPolicy
+        from unifi_mcp_server.models.firewall_policy import FirewallPolicy
 
         base = {
             "_id": "pol-1",

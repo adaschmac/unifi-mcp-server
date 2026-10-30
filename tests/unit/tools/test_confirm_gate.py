@@ -24,12 +24,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src import tools as tools_pkg
-from src.fleet.admin_tools import build_admin_tools, build_token_tools
-from src.tool_registry import _make_tool_wrapper
-from src.tools import site_vpn
-from src.utils.exceptions import ValidationError
-from src.utils.tool_kind import write_tool
+from unifi_mcp_server import tools as tools_pkg
+from unifi_mcp_server.fleet.admin_tools import build_admin_tools, build_token_tools
+from unifi_mcp_server.tool_registry import _make_tool_wrapper
+from unifi_mcp_server.tools import site_vpn
+from unifi_mcp_server.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.tool_kind import write_tool
 
 #: Strings that must not count as confirmation.
 UNCONFIRMED = [False, None, "false", "False", "FALSE", "0", "no", "", "off", "nope"]
@@ -40,7 +40,7 @@ CONFIRMED = [True, "true", "True", "1", "yes"]
 
 def _tool_modules() -> list[Any]:
     return [
-        importlib.import_module(f"src.tools.{info.name}")
+        importlib.import_module(f"unifi_mcp_server.tools.{info.name}")
         for info in pkgutil.iter_modules(tools_pkg.__path__)
         if not info.name.startswith("_")
     ]
@@ -91,8 +91,8 @@ def test_every_module_is_covered() -> None:
     """Guard against the discovery silently finding nothing."""
     modules = {fn.__module__ for fn in CONFIRM_TOOLS}
     assert len(CONFIRM_TOOLS) >= 130
-    assert "src.tools.site_vpn" in modules
-    assert "src.fleet.admin_tools" in modules
+    assert "unifi_mcp_server.tools.site_vpn" in modules
+    assert "unifi_mcp_server.fleet.admin_tools" in modules
 
 
 @pytest.mark.parametrize("tool", CONFIRM_TOOLS, ids=IDS)

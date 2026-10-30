@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import protect_pos
-from src.tools.protect_pos import ingest_pos_transaction
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.tools import protect_pos
+from unifi_mcp_server.tools.protect_pos import ingest_pos_transaction
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ VALID_KWARGS = {
 
 @pytest.mark.asyncio
 async def test_write_refused_without_confirm(mock_settings, mock_client):
-    with patch("src.tools.protect_pos.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_pos.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await ingest_pos_transaction("cam-1", mock_settings, **VALID_KWARGS)
         client_cls.assert_not_called()
@@ -52,7 +52,7 @@ async def test_write_refused_without_confirm(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_write_refused_with_string_false_confirm(mock_settings, mock_client):
-    with patch("src.tools.protect_pos.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_pos.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await ingest_pos_transaction("cam-1", mock_settings, confirm="false", **VALID_KWARGS)
         client_cls.assert_not_called()
@@ -64,7 +64,7 @@ async def test_write_refused_with_string_false_confirm(mock_settings, mock_clien
 @pytest.mark.asyncio
 async def test_ingest_pos_transaction_dry_run(mock_settings, mock_client):
     before_ms = int(time.time() * 1000)
-    with patch("src.tools.protect_pos.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_pos.ProtectClient", return_value=mock_client):
         result = await ingest_pos_transaction(
             "cam-1",
             mock_settings,
@@ -99,7 +99,7 @@ async def test_ingest_pos_transaction_dry_run(mock_settings, mock_client):
 async def test_ingest_pos_transaction_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"accepted": True, "externalId": "tx-123"})
     timestamp = int(time.time() * 1000)
-    with patch("src.tools.protect_pos.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_pos.ProtectClient", return_value=mock_client):
         result = await ingest_pos_transaction(
             "cam-1",
             mock_settings,
@@ -209,7 +209,7 @@ async def test_rejects_far_future_timestamp(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_validation_happens_before_dry_run_return(mock_settings, mock_client):
-    with patch("src.tools.protect_pos.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_pos.ProtectClient", return_value=mock_client):
         with pytest.raises(ValidationError):
             await ingest_pos_transaction(
                 "cam-1",

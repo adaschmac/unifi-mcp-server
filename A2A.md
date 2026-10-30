@@ -58,7 +58,7 @@ a request with no valid token.
 
 ## The Agent Card
 
-The card is built by `src/a2a/capabilities.py` and `src/a2a/agent_card.py`
+The card is built by `src/unifi_mcp_server/a2a/capabilities.py` and `src/unifi_mcp_server/a2a/agent_card.py`
 from the **live tool registry**. A card therefore describes the tools this
 deployment actually registered, and it changes when the tool surface or the
 configuration changes.

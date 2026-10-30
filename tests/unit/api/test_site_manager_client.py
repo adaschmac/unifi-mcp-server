@@ -1,4 +1,4 @@
-"""Unit tests for src/api/site_manager_client.py.
+"""Unit tests for src/unifi_mcp_server/api/site_manager_client.py.
 
 The real ``httpx.AsyncClient`` is kept and given an ``httpx.MockTransport``,
 so requests go through httpx's URL joining and status handling without
@@ -14,8 +14,13 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 
-from src.api.site_manager_client import SiteManagerClient
-from src.utils.exceptions import APIError, AuthenticationError, NetworkError, ResourceNotFoundError
+from unifi_mcp_server.api.site_manager_client import SiteManagerClient
+from unifi_mcp_server.utils.exceptions import (
+    APIError,
+    AuthenticationError,
+    NetworkError,
+    ResourceNotFoundError,
+)
 
 Handler = Callable[[httpx.Request], httpx.Response]
 

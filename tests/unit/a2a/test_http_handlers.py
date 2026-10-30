@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/http_handlers.py.
+"""Unit tests for src/unifi_mcp_server/a2a/http_handlers.py.
 
 The auth manager, safety controller and audit logger are mocked so these
 tests pin down the handlers' own branching: what each handler returns for
@@ -16,9 +16,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.a2a import http_handlers as h
-from src.a2a.audit import AuditLog
-from src.a2a.route_policy import ConfirmationWorkflow, SafetyResult
+from unifi_mcp_server.a2a import http_handlers as h
+from unifi_mcp_server.a2a.audit import AuditLog
+from unifi_mcp_server.a2a.route_policy import ConfirmationWorkflow, SafetyResult
 
 NOW = datetime(2026, 10, 10, 12, 0, tzinfo=UTC)
 
@@ -36,7 +36,7 @@ def _state(
     safety_controller.validate_safety_constraints.return_value = safety or SafetyResult(
         allowed=True, risk_level="read", reason="ok"
     )
-    from src.config.config import Settings
+    from unifi_mcp_server.config.config import Settings
 
     settings = Settings.model_validate(
         {
@@ -192,7 +192,7 @@ class TestDelegate:
     @pytest.mark.asyncio
     async def test_an_admin_role_grants_the_destructive_tier(self) -> None:
         """The real auth manager derives the tiers from the caller's role."""
-        from src.a2a.auth import AuthManager, current_caller_role
+        from unifi_mcp_server.a2a.auth import AuthManager, current_caller_role
 
         state = _state(executor=MagicMock(return_value={"sites": []}))
         state.auth_manager = AuthManager()
@@ -206,7 +206,7 @@ class TestDelegate:
 
     @pytest.mark.asyncio
     async def test_scopes_can_only_narrow_the_role(self) -> None:
-        from src.a2a.auth import AuthManager, current_caller_role
+        from unifi_mcp_server.a2a.auth import AuthManager, current_caller_role
 
         state = _state()
         state.auth_manager = AuthManager()
@@ -221,7 +221,7 @@ class TestDelegate:
 
     @pytest.mark.asyncio
     async def test_an_anonymous_caller_gets_read_only(self) -> None:
-        from src.a2a.auth import AuthManager
+        from unifi_mcp_server.a2a.auth import AuthManager
 
         state = _state(executor=MagicMock(return_value={"sites": []}))
         state.auth_manager = AuthManager()

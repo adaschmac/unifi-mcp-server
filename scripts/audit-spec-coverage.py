@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """audit-spec-coverage.py — field-level drift audit of Integration API call sites.
 
-Compares every /v1/ path literal and f-string in src/tools/ against the
+Compares every /v1/ path literal and f-string in src/unifi_mcp_server/tools/ against the
 pinned Network Integration API spec snapshot, then compares request-body
 field sets for operations that carry one. Re-run after each spec refresh
 (scripts/fetch-specs.sh); see .analysis-reports/api-spec-audit-2026-09-26.md
@@ -72,7 +72,7 @@ for path, methods in spec.get("paths", {}).items():
 #    spec paths drop it — normalize both away)
 code_paths = defaultdict(list)
 pat = re.compile(r'["\'](/[^"\']*(?:integration/v\d+|/v1/)[^"\']*)["\']')
-for f in sorted((ROOT / "src/tools").glob("*.py")):
+for f in sorted((ROOT / "src/unifi_mcp_server/tools").glob("*.py")):
     for i, line in enumerate(open(f), 1):
         for match in pat.finditer(line):
             raw = match.group(1)

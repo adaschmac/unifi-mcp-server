@@ -53,8 +53,8 @@ Goal: deliver native Protect coverage on top of the existing Network and Site Ma
 
 ### Deliverables
 
-- `src/api/protect_client.py`
-- Protect models under `src/models/protect_*.py`
+- `src/unifi_mcp_server/api/protect_client.py`
+- Protect models under `src/unifi_mcp_server/models/protect_*.py`
 - Tool modules for cameras, devices, NVR, views, and events
 - Protect MCP resources for cameras and events
 - Integration tests with mocked NVR responses

@@ -16,15 +16,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import Settings
-from src.tools import traffic_flows as tf
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.config import Settings
+from unifi_mcp_server.tools import traffic_flows as tf
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
 def mock_settings() -> MagicMock:
     """Mock Settings object configured for local API access."""
-    from src.config import APIType
+    from unifi_mcp_server.config import APIType
 
     settings = MagicMock(spec=Settings)
     settings.api_type = APIType.LOCAL
@@ -42,7 +42,7 @@ def mock_settings() -> MagicMock:
 @pytest.fixture
 def cloud_settings() -> MagicMock:
     """Mock Settings object configured for cloud-EA API access."""
-    from src.config import APIType
+    from unifi_mcp_server.config import APIType
 
     settings = MagicMock(spec=Settings)
     settings.api_type = APIType.CLOUD_EA
@@ -249,7 +249,7 @@ class TestGetTrafficFlows:
     async def test_returns_all_flows_without_filters(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flows("default", mock_settings)
 
@@ -263,7 +263,7 @@ class TestGetTrafficFlows:
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
         client = _mock_client(sample_raw_flows)
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = client
             await tf.get_traffic_flows("default", mock_settings)
 
@@ -289,7 +289,7 @@ class TestGetTrafficFlows:
         client = _mock_client(sample_raw_flows)
         client._site_uuid_to_name = {site_uuid: "hq"}
 
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = client
             await tf.get_traffic_flows(site_uuid, mock_settings)
 
@@ -302,7 +302,7 @@ class TestGetTrafficFlows:
         client = _mock_client(sample_raw_flows)
         client._site_uuid_to_name = {"other-uuid": "elsewhere"}
 
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = client
             await tf.get_traffic_flows("default", mock_settings)
 
@@ -312,7 +312,7 @@ class TestGetTrafficFlows:
     async def test_filter_by_source_mac(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flows(
                 "default", mock_settings, source_mac="aa:bb:cc:dd:ee:02"
@@ -324,7 +324,7 @@ class TestGetTrafficFlows:
     async def test_filter_by_destination_zone(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flows(
                 "default", mock_settings, destination_zone_name="External"
@@ -388,7 +388,7 @@ class TestGetTrafficFlows:
 
         flows_with_inter_vlan = [*sample_raw_flows, inter_vlan]
 
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(flows_with_inter_vlan)
             by_zone = await tf.get_traffic_flows(
                 "default", mock_settings, destination_zone_name="Servers"
@@ -398,7 +398,7 @@ class TestGetTrafficFlows:
             "are labeled as 'Gateway'. This is the bug reproducer."
         )
 
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(flows_with_inter_vlan)
             by_network = await tf.get_traffic_flows(
                 "default",
@@ -415,7 +415,7 @@ class TestGetTrafficFlows:
     async def test_filter_by_protocol_and_action(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flows(
                 "default", mock_settings, protocol="TCP", action="blocked"
@@ -427,7 +427,7 @@ class TestGetTrafficFlows:
     async def test_filter_by_min_bytes(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flows("default", mock_settings, min_bytes=1000)
         assert len(result) == 1
@@ -437,7 +437,7 @@ class TestGetTrafficFlows:
     async def test_client_name_contains_is_case_insensitive(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flows(
                 "default", mock_settings, client_name_contains="laptop"
@@ -449,7 +449,7 @@ class TestGetTrafficFlows:
     async def test_limit_applied_after_filter(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flows("default", mock_settings, limit=2)
         assert len(result) == 2
@@ -460,14 +460,14 @@ class TestGetTrafficFlows:
     ) -> None:
         wrapped = {"data": sample_raw_flows}
 
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(wrapped)
             result = await tf.get_traffic_flows("default", mock_settings)
         assert len(result) == 3
 
     @pytest.mark.asyncio
     async def test_handles_empty_response(self, mock_settings: MagicMock) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client([])
             result = await tf.get_traffic_flows("default", mock_settings)
         assert result == []
@@ -483,7 +483,7 @@ class TestGetFlowStatistics:
     async def test_aggregates_correctly(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             stats = await tf.get_flow_statistics("default", mock_settings)
 
@@ -501,7 +501,7 @@ class TestGetFlowStatistics:
     async def test_statistics_with_filter_narrows_sample(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             stats = await tf.get_flow_statistics("default", mock_settings, action="blocked")
         assert stats["sample_size"] == 1
@@ -513,7 +513,7 @@ class TestGetFlowAnalytics:
     async def test_analytics_includes_risk_breakdown(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_flow_analytics("default", mock_settings)
         assert result["risk_breakdown"] == {"low": 1, "medium": 1, "high": 1}
@@ -530,7 +530,7 @@ class TestGetTrafficFlowDetails:
     async def test_found_in_sample(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_traffic_flow_details("default", "flow-2", mock_settings)
         assert result["id"] == "flow-2"
@@ -540,7 +540,7 @@ class TestGetTrafficFlowDetails:
     async def test_not_in_sample_raises(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             with pytest.raises(ResourceNotFoundError):
                 await tf.get_traffic_flow_details("default", "missing-id", mock_settings)
@@ -556,7 +556,7 @@ class TestGetTopFlows:
     async def test_sort_by_bytes_default(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_top_flows("default", mock_settings, limit=2)
         assert [r["id"] for r in result] == ["flow-2", "flow-1"]
@@ -565,7 +565,7 @@ class TestGetTopFlows:
     async def test_sort_by_packets(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_top_flows("default", mock_settings, limit=1, sort_by="packets")
         assert result[0]["id"] == "flow-2"  # 72 packets
@@ -574,7 +574,7 @@ class TestGetTopFlows:
     async def test_sort_by_duration(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_top_flows("default", mock_settings, limit=1, sort_by="duration")
         assert result[0]["id"] == "flow-1"  # 221461 ms
@@ -585,7 +585,7 @@ class TestGetFlowRisks:
     async def test_threshold_medium(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_flow_risks("default", mock_settings, min_risk_level="medium")
         assert [r["id"] for r in result] == ["flow-2", "flow-3"]
@@ -594,7 +594,7 @@ class TestGetFlowRisks:
     async def test_threshold_high_only(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_flow_risks("default", mock_settings, min_risk_level="high")
         assert len(result) == 1
@@ -606,7 +606,7 @@ class TestFilterTrafficFlows:
     async def test_filter_expression_parsing(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.filter_traffic_flows(
                 "default",
@@ -627,7 +627,7 @@ class TestGetClientFlowAggregation:
     async def test_aggregates_for_client(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_client_flow_aggregation(
                 "default", "aa:bb:cc:dd:ee:02", mock_settings
@@ -641,7 +641,7 @@ class TestGetClientFlowAggregation:
     async def test_unknown_client_returns_empty_aggregation(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.get_client_flow_aggregation(
                 "default", "00:00:00:00:00:00", mock_settings
@@ -661,7 +661,7 @@ class TestFindFlowsForRuleReference:
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
         """Simulated workflow: 'show me what a Dmz→External rule would match'."""
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             matches = await tf.find_flows_for_rule_reference(
                 "default",
@@ -681,7 +681,7 @@ class TestFindFlowsForRuleReference:
     async def test_match_protocol_and_port(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             matches = await tf.find_flows_for_rule_reference(
                 "default",
@@ -697,7 +697,7 @@ class TestFindFlowsForRuleReference:
     async def test_no_matches_returns_empty(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             matches = await tf.find_flows_for_rule_reference(
                 "default",
@@ -710,7 +710,7 @@ class TestFindFlowsForRuleReference:
     async def test_respects_limit(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             matches = await tf.find_flows_for_rule_reference(
                 "default",
@@ -733,7 +733,7 @@ class TestExportTrafficFlows:
     ) -> None:
         import json
 
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.export_traffic_flows("default", mock_settings, export_format="json")
         parsed = json.loads(result)
@@ -744,7 +744,7 @@ class TestExportTrafficFlows:
     async def test_csv_export_has_header_and_rows(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.export_traffic_flows("default", mock_settings, export_format="csv")
         lines = result.strip().split("\n")
@@ -762,7 +762,7 @@ class TestExportTrafficFlows:
     ) -> None:
         import json
 
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.export_traffic_flows(
                 "default", mock_settings, export_format="json", max_records=2
@@ -781,7 +781,7 @@ class TestBlockFlowActions:
     async def test_block_source_ip_dry_run(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.block_flow_source_ip(
                 "default",
@@ -798,7 +798,7 @@ class TestBlockFlowActions:
     async def test_block_destination_ip_dry_run(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.block_flow_destination_ip(
                 "default",
@@ -815,7 +815,7 @@ class TestBlockFlowActions:
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
         # flow-1 has service=OTHER so block_flow_application falls back to dst ip
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.block_flow_application(
                 "default",
@@ -836,7 +836,7 @@ class TestBlockFlowActions:
     async def test_block_temporary_sets_expiry(
         self, mock_settings: MagicMock, sample_raw_flows: list[dict[str, Any]]
     ) -> None:
-        with patch("src.tools.traffic_flows.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.traffic_flows.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client(sample_raw_flows)
             result = await tf.block_flow_destination_ip(
                 "default",

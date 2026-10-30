@@ -8,7 +8,7 @@ import pytest
 from fastmcp.resources.function_resource import FunctionResource
 from fastmcp.tools.function_tool import FunctionTool
 
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 
 class FakeProvider:

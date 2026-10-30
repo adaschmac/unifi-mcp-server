@@ -21,7 +21,7 @@ No documented endpoint removal or rename affects this server's REST surface. The
 
 | Break | Affected in this repo | Visibility |
 |---|---|---|
-| USG gateway support removed (10.6 is the last USG release) | Every device, client and stat call for a USG-gated site | **Implemented 2026-10-27**: `fleet_health` flags any controller with a USG anywhere in its synced device inventory — `platform_compat.network_11_capable: false` (`src/fleet/fleet_tools.py`, `USG_MODEL_SUBSTRING`/`USG_GATED_REASON`). |
+| USG gateway support removed (10.6 is the last USG release) | Every device, client and stat call for a USG-gated site | **Implemented 2026-10-27**: `fleet_health` flags any controller with a USG anywhere in its synced device inventory — `platform_compat.network_11_capable: false` (`src/unifi_mcp_server/fleet/fleet_tools.py`, `USG_MODEL_SUBSTRING`/`USG_GATED_REASON`). |
 | Standalone Network Application Server removed | `local` mode against a classic server | **Not auto-detectable**: the Integration API's `/v1/info` returns only `applicationVersion`, with no host-type/platform field — there is no API signal that distinguishes a classic self-hosted server from a UniFi OS console. Operators who know this about a controller should label it (e.g. `deployment=classic-server`) and filter `fleet_health`/`fleet_sites` on that label. Migrating is an operator action (replacement is UniFi OS Server, which keeps the same `/proxy/network/...` paths) — not a code change. |
 
 ## The four "needs live controller test" items
@@ -30,10 +30,10 @@ Not a confirmed break — the point cannot be settled from released material alo
 
 | # | Item | Surface in this repo | Status |
 |---|---|---|---|
-| N1 | Legacy firewall rules/groups (`rest/firewallrule`, `rest/firewallgroup`) behaviour after the forced Zone-Based Firewall migration | `src/tools/firewall.py`, `src/tools/firewall_groups.py` vs. `src/tools/firewall_policies.py` | **Doc half landed 2026-10-27**; **first live evidence 2026-10-29** (10.6.109, already ZBF-migrated): legacy rule writes are rejected outright (HTTP 400 across 15 probed `rule_index` bands; loud failure, never a silent no-op), `rest/firewallgroup` mutations still work. Network 11 confirmation and the deprecation-note decision remain open — see `.analysis-reports/live-controller-10.6-baseline-2026-10-29/report.md`. |
-| N2 | Site-UID stability across the upgrade (single unverified community report) | `src/api/client.py`, `src/api/pool.py`, `src/fleet/db/models.py`, `src/worker/jobs.py` | Needs live test. "Before" UUID recorded 2026-10-29 (same report). No code change until UID drift is actually observed — see `DEVELOPMENT_PLAN.md` §4 Phase 8 Fix 2. |
-| N3 | Statistics tools against the new statistics engine (`stat/report/*`, `stat/sitedpi`, `stat/stadpi`) | `src/tools/dpi.py`, `src/tools/diagnostics.py` | Needs live test for payload-shape drift; 10.6.109 field-set baseline recorded 2026-10-29 (same report). The "history was reset by the upgrade" caveat **shipped in the tool output 2026-10-29**: every empty response from `get_historical_stats`, `get_speed_test_history`, `get_dpi_statistics`, `list_top_applications` and `get_client_dpi` carries `statistics_note`. |
-| N4 | v2 `traffic-flows` continuity | `src/tools/traffic_flows.py` (50-flow cap) | Needs live test against Network 11; 10.6.109 baseline recorded 2026-10-29 (same report): 50-flow cap holds, pagination params ignored, server-side protocol filter non-functional. Rolling-window churn not observable on a quiet gateway. |
+| N1 | Legacy firewall rules/groups (`rest/firewallrule`, `rest/firewallgroup`) behaviour after the forced Zone-Based Firewall migration | `src/unifi_mcp_server/tools/firewall.py`, `src/unifi_mcp_server/tools/firewall_groups.py` vs. `src/unifi_mcp_server/tools/firewall_policies.py` | **Doc half landed 2026-10-27**; **first live evidence 2026-10-29** (10.6.109, already ZBF-migrated): legacy rule writes are rejected outright (HTTP 400 across 15 probed `rule_index` bands; loud failure, never a silent no-op), `rest/firewallgroup` mutations still work. Network 11 confirmation and the deprecation-note decision remain open — see `.analysis-reports/live-controller-10.6-baseline-2026-10-29/report.md`. |
+| N2 | Site-UID stability across the upgrade (single unverified community report) | `src/unifi_mcp_server/api/client.py`, `src/unifi_mcp_server/api/pool.py`, `src/unifi_mcp_server/fleet/db/models.py`, `src/unifi_mcp_server/worker/jobs.py` | Needs live test. "Before" UUID recorded 2026-10-29 (same report). No code change until UID drift is actually observed — see `DEVELOPMENT_PLAN.md` §4 Phase 8 Fix 2. |
+| N3 | Statistics tools against the new statistics engine (`stat/report/*`, `stat/sitedpi`, `stat/stadpi`) | `src/unifi_mcp_server/tools/dpi.py`, `src/unifi_mcp_server/tools/diagnostics.py` | Needs live test for payload-shape drift; 10.6.109 field-set baseline recorded 2026-10-29 (same report). The "history was reset by the upgrade" caveat **shipped in the tool output 2026-10-29**: every empty response from `get_historical_stats`, `get_speed_test_history`, `get_dpi_statistics`, `list_top_applications` and `get_client_dpi` carries `statistics_note`. |
+| N4 | v2 `traffic-flows` continuity | `src/unifi_mcp_server/tools/traffic_flows.py` (50-flow cap) | Needs live test against Network 11; 10.6.109 baseline recorded 2026-10-29 (same report): 50-flow cap holds, pagination params ignored, server-side protocol filter non-functional. Rolling-window churn not observable on a quiet gateway. |
 
 ## The four "Changed" items
 
@@ -41,9 +41,9 @@ The endpoints are unchanged; the behaviour or the data is not.
 
 | Item | Change | Surface in this repo |
 |---|---|---|
-| `stat/sitedpi`, `stat/stadpi` | DPI history cleared on upgrade; payload shape to be verified live | `src/tools/dpi.py` |
-| `stat/report/*` | Historical series return empty post-upgrade until new data accrues | `src/tools/diagnostics.py` (`get_historical_stats`) |
-| `traffic-matching-lists` | External (URL-sourced) lists added upstream; URL-source property not modelled (field name needs live confirmation — do not guess it) | `src/tools/traffic_matching_lists.py`, `src/models/traffic_matching_list.py` |
+| `stat/sitedpi`, `stat/stadpi` | DPI history cleared on upgrade; payload shape to be verified live | `src/unifi_mcp_server/tools/dpi.py` |
+| `stat/report/*` | Historical series return empty post-upgrade until new data accrues | `src/unifi_mcp_server/tools/diagnostics.py` (`get_historical_stats`) |
+| `traffic-matching-lists` | External (URL-sourced) lists added upstream; URL-source property not modelled (field name needs live confirmation — do not guess it) | `src/unifi_mcp_server/tools/traffic_matching_lists.py`, `src/unifi_mcp_server/models/traffic_matching_list.py` |
 | Statistics semantics overall | Same endpoints, new engine: empty history after an upgrade is expected, not a failure signal | Stats tools' output and docs |
 
 ## Everything else

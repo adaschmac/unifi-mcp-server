@@ -21,8 +21,8 @@ fakeredis = pytest.importorskip("fakeredis")
 # bus to reach it; skip rather than fail where the fleet extra is absent.
 pytest.importorskip("redis.asyncio")
 
-from src.config.config import Settings  # noqa: E402
-from src.fleet.bus import WebhookBus  # noqa: E402
+from unifi_mcp_server.config.config import Settings  # noqa: E402
+from unifi_mcp_server.fleet.bus import WebhookBus  # noqa: E402
 
 
 @pytest.fixture(scope="module")

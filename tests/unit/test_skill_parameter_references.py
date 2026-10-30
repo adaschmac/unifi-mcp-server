@@ -49,12 +49,12 @@ def _registered_schemas() -> dict[str, dict[str, list[str]]]:
     """Return every registered tool's parameter names and required arguments.
 
     The registry is read in a subprocess, because importing the server
-    in-process would reuse whatever ``src.main`` another test module already
+    in-process would reuse whatever ``unifi_mcp_server.main`` another test module already
     cached under a different environment.
     """
     script = (
         "import json\n"
-        "import src.main as M\n"
+        "import unifi_mcp_server.main as M\n"
         "out = {}\n"
         "for key, component in M.mcp._local_provider._components.items():\n"
         "    if not key.startswith('tool:'):\n"

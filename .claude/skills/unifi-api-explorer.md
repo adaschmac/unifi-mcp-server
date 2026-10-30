@@ -98,7 +98,7 @@ For local testing:
 ```python
 # Test script template
 import asyncio
-from src.api.client import UniFiClient
+from unifi_mcp_server.api.client import UniFiClient
 
 async def test_endpoint():
     client = UniFiClient.from_env()
@@ -274,7 +274,7 @@ Field Mapping:
 Create model with validation:
 
 ```python
-# src/models/qos.py
+# src/unifi_mcp_server/models/qos.py
 
 from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Literal
@@ -623,7 +623,7 @@ Load for context:
 
 - `DEVELOPMENT_PLAN.md` - Feature requirements and API endpoints
 - `API.md` - Existing API documentation patterns
-- `src/api/client.py` - UniFi API client implementation
+- `src/unifi_mcp_server/api/client.py` - UniFi API client implementation
 - `docs/UNIFI_API.md` - UniFi API reference (if exists)
 - `.env.example` - Environment configuration
 

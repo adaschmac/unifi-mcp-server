@@ -25,13 +25,13 @@ This command creates all necessary files and code for a new tool following the p
    - UniFi API endpoint it will use
    - Whether it's a read-only or mutating operation
 
-2. Create or update the Pydantic model in `src/models/`:
+2. Create or update the Pydantic model in `src/unifi_mcp_server/models/`:
    - If the model file for the category doesn't exist, create it
    - Add request/response models based on UniFi API schema
    - Include proper type hints and field descriptions
    - Add validators if needed
 
-3. Create the tool function in `src/tools/`:
+3. Create the tool function in `src/unifi_mcp_server/tools/`:
    - If the tool file for the category doesn't exist, create it
    - Implement async tool function with proper error handling
    - Add confirmation/dry-run support for mutating operations
@@ -42,7 +42,7 @@ This command creates all necessary files and code for a new tool following the p
      - Raises
      - Example usage
 
-4. Register the tool in `src/main.py`:
+4. Register the tool in `src/unifi_mcp_server/main.py`:
    - Add import statement
    - Register tool with FastMCP
 
@@ -62,7 +62,7 @@ This command creates all necessary files and code for a new tool following the p
 7. Run validation:
    - Format code: `black src/ tests/`
    - Check tests: `pytest tests/unit/test_<category>_tools.py -v`
-   - Verify registration: `python -c "from src.main import mcp; print(mcp.list_tools())"`
+   - Verify registration: `python -c "from unifi_mcp_server.main import mcp; print(mcp.list_tools())"`
 
 **Report back with:**
 
@@ -77,9 +77,9 @@ This command creates all necessary files and code for a new tool following the p
 ```
 User: "I want to add a tool to get WLAN groups"
 Assistant:
-1. Creates src/models/wifi.py with WLANGroupResponse model
-2. Creates src/tools/wifi.py with get_wlan_groups() function
-3. Updates src/main.py to register the tool
+1. Creates src/unifi_mcp_server/models/wifi.py with WLANGroupResponse model
+2. Creates src/unifi_mcp_server/tools/wifi.py with get_wlan_groups() function
+3. Updates src/unifi_mcp_server/main.py to register the tool
 4. Creates tests/unit/test_wifi_tools.py
 5. Updates API.md with documentation
 6. Runs tests and reports results

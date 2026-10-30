@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from src.api.client import RateLimiter, UniFiClient
-from src.config import APIType, Settings
-from src.utils.exceptions import (
+from unifi_mcp_server.api.client import RateLimiter, UniFiClient
+from unifi_mcp_server.config import APIType, Settings
+from unifi_mcp_server.utils.exceptions import (
     APIError,
     AuthenticationError,
     NetworkError,

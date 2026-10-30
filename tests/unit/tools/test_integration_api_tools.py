@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.integration_api import (
+from unifi_mcp_server.tools.integration_api import (
     get_integration_client,
     get_integration_device,
     get_integration_dns_policy,
@@ -61,7 +61,7 @@ async def test_list_integration_sites_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_sites(mock_settings)
@@ -102,7 +102,7 @@ async def test_list_integration_devices_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_devices("default", mock_settings)
@@ -134,7 +134,7 @@ async def test_list_integration_devices_accepts_list_shaped_features(mock_settin
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_devices("default", mock_settings)
@@ -156,7 +156,7 @@ async def test_get_integration_device_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await get_integration_device("default", "dev-uuid-1", mock_settings)
@@ -191,7 +191,7 @@ async def test_list_integration_clients_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_clients("default", mock_settings)
@@ -212,7 +212,7 @@ async def test_get_integration_client_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await get_integration_client("default", "client-uuid-2", mock_settings)
@@ -248,7 +248,7 @@ async def test_list_integration_networks_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_networks("default", mock_settings)
@@ -286,7 +286,7 @@ async def test_list_integration_wifi_broadcasts_success(mock_settings, mock_clie
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_wifi_broadcasts("default", mock_settings)
@@ -307,7 +307,7 @@ async def test_get_integration_wifi_broadcast_success(mock_settings, mock_client
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await get_integration_wifi_broadcast("default", "wifi-uuid-1", mock_settings)
@@ -340,7 +340,7 @@ async def test_list_integration_dns_policies_success(mock_settings, mock_client)
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_dns_policies("default", mock_settings)
@@ -360,7 +360,7 @@ async def test_get_integration_dns_policy_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await get_integration_dns_policy("default", "dns-uuid-1", mock_settings)
@@ -385,7 +385,7 @@ async def test_list_integration_wans_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_wans("default", mock_settings)
@@ -419,7 +419,7 @@ async def test_list_integration_vpn_servers_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_vpn_servers("default", mock_settings)
@@ -452,7 +452,7 @@ async def test_list_integration_device_tags_success(mock_settings, mock_client):
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_integration_device_tags("default", mock_settings)
@@ -481,7 +481,7 @@ async def test_list_dpi_application_categories_success(mock_settings, mock_clien
     }
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    with patch("src.tools.integration_api.UniFiClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.integration_api.UniFiClient", return_value=mock_client):
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         result = await list_dpi_application_categories(mock_settings)

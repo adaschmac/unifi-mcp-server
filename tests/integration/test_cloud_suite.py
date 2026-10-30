@@ -14,7 +14,7 @@ from tests.integration.test_harness import TestEnvironment, TestSuite
 async def test_list_sites(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test listing sites via cloud API."""
     try:
-        from src.tools.sites import list_sites
+        from unifi_mcp_server.tools.sites import list_sites
 
         result = await list_sites(settings)
         assert isinstance(result, list), "Should return a list of sites"
@@ -40,8 +40,8 @@ async def test_list_sites(settings, env: TestEnvironment) -> dict[str, Any]:
 async def test_get_site_details_cloud(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test retrieving site details."""
     try:
-        from src.tools.sites import get_site_details, list_sites
-        from src.utils import ResourceNotFoundError
+        from unifi_mcp_server.tools.sites import get_site_details, list_sites
+        from unifi_mcp_server.utils import ResourceNotFoundError
 
         # Get first site
         sites = await list_sites(settings)
@@ -76,7 +76,7 @@ async def test_get_site_details_cloud(settings, env: TestEnvironment) -> dict[st
 async def test_get_site_statistics(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test retrieving site statistics (cloud API)."""
     try:
-        from src.tools.sites import get_site_statistics, list_sites
+        from unifi_mcp_server.tools.sites import get_site_statistics, list_sites
 
         # Get first site
         sites = await list_sites(settings)
@@ -117,7 +117,7 @@ async def test_get_site_statistics(settings, env: TestEnvironment) -> dict[str, 
 async def test_list_all_sites_aggregated(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test list_all_sites_aggregated (Site Manager API)."""
     try:
-        from src.tools.site_manager import list_all_sites_aggregated
+        from unifi_mcp_server.tools.site_manager import list_all_sites_aggregated
 
         result = await list_all_sites_aggregated(settings)
 
@@ -148,7 +148,7 @@ async def test_list_all_sites_aggregated(settings, env: TestEnvironment) -> dict
 async def test_get_internet_health(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test get_internet_health (Site Manager API)."""
     try:
-        from src.tools.site_manager import get_internet_health
+        from unifi_mcp_server.tools.site_manager import get_internet_health
 
         # Test aggregate metrics (no site_id)
         result = await get_internet_health(settings)
@@ -178,7 +178,7 @@ async def test_get_internet_health(settings, env: TestEnvironment) -> dict[str, 
 async def test_get_site_health_summary(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test get_site_health_summary for all sites."""
     try:
-        from src.tools.site_manager import get_site_health_summary
+        from unifi_mcp_server.tools.site_manager import get_site_health_summary
 
         # Test all sites (no site_id)
         result = await get_site_health_summary(settings)
@@ -213,8 +213,8 @@ async def test_get_site_health_summary(settings, env: TestEnvironment) -> dict[s
 async def test_get_site_health_summary_specific(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test get_site_health_summary for specific site."""
     try:
-        from src.tools.site_manager import get_site_health_summary
-        from src.tools.sites import list_sites
+        from unifi_mcp_server.tools.site_manager import get_site_health_summary
+        from unifi_mcp_server.tools.sites import list_sites
 
         # Get first site
         sites = await list_sites(settings)
@@ -248,7 +248,7 @@ async def test_get_site_health_summary_specific(settings, env: TestEnvironment) 
 async def test_get_cross_site_statistics(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test get_cross_site_statistics (Site Manager API)."""
     try:
-        from src.tools.site_manager import get_cross_site_statistics
+        from unifi_mcp_server.tools.site_manager import get_cross_site_statistics
 
         result = await get_cross_site_statistics(settings)
 
@@ -281,7 +281,7 @@ async def test_get_cross_site_statistics(settings, env: TestEnvironment) -> dict
 async def test_list_sites_with_limit(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test list_sites with pagination."""
     try:
-        from src.tools.sites import list_sites
+        from unifi_mcp_server.tools.sites import list_sites
 
         # Test with limit
         result = await list_sites(settings, limit=1)
@@ -305,7 +305,7 @@ async def test_list_sites_with_limit(settings, env: TestEnvironment) -> dict[str
 async def test_list_sites_with_search(settings, env: TestEnvironment) -> dict[str, Any]:
     """Test list_sites with search query."""
     try:
-        from src.tools.sites import list_sites
+        from unifi_mcp_server.tools.sites import list_sites
 
         # Get all sites first
         all_sites = await list_sites(settings)

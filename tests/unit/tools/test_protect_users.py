@@ -4,13 +4,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.protect_users import (
+from unifi_mcp_server.tools.protect_users import (
     get_protect_ulp_user,
     get_protect_user,
     list_protect_ulp_users,
     list_protect_users,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ async def test_list_protect_users_success(mock_settings, mock_client):
             ],
         }
     )
-    with patch("src.tools.protect_users.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_users.ProtectClient", return_value=mock_client):
         result = await list_protect_users(mock_settings, limit=10, offset=0)
     mock_client.get.assert_awaited_once_with(
         "/integration/v1/users", params={"limit": 10, "offset": 0}
@@ -60,7 +60,7 @@ async def test_list_protect_users_success(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_get_protect_user_success(mock_settings, mock_client):
     mock_client.get = AsyncMock(return_value={"id": "user-1", "name": "Admin"})
-    with patch("src.tools.protect_users.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_users.ProtectClient", return_value=mock_client):
         result = await get_protect_user("user-1", mock_settings)
     mock_client.get.assert_awaited_once_with("/integration/v1/users/user-1")
     assert result["id"] == "user-1"
@@ -81,7 +81,7 @@ async def test_list_protect_ulp_users_success(mock_settings, mock_client):
             ],
         }
     )
-    with patch("src.tools.protect_users.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_users.ProtectClient", return_value=mock_client):
         result = await list_protect_ulp_users(mock_settings, limit=10, offset=0)
     mock_client.get.assert_awaited_once_with(
         "/integration/v1/ulp-users", params={"limit": 10, "offset": 0}
@@ -93,7 +93,7 @@ async def test_list_protect_ulp_users_success(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_get_protect_ulp_user_success(mock_settings, mock_client):
     mock_client.get = AsyncMock(return_value={"id": "ulp-1", "name": "Identity One"})
-    with patch("src.tools.protect_users.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_users.ProtectClient", return_value=mock_client):
         result = await get_protect_ulp_user("ulp-1", mock_settings)
     mock_client.get.assert_awaited_once_with("/integration/v1/ulp-users/ulp-1")
     assert result["id"] == "ulp-1"

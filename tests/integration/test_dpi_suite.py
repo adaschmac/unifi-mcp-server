@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from src.tools import dpi
 from tests.integration.test_harness import TestEnvironment, TestSuite
+from unifi_mcp_server.tools import dpi
 
 
 @pytest.mark.integration
@@ -150,7 +150,7 @@ async def test_get_client_dpi(settings, env: TestEnvironment) -> dict[str, Any]:
 
     try:
         # First, discover a client
-        from src.tools import clients
+        from unifi_mcp_server.tools import clients
 
         client_list = await clients.list_active_clients(
             site_id=env.site_id,

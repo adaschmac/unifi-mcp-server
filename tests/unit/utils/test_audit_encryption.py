@@ -14,10 +14,10 @@ from pathlib import Path
 import pytest
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 
-import src.utils.audit as audit_module
-from src.utils.audit import AuditLogger, get_audit_logger, log_audit
-from src.utils.audit_decrypt import main as decrypt_cli_main
-from src.utils.audit_encryption import (
+import unifi_mcp_server.utils.audit as audit_module
+from unifi_mcp_server.utils.audit import AuditLogger, get_audit_logger, log_audit
+from unifi_mcp_server.utils.audit_decrypt import main as decrypt_cli_main
+from unifi_mcp_server.utils.audit_encryption import (
     ENV_VAR,
     ENV_VAR_ALIAS,
     TOKEN_PREFIX,
@@ -479,7 +479,7 @@ class TestDecryptCli:
         assert all(json.loads(line)["operation"] == "wanted_op" for line in out)
 
     def test_cli_runnable_as_module(self, tmp_path, monkeypatch):
-        """python -m src.utils.audit_decrypt works end to end."""
+        """python -m unifi_mcp_server.utils.audit_decrypt works end to end."""
         monkeypatch.setenv(ENV_VAR, KEY_A)
         log_path = tmp_path / "audit.log"
         AuditLogger(log_file=log_path).log_operation(
@@ -487,7 +487,7 @@ class TestDecryptCli:
         )
 
         result = subprocess.run(
-            [sys.executable, "-m", "src.utils.audit_decrypt", str(log_path)],
+            [sys.executable, "-m", "unifi_mcp_server.utils.audit_decrypt", str(log_path)],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[3],

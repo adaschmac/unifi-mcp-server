@@ -44,7 +44,7 @@ Guides test creation for low-coverage modules to achieve the 60-70% coverage tar
 **Example usage:**
 
 ```
-I want to improve test coverage for src/tools/clients.py
+I want to improve test coverage for src/unifi_mcp_server/tools/clients.py
 ```
 
 #### 2. tool-design-reviewer
@@ -224,11 +224,11 @@ Help me plan the QoS and Traffic Management implementation
 
 ### Example 1: Test-Driven Development Workflow
 
-**Scenario:** Improving test coverage for `src/tools/clients.py` (currently 15.91%, target 70%)
+**Scenario:** Improving test coverage for `src/unifi_mcp_server/tools/clients.py` (currently 15.91%, target 70%)
 
 ```markdown
 Step 1: Invoke test-strategy skill
-> I want to improve test coverage for src/tools/clients.py
+> I want to improve test coverage for src/unifi_mcp_server/tools/clients.py
 
 Step 2: Skill analyzes coverage gaps
 → Identifies 8 uncovered functions
@@ -241,7 +241,7 @@ Step 3: Implement tests using recommendations
 → Run tests frequently: pytest tests/unit/test_clients.py -v
 
 Step 4: Verify coverage improvement
-→ Run coverage report: pytest --cov=src/tools/clients --cov-report=term
+→ Run coverage report: pytest --cov=src/unifi_mcp_server/tools/clients --cov-report=term
 → Verify: 15.91% → 72% ✅
 ```
 
@@ -269,7 +269,7 @@ Step 2: API exploration with unifi-api-explorer
 → Document API behavior and quirks
 
 Step 3: Implement tool
-→ Create src/tools/qos.py
+→ Create src/unifi_mcp_server/tools/qos.py
 → Use template from tool-design-reviewer
 → Integrate API client code from unifi-api-explorer
 
@@ -412,7 +412,7 @@ Step 5: Documentation with api-doc-generator
               ▼
 ┌─────────────────────────────────────────────────────────┐
 │ 3. Implement tool                                       │
-│    → Create src/tools/[module].py                      │
+│    → Create src/unifi_mcp_server/tools/[module].py                      │
 │    → Use @mcp.tool() decorator                         │
 │    → Add safety checks                                 │
 │    → Implement error handling                          │

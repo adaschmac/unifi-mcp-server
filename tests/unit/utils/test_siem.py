@@ -1,4 +1,4 @@
-"""Audit export to a SIEM (src/utils/siem.py, docs/FLEET_SCALING_PLAN.md Phase 5).
+"""Audit export to a SIEM (src/unifi_mcp_server/utils/siem.py, docs/FLEET_SCALING_PLAN.md Phase 5).
 
 Exporters run against real local listeners (TCP, TLS) or an HTTP mock
 transport; the forwarder runs against a recording exporter that can be made
@@ -22,12 +22,12 @@ from typing import Any
 import httpx
 import pytest
 
-from src.config.config import Settings
-from src.utils import siem
-from src.utils.audit import AuditLogger
-from src.utils.audit_verify import main as verify_cli
-from src.utils.exceptions import ConfigurationError
-from src.utils.siem import (
+from unifi_mcp_server.config.config import Settings
+from unifi_mcp_server.utils import siem
+from unifi_mcp_server.utils.audit import AuditLogger
+from unifi_mcp_server.utils.audit_verify import main as verify_cli
+from unifi_mcp_server.utils.exceptions import ConfigurationError
+from unifi_mcp_server.utils.siem import (
     OtlpExporter,
     SiemForwarder,
     SyslogExporter,
@@ -421,7 +421,7 @@ class TestWaitEvent:
     async def test_a_cancel_arriving_with_the_event_is_not_lost(self) -> None:
         # stop() sets the wake event and cancels the delivery task in one
         # tick; asyncio.wait_for dropped that cancellation before 3.12.
-        from src.utils.siem import _wait_event
+        from unifi_mcp_server.utils.siem import _wait_event
 
         event = asyncio.Event()
 
@@ -439,7 +439,7 @@ class TestWaitEvent:
         task.cancel()
 
     async def test_returns_when_the_event_is_set(self) -> None:
-        from src.utils.siem import _wait_event
+        from unifi_mcp_server.utils.siem import _wait_event
 
         event = asyncio.Event()
         asyncio.get_running_loop().call_later(0.01, event.set)
@@ -793,13 +793,13 @@ class TestAnchorsVerifyTruncation:
 class TestServerWiring:
     async def test_unset_starts_nothing(self, monkeypatch: Any, tmp_path: Path) -> None:
         settings = _settings(monkeypatch, tmp_path)
-        from src.main import start_siem_forwarder
+        from unifi_mcp_server.main import start_siem_forwarder
 
         assert await start_siem_forwarder(settings) is None
 
     async def test_invalid_target_stops_startup(self, monkeypatch: Any, tmp_path: Path) -> None:
         settings = _settings(monkeypatch, tmp_path, UNIFI_AUDIT_SIEM_TARGETS="ftp://x")
-        from src.main import start_siem_forwarder
+        from unifi_mcp_server.main import start_siem_forwarder
 
         with pytest.raises(ConfigurationError):
             await start_siem_forwarder(settings)
@@ -810,7 +810,7 @@ class TestServerWiring:
         settings = _settings(
             monkeypatch, tmp_path, UNIFI_AUDIT_SIEM_TARGETS="syslog+tcp://127.0.0.1:1"
         )
-        from src.main import start_siem_forwarder
+        from unifi_mcp_server.main import start_siem_forwarder
 
         with pytest.raises(ConfigurationError, match="UNIFI_AUDIT_CHAIN_KEY"):
             await start_siem_forwarder(settings)
@@ -824,10 +824,10 @@ class TestServerWiring:
             UNIFI_AUDIT_SIEM_TARGETS="syslog+tcp://127.0.0.1:1",
             UNIFI_AUDIT_CHAIN_KEY="chain-key",  # pragma: allowlist secret
         )
-        from src.main import start_siem_forwarder
-        from src.utils.audit import get_audit_logger
+        from unifi_mcp_server.main import start_siem_forwarder
+        from unifi_mcp_server.utils.audit import get_audit_logger
 
-        monkeypatch.setattr("src.utils.audit._audit_logger", None)
+        monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
         forwarder = await start_siem_forwarder(settings)
         try:
             assert forwarder is not None

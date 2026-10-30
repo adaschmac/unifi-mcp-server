@@ -31,6 +31,6 @@ prompts:
           Always provide clear, accurate information about available tools and their usage.
 
 # Tools define custom MCP tools exposed by this toolbox
-# The UniFi MCP Server's tools are defined in src/main.py
+# The UniFi MCP Server's tools are defined in src/unifi_mcp_server/main.py
 # This section can be used to add custom toolbox-specific tools
 tools: {}

@@ -22,15 +22,15 @@ import pytest
 from fastmcp import FastMCP
 from fastmcp.server.auth import AccessToken
 
-import src.tools
-from src.access import ROLE_TIERS, PermissionDeniedError
-from src.config.config import APIType, Settings
-from src.fleet import ControllerProfile
-from src.fleet.admin_tools import register_admin_tools
-from src.fleet.fleet_tools import register_fleet_read_tools
-from src.fleet.router import FleetRouter
-from src.fleet.tools import register_fleet_tools
-from src.tool_registry import TOOL_TIERS, register_module_tools
+import unifi_mcp_server.tools
+from unifi_mcp_server.access import ROLE_TIERS, PermissionDeniedError
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet import ControllerProfile
+from unifi_mcp_server.fleet.admin_tools import register_admin_tools
+from unifi_mcp_server.fleet.fleet_tools import register_fleet_read_tools
+from unifi_mcp_server.fleet.router import FleetRouter
+from unifi_mcp_server.fleet.tools import register_fleet_tools
+from unifi_mcp_server.tool_registry import TOOL_TIERS, register_module_tools
 
 from .test_router import StaticRegistry
 
@@ -83,7 +83,7 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(tmp_path / "audit.log"))
     monkeypatch.delenv("UNIFI_AUDIT_CHAIN_KEY", raising=False)
     monkeypatch.delenv("UNIFI_AUDIT_LOG_KEY", raising=False)
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 
@@ -97,8 +97,8 @@ def server(settings: Settings) -> FastMCP:
     )
     router = FleetRouter(settings, UntouchableRegistry(StaticRegistry(profile, default="hq")))
     mcp = FastMCP("rbac-drill")
-    for info in pkgutil.iter_modules(src.tools.__path__):
-        module = importlib.import_module(f"src.tools.{info.name}")
+    for info in pkgutil.iter_modules(unifi_mcp_server.tools.__path__):
+        module = importlib.import_module(f"unifi_mcp_server.tools.{info.name}")
         register_module_tools(mcp, module, settings, router=router)
     register_fleet_tools(mcp, router)
     register_fleet_read_tools(mcp, router.registry, settings, MagicMock())
@@ -125,7 +125,7 @@ def _as(monkeypatch: pytest.MonkeyPatch, role: str) -> None:
         scopes=[],
         claims={"token_id": f"tok-{role}", "name": f"drill-{role}", "role": role},
     )
-    monkeypatch.setattr("src.access.get_access_token", lambda: token)
+    monkeypatch.setattr("unifi_mcp_server.access.get_access_token", lambda: token)
 
 
 async def _tools(server: FastMCP) -> dict[str, Any]:

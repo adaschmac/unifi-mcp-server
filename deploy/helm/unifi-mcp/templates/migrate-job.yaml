@@ -35,7 +35,7 @@ spec:
         - name: migrate
           image: {{ include "unifi-mcp.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: [python, -m, src.fleet.cli, migrate]
+          command: [python, -m, unifi_mcp_server.fleet.cli, migrate]
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           envFrom:

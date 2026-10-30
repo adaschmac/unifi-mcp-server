@@ -5,12 +5,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.utils.exceptions import AuthenticationError, RateLimitError, ResourceNotFoundError
+from unifi_mcp_server.utils.exceptions import (
+    AuthenticationError,
+    RateLimitError,
+    ResourceNotFoundError,
+)
 
 
 @pytest.fixture
 def mock_settings():
-    from src.config import APIType
+    from unifi_mcp_server.config import APIType
 
     settings = MagicMock(spec="Settings")
     settings.log_level = "INFO"
@@ -103,9 +107,9 @@ class TestGetNetworkTopology:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test retrieving complete network topology."""
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -137,9 +141,9 @@ class TestGetNetworkTopology:
     @pytest.mark.asyncio
     async def test_get_network_topology_empty(self, mock_settings):
         """Test topology retrieval with no devices."""
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -160,9 +164,9 @@ class TestGetNetworkTopology:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test topology retrieval with position coordinates."""
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -196,9 +200,9 @@ class TestGetDeviceConnections:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test retrieving connections for a specific device."""
-        from src.tools.topology import get_device_connections
+        from unifi_mcp_server.tools.topology import get_device_connections
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -234,9 +238,9 @@ class TestGetDeviceConnections:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test retrieving all device connections."""
-        from src.tools.topology import get_device_connections
+        from unifi_mcp_server.tools.topology import get_device_connections
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -270,9 +274,9 @@ class TestGetPortMappings:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test retrieving port mappings for a specific device."""
-        from src.tools.topology import get_port_mappings
+        from unifi_mcp_server.tools.topology import get_port_mappings
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -305,7 +309,7 @@ class TestGetPortMappings:
 
         Keying one peer per port silently dropped all but the last of them.
         """
-        from src.tools.topology import get_port_mappings
+        from unifi_mcp_server.tools.topology import get_port_mappings
 
         devices = [
             {"id": "sw1", "name": "Switch", "macAddress": "AA:BB:CC:00:00:00", "state": "ONLINE"}
@@ -325,7 +329,7 @@ class TestGetPortMappings:
             for i in range(1, 4)
         ]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -363,9 +367,9 @@ class TestExportTopology:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test exporting topology as JSON."""
-        from src.tools.topology import export_topology
+        from unifi_mcp_server.tools.topology import export_topology
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -399,9 +403,9 @@ class TestExportTopology:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test exporting topology as GraphML."""
-        from src.tools.topology import export_topology
+        from unifi_mcp_server.tools.topology import export_topology
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -428,9 +432,9 @@ class TestExportTopology:
     @pytest.mark.asyncio
     async def test_export_topology_dot(self, mock_settings, sample_device_data, sample_client_data):
         """Test exporting topology as DOT format."""
-        from src.tools.topology import export_topology
+        from unifi_mcp_server.tools.topology import export_topology
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -457,8 +461,8 @@ class TestExportTopology:
     @pytest.mark.asyncio
     async def test_export_topology_invalid_format(self, mock_settings):
         """Test that invalid export formats are rejected."""
-        from src.tools.topology import export_topology
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.topology import export_topology
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         with pytest.raises(ValidationError, match="format"):
             await export_topology("default", "invalid_format", mock_settings)
@@ -472,9 +476,9 @@ class TestGetTopologyStatistics:
         self, mock_settings, sample_device_data, sample_client_data
     ):
         """Test retrieving topology statistics."""
-        from src.tools.topology import get_topology_statistics
+        from unifi_mcp_server.tools.topology import get_topology_statistics
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -506,9 +510,9 @@ class TestGetTopologyStatistics:
     @pytest.mark.asyncio
     async def test_get_topology_statistics_empty(self, mock_settings):
         """Test topology statistics with no devices."""
-        from src.tools.topology import get_topology_statistics
+        from unifi_mcp_server.tools.topology import get_topology_statistics
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -530,7 +534,7 @@ class TestDeviceUplinkResolution:
 
     def test_depth_is_independent_of_device_order(self):
         """Depth comes from the uplink chain, not from device ordering."""
-        from src.tools.topology import _resolve_depth
+        from unifi_mcp_server.tools.topology import _resolve_depth
 
         # Deliberately leaf-first: a single forward pass would score these 0.
         uplinks = {"ap": "switch", "switch": "gateway"}
@@ -542,7 +546,7 @@ class TestDeviceUplinkResolution:
 
     def test_depth_survives_an_uplink_cycle(self):
         """A cycle terminates, with the repeated device pinned as the root."""
-        from src.tools.topology import _resolve_depth
+        from unifi_mcp_server.tools.topology import _resolve_depth
 
         uplinks = {"a": "b", "b": "a"}
         cache: dict[str, int] = {}
@@ -555,7 +559,7 @@ class TestDeviceUplinkResolution:
 
     def test_depth_of_a_device_hanging_off_a_cycle(self):
         """A device feeding into a cycle counts hops from the cycle root."""
-        from src.tools.topology import _resolve_depth
+        from unifi_mcp_server.tools.topology import _resolve_depth
 
         uplinks = {"leaf": "a", "a": "b", "b": "a"}
         cache: dict[str, int] = {}
@@ -567,7 +571,7 @@ class TestDeviceUplinkResolution:
     @pytest.mark.asyncio
     async def test_merge_device_uplinks_fills_from_detail_route(self):
         """The detail route supplies the uplink the list route omits."""
-        from src.tools.topology import _merge_device_uplinks
+        from unifi_mcp_server.tools.topology import _merge_device_uplinks
 
         devices = [{"id": "ap_001"}, {"id": "switch_001"}]
         details = {
@@ -587,7 +591,7 @@ class TestDeviceUplinkResolution:
     @pytest.mark.asyncio
     async def test_merge_device_uplinks_tolerates_detail_failure(self):
         """A per-device API failure degrades that device only."""
-        from src.tools.topology import _merge_device_uplinks
+        from unifi_mcp_server.tools.topology import _merge_device_uplinks
 
         devices = [{"id": "ap_001"}, {"id": "switch_001"}]
         detail = {"data": {"id": "switch_001", "uplink": {"deviceId": "gw_001"}}}
@@ -618,7 +622,7 @@ class TestDeviceUplinkResolution:
         Args:
             systemic_error: Controller-wide failure raised by the detail route
         """
-        from src.tools.topology import _merge_device_uplinks
+        from unifi_mcp_server.tools.topology import _merge_device_uplinks
 
         devices = [{"id": "ap_001"}]
 
@@ -632,8 +636,8 @@ class TestDeviceUplinkResolution:
     @pytest.mark.asyncio
     async def test_merge_device_uplinks_bounds_concurrency(self):
         """Detail lookups are capped rather than fanned out one per device."""
-        from src.tools import topology
-        from src.tools.topology import _merge_device_uplinks
+        from unifi_mcp_server.tools import topology
+        from unifi_mcp_server.tools.topology import _merge_device_uplinks
 
         devices = [{"id": f"ap_{index:03d}"} for index in range(50)]
         in_flight = 0
@@ -659,7 +663,7 @@ class TestDeviceUplinkResolution:
     @pytest.mark.asyncio
     async def test_merge_device_uplinks_skips_already_populated(self):
         """A device that already carries an uplink is not re-fetched."""
-        from src.tools.topology import _merge_device_uplinks
+        from unifi_mcp_server.tools.topology import _merge_device_uplinks
 
         devices = [{"id": "ap_001", "uplink": {"deviceId": "switch_001"}}]
 
@@ -674,11 +678,11 @@ class TestDeviceUplinkResolution:
     @pytest.mark.asyncio
     async def test_online_state_is_recognised(self, mock_settings, sample_client_data):
         """The Integration API reports ONLINE, not CONNECTED."""
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
         devices = [{"id": "gw_001", "name": "UDM Pro", "state": "ONLINE"}]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -728,7 +732,7 @@ TOPO_FIXTURE = {
 
 def test_resolve_topology_node_by_node_id():
     """The topology's own id resolves to itself."""
-    from src.tools.topology import _resolve_topology_node
+    from unifi_mcp_server.tools.topology import _resolve_topology_node
 
     assert _resolve_topology_node(TOPO_FIXTURE, "uuid-sw1") == "uuid-sw1"
 
@@ -739,14 +743,14 @@ def test_resolve_topology_node_by_mac():
     Every other device tool in this server speaks MACs and legacy controller
     ids; the topology speaks Integration API UUIDs.
     """
-    from src.tools.topology import _resolve_topology_node
+    from unifi_mcp_server.tools.topology import _resolve_topology_node
 
     assert _resolve_topology_node(TOPO_FIXTURE, "00:00:5E:00:53:10") == "uuid-sw1"
 
 
 def test_resolve_topology_node_by_name():
     """A device name resolves."""
-    from src.tools.topology import _resolve_topology_node
+    from unifi_mcp_server.tools.topology import _resolve_topology_node
 
     assert _resolve_topology_node(TOPO_FIXTURE, "Switch A") == "uuid-sw1"
 
@@ -759,7 +763,7 @@ def test_resolve_topology_node_unknown_raises():
     connected. "I do not know this device" is a different answer from "this
     device has no connections".
     """
-    from src.tools.topology import _resolve_topology_node
+    from unifi_mcp_server.tools.topology import _resolve_topology_node
 
     with pytest.raises(ResourceNotFoundError, match="device"):
         _resolve_topology_node(TOPO_FIXTURE, "507f191e810c19729de860ea")  # pragma: allowlist secret
@@ -773,9 +777,9 @@ async def test_get_port_mappings_accepts_a_mac(mock_settings):
     "report every host behind a switch port"), so a single-peer port still
     reports as a one-element list.
     """
-    from src.tools.topology import get_port_mappings
+    from unifi_mcp_server.tools.topology import get_port_mappings
 
-    with patch("src.tools.topology.get_network_topology", return_value=TOPO_FIXTURE):
+    with patch("unifi_mcp_server.tools.topology.get_network_topology", return_value=TOPO_FIXTURE):
         result = await get_port_mappings("default", "00:00:5e:00:53:10", mock_settings)
 
     assert result["device_id"] == "uuid-sw1"
@@ -787,9 +791,9 @@ async def test_get_port_mappings_accepts_a_mac(mock_settings):
 @pytest.mark.asyncio
 async def test_get_device_connections_accepts_a_mac(mock_settings):
     """Connections resolve a MAC instead of silently returning nothing."""
-    from src.tools.topology import get_device_connections
+    from unifi_mcp_server.tools.topology import get_device_connections
 
-    with patch("src.tools.topology.get_network_topology", return_value=TOPO_FIXTURE):
+    with patch("unifi_mcp_server.tools.topology.get_network_topology", return_value=TOPO_FIXTURE):
         result = await get_device_connections("default", "00:00:5e:00:53:10", mock_settings)
 
     assert len(result) == 2
@@ -804,7 +808,7 @@ class TestLegacyPortDetail:
 
     @pytest.mark.asyncio
     async def test_device_uplink_gains_ports_and_speed(self, mock_settings):
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
         devices = [
             {"id": "sw1", "name": "Switch", "macAddress": "AA:BB:CC:00:00:01", "state": "ONLINE"},
@@ -822,7 +826,7 @@ class TestLegacyPortDetail:
             }
         ]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -851,7 +855,7 @@ class TestLegacyPortDetail:
 
     @pytest.mark.asyncio
     async def test_wired_client_gains_switch_port_and_rate(self, mock_settings):
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
         clients = [
             {
@@ -863,7 +867,7 @@ class TestLegacyPortDetail:
         ]
         legacy_clients = [{"mac": "aa:bb:cc:00:00:09", "sw_port": 5, "wired_rate_mbps": 1000}]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -881,7 +885,7 @@ class TestLegacyPortDetail:
 
     @pytest.mark.asyncio
     async def test_wireless_client_rate_is_converted_from_kbps(self, mock_settings):
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
         clients = [
             {
@@ -893,7 +897,7 @@ class TestLegacyPortDetail:
         ]
         legacy_clients = [{"mac": "aa:bb:cc:00:00:0a", "tx_rate": 1201000}]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -912,14 +916,14 @@ class TestLegacyPortDetail:
     @pytest.mark.asyncio
     async def test_graph_survives_legacy_route_failure(self, mock_settings):
         """A controller refusing the legacy routes must degrade, not fail."""
-        from src.tools.topology import get_network_topology
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.tools.topology import get_network_topology
+        from unifi_mcp_server.utils.exceptions import APIError
 
         devices = [
             {"id": "sw1", "name": "Switch", "macAddress": "AA:BB:CC:00:00:01", "state": "ONLINE"}
         ]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -949,14 +953,14 @@ class TestLegacyPortDetail:
         AuthenticationError is not an APIError subclass, so it needs its own
         entry in the best-effort catch.
         """
-        from src.tools.topology import get_network_topology
-        from src.utils.exceptions import AuthenticationError
+        from unifi_mcp_server.tools.topology import get_network_topology
+        from unifi_mcp_server.utils.exceptions import AuthenticationError
 
         devices = [
             {"id": "sw1", "name": "Switch", "macAddress": "AA:BB:CC:00:00:01", "state": "ONLINE"}
         ]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -980,7 +984,7 @@ class TestLegacyPortDetail:
     @pytest.mark.asyncio
     async def test_half_duplex_link_is_reported_as_half(self, mock_settings):
         """full_duplex=False is a half-duplex link, not missing detail."""
-        from src.tools.topology import get_network_topology
+        from unifi_mcp_server.tools.topology import get_network_topology
 
         devices = [
             {"id": "gw1", "name": "Gateway", "macAddress": "AA:BB:CC:00:00:01", "state": "ONLINE"},
@@ -1004,7 +1008,7 @@ class TestLegacyPortDetail:
             }
         ]
 
-        with patch("src.tools.topology.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.topology.UniFiClient") as mock_client:
             mock_instance = mock_client.return_value.__aenter__.return_value
             mock_instance.is_authenticated = True
             mock_instance.resolve_site_id = AsyncMock(return_value="default")
@@ -1031,7 +1035,7 @@ class TestLegacyPortDetail:
 @pytest.mark.asyncio
 async def test_legacy_rows_skip_non_dict_entries(mock_settings):
     """Junk rows in a legacy response are skipped, not indexed."""
-    from src.tools.topology import _fetch_legacy_stats
+    from unifi_mcp_server.tools.topology import _fetch_legacy_stats
 
     client = MagicMock()
     client.logger = MagicMock()

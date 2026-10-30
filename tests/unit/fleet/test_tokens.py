@@ -17,15 +17,15 @@ from fastmcp.client.transports import StreamableHttpTransport  # noqa: E402
 from fastmcp.exceptions import ToolError  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
-from src.config.config import Settings  # noqa: E402
-from src.fleet import cli  # noqa: E402
-from src.fleet.admin_tools import register_admin_tools  # noqa: E402
-from src.fleet.postgres_registry import PostgresRegistry  # noqa: E402
-from src.fleet.router import FleetRouter  # noqa: E402
-from src.fleet.tokens import FleetTokenVerifier, TokenStore, hash_token  # noqa: E402
-from src.tool_registry import _make_tool_wrapper  # noqa: E402
-from src.utils import tool_kind
-from src.utils.exceptions import ResourceNotFoundError, ValidationError  # noqa: E402
+from unifi_mcp_server.config.config import Settings  # noqa: E402
+from unifi_mcp_server.fleet import cli  # noqa: E402
+from unifi_mcp_server.fleet.admin_tools import register_admin_tools  # noqa: E402
+from unifi_mcp_server.fleet.postgres_registry import PostgresRegistry  # noqa: E402
+from unifi_mcp_server.fleet.router import FleetRouter  # noqa: E402
+from unifi_mcp_server.fleet.tokens import FleetTokenVerifier, TokenStore, hash_token  # noqa: E402
+from unifi_mcp_server.tool_registry import _make_tool_wrapper  # noqa: E402
+from unifi_mcp_server.utils import tool_kind
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError  # noqa: E402
 
 ENV_TOKEN = "env-break-glass-token-0123456789"  # pragma: allowlist secret
 
@@ -162,7 +162,7 @@ def settings(
     monkeypatch.setenv("UNIFI_LOCAL_HOST", "192.168.2.1")
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(tmp_path / "audit.log"))
     monkeypatch.setenv("DATABASE_URL", database_url)
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 

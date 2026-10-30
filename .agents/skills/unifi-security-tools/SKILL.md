@@ -11,29 +11,29 @@ These tools change who can reach what on the network, so a mistake can lock user
 
 | Module | Tools | API | Examples |
 |--------|-------|-----|----------|
-| `src/tools/firewall.py` | 4 | legacy | `list_firewall_rules`, `create_firewall_rule` |
-| `src/tools/firewall_policies.py` | 7 | v2 and integration | `list_firewall_policies`, `create_firewall_policy`, `get_zone_policy_matrix` |
-| `src/tools/firewall_zones.py` | 7 | integration | `assign_network_to_zone`, `unassign_network_from_zone` |
-| `src/tools/firewall_groups.py` | 7 | legacy | `create_port_group`, `create_address_group`, `delete_firewall_group` |
-| `src/tools/acls.py` | 5 | integration | `list_acl_rules`, `create_acl_rule` |
-| `src/tools/traffic_matching_lists.py` | 5 | integration | `list_traffic_matching_lists`, `create_traffic_matching_list` |
-| `src/tools/content_filtering.py` | 4 | v2 | `list_content_filters`, `update_content_filter` |
-| `src/tools/port_forwarding.py` | 4 | legacy | `list_port_forwards`, `create_port_forward` |
-| `src/tools/radius.py` | 17 | legacy | `list_radius_profiles`, `configure_guest_portal` |
+| `src/unifi_mcp_server/tools/firewall.py` | 4 | legacy | `list_firewall_rules`, `create_firewall_rule` |
+| `src/unifi_mcp_server/tools/firewall_policies.py` | 7 | v2 and integration | `list_firewall_policies`, `create_firewall_policy`, `get_zone_policy_matrix` |
+| `src/unifi_mcp_server/tools/firewall_zones.py` | 7 | integration | `assign_network_to_zone`, `unassign_network_from_zone` |
+| `src/unifi_mcp_server/tools/firewall_groups.py` | 7 | legacy | `create_port_group`, `create_address_group`, `delete_firewall_group` |
+| `src/unifi_mcp_server/tools/acls.py` | 5 | integration | `list_acl_rules`, `create_acl_rule` |
+| `src/unifi_mcp_server/tools/traffic_matching_lists.py` | 5 | integration | `list_traffic_matching_lists`, `create_traffic_matching_list` |
+| `src/unifi_mcp_server/tools/content_filtering.py` | 4 | v2 | `list_content_filters`, `update_content_filter` |
+| `src/unifi_mcp_server/tools/port_forwarding.py` | 4 | legacy | `list_port_forwards`, `create_port_forward` |
+| `src/unifi_mcp_server/tools/radius.py` | 17 | legacy | `list_radius_profiles`, `configure_guest_portal` |
 
-`src/tools/zbf_matrix.py` holds 7 stubs that raise `NotImplementedError`. `src/main.py` does not import it, so none of them is registered. The UniFi API has no zone-matrix endpoint; `API.md` lists those tools as removed.
+`src/unifi_mcp_server/tools/zbf_matrix.py` holds 7 stubs that raise `NotImplementedError`. `src/unifi_mcp_server/main.py` does not import it, so none of them is registered. The UniFi API has no zone-matrix endpoint; `API.md` lists those tools as removed.
 
 ## Registration and modes
 
-- Every public `async def` is a tool (`register_module_tools()` in `src/tool_registry.py`). Name helpers with a leading `_`.
-- All these modules are in `_LOCAL_TOOL_MODULES` (`src/main.py`).
+- Every public `async def` is a tool (`register_module_tools()` in `src/unifi_mcp_server/tool_registry.py`). Name helpers with a leading `_`.
+- All these modules are in `_LOCAL_TOOL_MODULES` (`src/unifi_mcp_server/main.py`).
 - The `security` profile covers `acls`, `content_filtering`, `firewall`, `firewall_groups`, `firewall_policies`, `firewall_zones` and `port_forwarding`, and also `site_vpn` and `vpn`. `radius` and `traffic_matching_lists` are in the `system` profile.
 - Run-time checks: `firewall_policies`, `firewall_groups` and `content_filtering` refuse non-local modes with `_ensure_local_api()` (`NotImplementedError`). The `firewall_zones` version of that helper raises `ValidationError`.
 - No code checks for Network 9.0+. If the v2 zone list is empty, `list_firewall_zones_v2` raises `APIError` with the message "ZBF does not appear to be configured".
 
 ## Legacy rules or zone-based policies
 
-- Legacy rules (`rest/firewallrule`) are read and written by `src/tools/firewall.py`. In local mode, `list_firewall_rules` falls back to the v2 `firewall-policies` list when the legacy list is empty.
+- Legacy rules (`rest/firewallrule`) are read and written by `src/unifi_mcp_server/tools/firewall.py`. In local mode, `list_firewall_rules` falls back to the v2 `firewall-policies` list when the legacy list is empty.
 - Zone-based policies are read and written only by the `*_firewall_policy` tools. Nothing picks the right family for the caller, so a new tool must state in its docstring which family it changes.
 
 ## URL spaces
@@ -48,13 +48,13 @@ The integration API needs a site UUID; get it with `await client.resolve_site_id
 
 ## IDs
 
-- There are two zone ID spaces. v2 uses MongoDB ObjectIds; the integration API uses UUIDs. `_resolve_zone_id()` in `src/tools/firewall_policies.py` accepts a name, a UUID or an ObjectId, and caches the zone index per site in the module-level `_zone_cache`.
-- Network IDs are mapped from ObjectId to UUID by `_resolve_network_uuid()` in `src/tools/firewall_zones.py`.
+- There are two zone ID spaces. v2 uses MongoDB ObjectIds; the integration API uses UUIDs. `_resolve_zone_id()` in `src/unifi_mcp_server/tools/firewall_policies.py` accepts a name, a UUID or an ObjectId, and caches the zone index per site in the module-level `_zone_cache`.
+- Network IDs are mapped from ObjectId to UUID by `_resolve_network_uuid()` in `src/unifi_mcp_server/tools/firewall_zones.py`.
 - `get_zone_policy_matrix` returns v2 and integration zone IDs, which cannot be joined directly.
 
 ## Models
 
-- Models: `src/models/firewall_policy.py`, `src/models/firewall_group.py`, `src/models/firewall_zone.py`, `src/models/acl.py`, `src/models/traffic_matching_list.py`, `src/models/radius.py`.
+- Models: `src/unifi_mcp_server/models/firewall_policy.py`, `src/unifi_mcp_server/models/firewall_group.py`, `src/unifi_mcp_server/models/firewall_zone.py`, `src/unifi_mcp_server/models/acl.py`, `src/unifi_mcp_server/models/traffic_matching_list.py`, `src/unifi_mcp_server/models/radius.py`.
 - Read models are permissive on purpose: string fields instead of enums, and `extra="allow"`. New firmware adds values, and a strict model would break reads.
 - `ACLRule` requires `action` and maps `id` from `_id` (`populate_by_name=True`).
 
@@ -70,7 +70,7 @@ The integration API needs a site UUID; get it with `await client.resolve_site_id
 
 ## Risk tiers
 
-- `tool_tier()` (`src/tool_registry.py`) makes a tool destructive when its name starts with `delete_`, `remove_` or `bulk_delete_`, or when it is in `DESTRUCTIVE_TOOLS`.
+- `tool_tier()` (`src/unifi_mcp_server/tool_registry.py`) makes a tool destructive when its name starts with `delete_`, `remove_` or `bulk_delete_`, or when it is in `DESTRUCTIVE_TOOLS`.
 - Tools that change firewall policy are in `DESTRUCTIVE_TOOLS`, so only the admin role can call them: `create_firewall_policy`, `update_firewall_policy`, `update_zbf_policy`, `create_firewall_rule`, `update_firewall_rule`, `assign_network_to_zone` and `unassign_network_from_zone`. The test that proves this is `test_firewall_policy_changes_need_admin`.
 - Everything else that mutates is `write` tier, which the operator role can call. That includes ACL rules, port forwards, firewall groups and zones, traffic matching lists and the content filter.
 - When a new tool can cut off traffic, decide with the owner whether it belongs in `DESTRUCTIVE_TOOLS`.
@@ -80,7 +80,7 @@ The integration API needs a site UUID; get it with `await client.resolve_site_id
 ## Tests
 
 - Files: `tests/unit/tools/test_<module>_tools.py`, plus `tests/unit/tools/test_firewall_policies.py` and `tests/unit/tools/test_firewall_policy_helpers.py`.
-- Patch the client in the module: `patch("src.tools.firewall_policies.UniFiClient")`. Set `__aenter__` to return the client and `__aexit__` to return `False`. A bare `AsyncMock()` for `__aexit__` returns a truthy value, the `async with` block then swallows every exception, and the tool returns `None`.
+- Patch the client in the module: `patch("unifi_mcp_server.tools.firewall_policies.UniFiClient")`. Set `__aenter__` to return the client and `__aexit__` to return `False`. A bare `AsyncMock()` for `__aexit__` returns a truthy value, the `async with` block then swallows every exception, and the tool returns `None`.
 - Build real settings with `monkeypatch.setenv("UNIFI_API_TYPE", "local")` and `Settings()` when the path matters. Mocked cloud-ea settings hid the local-mode ACL bug from April to October 2026: the tests ran in cloud-ea mode, but the tools were registered only in local mode.
 - Tests that use `_zone_cache` seed it by hand and clear it afterwards.
 

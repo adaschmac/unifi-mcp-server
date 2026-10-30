@@ -46,14 +46,14 @@ Keep the live backlog actionable and phase-aligned so operators and contributors
 
 ### Phase 3 — Protect API integration (complete)
 
-- [x] Implement `src/api/protect_client.py` (scaffolded; wired for local/Cloud path prefixes)
-- [x] Add Protect models under `src/models/protect_*.py` (ProtectCamera, ProtectNVR)
-- [x] Add camera tools (`src/tools/protect_cameras.py`) (list, get)
-- [x] Add Protect device tools (`src/tools/protect_devices.py`)
-- [x] Add NVR / asset tools (`src/tools/protect_nvr.py`) (list, get)
-- [x] Add live view / viewer tools (`src/tools/protect_views.py`)
-- [x] Add Protect events / webhook tools (`src/tools/protect_events.py`)
-- [x] Add Protect MCP resources (`src/resources/protect.py`) (nvrs, cameras resource URIs)
+- [x] Implement `src/unifi_mcp_server/api/protect_client.py` (scaffolded; wired for local/Cloud path prefixes)
+- [x] Add Protect models under `src/unifi_mcp_server/models/protect_*.py` (ProtectCamera, ProtectNVR)
+- [x] Add camera tools (`src/unifi_mcp_server/tools/protect_cameras.py`) (list, get)
+- [x] Add Protect device tools (`src/unifi_mcp_server/tools/protect_devices.py`)
+- [x] Add NVR / asset tools (`src/unifi_mcp_server/tools/protect_nvr.py`) (list, get)
+- [x] Add live view / viewer tools (`src/unifi_mcp_server/tools/protect_views.py`)
+- [x] Add Protect events / webhook tools (`src/unifi_mcp_server/tools/protect_events.py`)
+- [x] Add Protect MCP resources (`src/unifi_mcp_server/resources/protect.py`) (nvrs, cameras resource URIs)
 - [x] Build mocked integration tests for Protect (completed 2026-08-12)
 - [x] Update `API.md` and `UNIFI_API.md` with Protect coverage (completed 2026-08-12)
 - [x] Wire exports, runtime profile, and config helper for Protect (completed 2026-07-19)
@@ -62,8 +62,8 @@ Keep the live backlog actionable and phase-aligned so operators and contributors
 
 - [x] Add tests for all new Phase 1–3 modules (2026-10-10: every module at 80%+)
 - [x] Close remaining minor gaps: Dynamic DNS full CRUD
-- [x] Close remaining minor gaps: Tagged MAC management (`src/tools/mac_tags.py`)
-- [x] Close remaining minor gaps: Device migration tools (`src/tools/device_migration.py`)
+- [x] Close remaining minor gaps: Tagged MAC management (`src/unifi_mcp_server/tools/mac_tags.py`)
+- [x] Close remaining minor gaps: Device migration tools (`src/unifi_mcp_server/tools/device_migration.py`)
 - [x] Fix "Received request before initialization was complete" (issue #96: closed; raised inside the `mcp` SDK's SSE transport, workaround is `MCP_SERVER_TRANSPORT=streamable_http`)
 - [x] Add `NETWORK_PLAYBOOK.md` runbook library
 - [x] Add `skills/` domain knowledge packs (channel planning, devices, network, security, system)
@@ -72,17 +72,17 @@ Keep the live backlog actionable and phase-aligned so operators and contributors
 - [x] Synchronize README, API.md, UNIFI_API.md, and CHANGELOG.md (2026-09-27; tool and test counts refreshed 2026-10-10)
 - [x] Prepare release prep notes and version bump (v0.5.0 tagged 2026-09-28; v0.6.0 released 2026-10-12, v0.6.1 2026-10-14, v0.7.0 2026-10-29, see `DEVELOPMENT_PLAN.md` §5)
 - [x] Fix the webhook receiver (2026-10-10: Starlette endpoint instead of the undeclared `fastapi`, `WEBHOOK_SECRET` read into `Settings`, fails closed without it, real 401/429 responses)
-- [x] Mount `POST /webhooks/unifi` on network transports when `WEBHOOK_SECRET` is set (`register_webhook_route` in `src/main.py`)
+- [x] Mount `POST /webhooks/unifi` on network transports when `WEBHOOK_SECRET` is set (`register_webhook_route` in `src/unifi_mcp_server/main.py`)
 
 ### Phase 5 — Enterprise scale & operational excellence
 
 - [x] Add multi-controller / multi-site orchestration (fleet Phases 0–5: per-call `controller` routing, the Postgres controller registry, a shared connection pool and Redis read cache, several replicas with shared rate limits and registry pub/sub, the worker tier with `fleet_*` read tools and health-driven circuit recovery, drills, SIEM export and retention; cloud-account discovery deferred, `docs/FLEET_SCALING_PLAN.md` §4)
 - [x] Add dry-run / change-safe mode (every mutating tool declares `dry_run`, enforced by `test_every_mutating_tool_declares_dry_run`; `UNIFI_DRY_RUN` forces previews server-wide)
 - [x] Add tool-level RBAC: roles over risk tiers, server-issued API tokens (fleet Phase 2b: `viewer`/`operator`/`admin`/`fleet-admin` roles, module and controller-label scopes, `umcp_` tokens with `DATABASE_URL`)
-- [x] Add append-only audit logging (wrapper-level coverage, HMAC hash chain with `python -m src.utils.audit_verify`, the append-only Postgres store, SIEM export with chain-head anchors (`UNIFI_AUDIT_SIEM_TARGETS`, fleet Phase 5b), and retention: `python -m src.fleet.cli audit-retention` for Postgres, `UNIFI_AUDIT_LOG_ROTATE_MB` plus `python -m src.utils.audit_retention` for the JSONL file (fleet Phase 5c); `docs/FLEET_SCALING_PLAN.md` §3.7)
+- [x] Add append-only audit logging (wrapper-level coverage, HMAC hash chain with `python -m unifi_mcp_server.utils.audit_verify`, the append-only Postgres store, SIEM export with chain-head anchors (`UNIFI_AUDIT_SIEM_TARGETS`, fleet Phase 5b), and retention: `python -m unifi_mcp_server.fleet.cli audit-retention` for Postgres, `UNIFI_AUDIT_LOG_ROTATE_MB` plus `python -m unifi_mcp_server.utils.audit_retention` for the JSONL file (fleet Phase 5c); `docs/FLEET_SCALING_PLAN.md` §3.7)
 - [x] Add Prometheus metrics endpoint (`UNIFI_METRICS_ENABLED`: `GET /metrics` on network transports, behind the same bearer token as `/mcp`)
-- [x] Add A2A agent card and manifest (`src/a2a/`, `agent-card.json`, served behind bearer auth)
-- [ ] Add webhook event bus with Redis pub/sub (partial: `src/webhooks/` receiver with signature verification; no Redis fan-out)
+- [x] Add A2A agent card and manifest (`src/unifi_mcp_server/a2a/`, `agent-card.json`, served behind bearer auth)
+- [ ] Add webhook event bus with Redis pub/sub (partial: `src/unifi_mcp_server/webhooks/` receiver with signature verification; no Redis fan-out)
 - [ ] Add tool exposure modes for network, protect, access, talk, drive, and read-only sessions (partial: `UNIFI_PROFILE` supports network, devices, security, system, minimal, protect; `UNIFI_READ_ONLY` done; access, talk, drive pending)
 - [ ] Research and map the Access API
 - [ ] Implement Access API tools once the endpoint map is confirmed

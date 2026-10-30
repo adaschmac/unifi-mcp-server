@@ -4,14 +4,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.acls import (
+from unifi_mcp_server.tools.acls import (
     create_acl_rule,
     delete_acl_rule,
     get_acl_rule,
     list_acl_rules,
     update_acl_rule,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -69,7 +69,7 @@ async def test_list_acl_rules_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -103,7 +103,7 @@ async def test_list_acl_rules_with_filter(mock_settings):
         ]
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -135,7 +135,7 @@ async def test_list_acl_rules_pagination(mock_settings):
         ]
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -156,7 +156,7 @@ async def test_list_acl_rules_pagination(mock_settings):
 async def test_list_acl_rules_empty(mock_settings):
     mock_response = {"data": []}
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -190,7 +190,7 @@ async def test_get_acl_rule_success(mock_settings):
         }
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = _prepare_client(AsyncMock())
         mock_client.is_authenticated = False
         mock_client.authenticate = AsyncMock()
@@ -219,7 +219,7 @@ async def test_get_acl_rule_direct_response(mock_settings):
         "priority": 50,
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.get = AsyncMock(return_value=mock_response)
@@ -246,8 +246,10 @@ async def test_create_acl_rule_success(mock_settings):
         }
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
-        with patch("src.tools.acls.audit_action", new_callable=AsyncMock) as mock_audit:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
+        with patch(
+            "unifi_mcp_server.tools.acls.audit_action", new_callable=AsyncMock
+        ) as mock_audit:
             mock_client = AsyncMock()
             mock_client.is_authenticated = False
             mock_client.authenticate = AsyncMock()
@@ -272,7 +274,7 @@ async def test_create_acl_rule_success(mock_settings):
 
 @pytest.mark.asyncio
 async def test_create_acl_rule_dry_run(mock_settings):
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = _prepare_client(AsyncMock())
         mock_client.is_authenticated = True
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -334,8 +336,8 @@ async def test_create_acl_rule_legacy_params_ignored(mock_settings):
         }
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
-        with patch("src.tools.acls.audit_action", new_callable=AsyncMock):
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.acls.audit_action", new_callable=AsyncMock):
             mock_client = _prepare_client(AsyncMock())
             mock_client.is_authenticated = True
             mock_client.post = AsyncMock(return_value=mock_response)
@@ -386,8 +388,8 @@ async def test_update_acl_rule_success(mock_settings):
         }
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
-        with patch("src.tools.acls.audit_action", new_callable=AsyncMock):
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.acls.audit_action", new_callable=AsyncMock):
             mock_client = AsyncMock()
             mock_client.is_authenticated = True
             mock_client.put = AsyncMock(return_value=mock_response)
@@ -411,7 +413,7 @@ async def test_update_acl_rule_success(mock_settings):
 
 @pytest.mark.asyncio
 async def test_update_acl_rule_dry_run(mock_settings):
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = _prepare_client(AsyncMock())
         mock_client.is_authenticated = True
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -461,8 +463,8 @@ async def test_update_acl_rule_partial_fields(mock_settings):
         }
     }
 
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
-        with patch("src.tools.acls.audit_action", new_callable=AsyncMock):
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.acls.audit_action", new_callable=AsyncMock):
             mock_client = _prepare_client(AsyncMock())
             mock_client.is_authenticated = True
             mock_client.put = AsyncMock(return_value=mock_response)
@@ -486,8 +488,8 @@ async def test_update_acl_rule_partial_fields(mock_settings):
 
 @pytest.mark.asyncio
 async def test_delete_acl_rule_success(mock_settings):
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
-        with patch("src.tools.acls.audit_action", new_callable=AsyncMock):
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.acls.audit_action", new_callable=AsyncMock):
             mock_client = _prepare_client(AsyncMock())
             mock_client.is_authenticated = False
             mock_client.authenticate = AsyncMock()
@@ -512,7 +514,7 @@ async def test_delete_acl_rule_success(mock_settings):
 
 @pytest.mark.asyncio
 async def test_delete_acl_rule_dry_run(mock_settings):
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.is_authenticated = True
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -549,7 +551,7 @@ SITE_UUID = "88f7af54-98f8-306a-a1c7-c9349722b1f6"
 
 @pytest.fixture
 def local_settings(monkeypatch):
-    from src.config import Settings
+    from unifi_mcp_server.config import Settings
 
     monkeypatch.setenv("UNIFI_API_KEY", "test-api-key")
     monkeypatch.setenv("UNIFI_API_TYPE", "local")
@@ -571,7 +573,7 @@ def _local_client(mock_client_class, **responses) -> AsyncMock:
 @pytest.mark.asyncio
 async def test_list_acl_rules_local_mode_uses_local_integration_api(local_settings):
     """The Network integration API serves acl-rules on the local console too."""
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         client = _local_client(
             mock_client_class,
             get={"data": [{"id": "acl-1", "name": "Block IoT", "action": "BLOCK"}]},
@@ -588,7 +590,7 @@ async def test_list_acl_rules_local_mode_uses_local_integration_api(local_settin
 
 @pytest.mark.asyncio
 async def test_create_acl_rule_local_mode_posts_to_local_integration_api(local_settings):
-    with patch("src.tools.acls.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as mock_client_class:
         client = _local_client(
             mock_client_class, post={"id": "acl-9", "name": "Block cams", "action": "BLOCK"}
         )

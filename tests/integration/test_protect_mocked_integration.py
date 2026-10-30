@@ -7,10 +7,10 @@ from typing import Any
 import httpx
 import pytest
 
-from src.config import Settings
-from src.resources.protect import ProtectResource
-from src.tools.protect_cameras import get_protect_camera, list_protect_cameras
-from src.tools.protect_devices import (
+from unifi_mcp_server.config import Settings
+from unifi_mcp_server.resources.protect import ProtectResource
+from unifi_mcp_server.tools.protect_cameras import get_protect_camera, list_protect_cameras
+from unifi_mcp_server.tools.protect_devices import (
     get_protect_chime,
     get_protect_device,
     get_protect_light,
@@ -24,13 +24,13 @@ from src.tools.protect_devices import (
     update_protect_light,
     update_protect_sensor,
 )
-from src.tools.protect_events import (
+from unifi_mcp_server.tools.protect_events import (
     list_protect_device_updates,
     list_protect_events,
     send_protect_alarm_webhook,
 )
-from src.tools.protect_nvr import get_protect_nvr, list_protect_nvrs
-from src.tools.protect_views import (
+from unifi_mcp_server.tools.protect_nvr import get_protect_nvr, list_protect_nvrs
+from unifi_mcp_server.tools.protect_views import (
     create_protect_live_view,
     get_protect_live_view,
     get_protect_meta_info,

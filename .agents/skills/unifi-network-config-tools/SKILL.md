@@ -11,24 +11,24 @@ These tools read and change network configuration on the local gateway. Most of 
 
 | Module | Tools | Examples |
 |--------|-------|----------|
-| `src/tools/networks.py` | 4 | `get_network_details`, `list_vlans`, `get_subnet_info` |
-| `src/tools/network_config.py` | 3 | `create_network`, `update_network`, `delete_network` |
-| `src/tools/wifi.py` | 5 | `list_wlans`, `update_wlan`, `get_wlan_statistics` |
-| `src/tools/wans.py` | 6 | `list_wan_connections`, `create_dynamic_dns` |
-| `src/tools/dhcp_reservations.py` | 5 | `create_dhcp_reservation`, `remove_dhcp_reservation` |
-| `src/tools/dns_management.py` | 4 | `list_wan_dns`, `update_dns_filter` |
-| `src/tools/qos.py` | 3 | `list_traffic_routes`, `configure_smart_queue` |
-| `src/tools/port_profiles.py` | 8 | `update_port_profile`, `set_device_port_overrides` |
-| `src/tools/switching.py` | 6 | `list_switch_stacks`, `get_lag_details` (reads only) |
-| `src/tools/vpn.py` | 2 | `list_vpn_tunnels`, `list_vpn_servers` |
-| `src/tools/site_vpn.py` | 3 | `get_site_to_site_vpn`, `update_site_to_site_vpn` |
+| `src/unifi_mcp_server/tools/networks.py` | 4 | `get_network_details`, `list_vlans`, `get_subnet_info` |
+| `src/unifi_mcp_server/tools/network_config.py` | 3 | `create_network`, `update_network`, `delete_network` |
+| `src/unifi_mcp_server/tools/wifi.py` | 5 | `list_wlans`, `update_wlan`, `get_wlan_statistics` |
+| `src/unifi_mcp_server/tools/wans.py` | 6 | `list_wan_connections`, `create_dynamic_dns` |
+| `src/unifi_mcp_server/tools/dhcp_reservations.py` | 5 | `create_dhcp_reservation`, `remove_dhcp_reservation` |
+| `src/unifi_mcp_server/tools/dns_management.py` | 4 | `list_wan_dns`, `update_dns_filter` |
+| `src/unifi_mcp_server/tools/qos.py` | 3 | `list_traffic_routes`, `configure_smart_queue` |
+| `src/unifi_mcp_server/tools/port_profiles.py` | 8 | `update_port_profile`, `set_device_port_overrides` |
+| `src/unifi_mcp_server/tools/switching.py` | 6 | `list_switch_stacks`, `get_lag_details` (reads only) |
+| `src/unifi_mcp_server/tools/vpn.py` | 2 | `list_vpn_tunnels`, `list_vpn_servers` |
+| `src/unifi_mcp_server/tools/site_vpn.py` | 3 | `get_site_to_site_vpn`, `update_site_to_site_vpn` |
 
 ## Registration and modes
 
-- Every public `async def` is a tool (`register_module_tools()` in `src/tool_registry.py`). `port_profiles.get_device_by_mac` is public, so it is a tool too. Name helpers with a leading `_`.
-- All 11 modules are in `_LOCAL_TOOL_MODULES` (`src/main.py`). None of them exists in cloud modes.
+- Every public `async def` is a tool (`register_module_tools()` in `src/unifi_mcp_server/tool_registry.py`). `port_profiles.get_device_by_mac` is public, so it is a tool too. Name helpers with a leading `_`.
+- All 11 modules are in `_LOCAL_TOOL_MODULES` (`src/unifi_mcp_server/main.py`). None of them exists in cloud modes.
 - Some tools also refuse non-local modes at run time with a `_ensure_local_api()` helper: DHCP, DNS, Dynamic DNS and traffic routes.
-- `UNIFI_PROFILE` sets in `src/main.py`:
+- `UNIFI_PROFILE` sets in `src/unifi_mcp_server/main.py`:
 
   | Profile | Modules |
   |---------|---------|
@@ -54,7 +54,7 @@ Do not hardcode `/proxy/network/api/s/...`. The client passes such a path throug
 
 ## Models
 
-- Models: `src/models/network.py`, `src/models/wan.py`, `src/models/vpn.py`, `src/models/port_profile.py`, `src/models/switching.py`, `src/models/qos_profile.py`.
+- Models: `src/unifi_mcp_server/models/network.py`, `src/unifi_mcp_server/models/wan.py`, `src/unifi_mcp_server/models/vpn.py`, `src/unifi_mcp_server/models/port_profile.py`, `src/unifi_mcp_server/models/switching.py`, `src/unifi_mcp_server/models/qos_profile.py`.
 - Legacy records use `id` with `alias="_id"` and `populate_by_name=True`. Integration models use camelCase aliases.
 - Only `WANConnection` and `TrafficRoute` set `extra="allow"`. The rest drop unknown keys.
 - The legacy API calls the VLAN field `vlan`. `Network` aliases `vlan_id` to `vlan`, but `network_config` returns raw controller records, which contain `vlan`. The two modules return different shapes.
@@ -76,7 +76,7 @@ Do not hardcode `/proxy/network/api/s/...`. The client passes such a path throug
 Rules for them:
 
 - Optional update arguments must default to `None`. A default such as `False` overwrites the stored value on every update.
-- Take a record from a list reply with `first_response_item()` (`src/utils/helpers.py`), never with `[0]`.
+- Take a record from a list reply with `first_response_item()` (`src/unifi_mcp_server/utils/helpers.py`), never with `[0]`.
 - The controller rewrites some fields on its own. `port_profiles` re-reads the record and reports the differences (`_stored_value_warnings`). Do the same when you add a read-modify-write tool.
 - `set_device_port_overrides(merge=False)` replaces every override, and the `dns_filters` list in `update_dns_filter` replaces the whole list. Say so in the docstring of any argument that replaces a list.
 
@@ -86,10 +86,10 @@ Rules for them:
 
 - `UniFiClient` returns `{"data": ...}` for a reply that has a data key, and `{}` for an empty body. Handle a list or a dict.
 - 404 raises `ResourceNotFoundError`, 401 and 403 raise `AuthenticationError`, and other errors raise `APIError`.
-- The Redis read cache covers only the `networks` and `wifi` modules (`CACHED_MODULES` in `src/cache.py`). Tool names containing "statistics" are never cached.
+- The Redis read cache covers only the `networks` and `wifi` modules (`CACHED_MODULES` in `src/unifi_mcp_server/cache.py`). Tool names containing "statistics" are never cached.
 - Any write that is not a dry run clears every cached read for that controller. A write tool needs no cache code of its own.
-- `src/tools/wifi.py` passes WLAN output through `_redact_wlan()`. Keep that for any tool that returns WLAN records, because they contain passphrases.
-- `src/tools/site_vpn.py` passes VPN output through `_redact_vpn()`, which masks the IPsec pre-shared key. Do the same for any new tool that returns `networkconf` VPN records.
+- `src/unifi_mcp_server/tools/wifi.py` passes WLAN output through `_redact_wlan()`. Keep that for any tool that returns WLAN records, because they contain passphrases.
+- `src/unifi_mcp_server/tools/site_vpn.py` passes VPN output through `_redact_vpn()`, which masks the IPsec pre-shared key. Do the same for any new tool that returns `networkconf` VPN records.
 
 ## Tests
 
@@ -109,7 +109,7 @@ Rules for them:
 
 ## Known defects (not fixed)
 
-- `src/tools/site_vpn.py` sends `/ea/sites/{site_id}/rest/networkconf`, which the client translates to the legacy path with the site name, so a site UUID and a site name both work.
+- `src/unifi_mcp_server/tools/site_vpn.py` sends `/ea/sites/{site_id}/rest/networkconf`, which the client translates to the legacy path with the site name, so a site UUID and a site name both work.
 - The confirmation checks are not the same everywhere. `site_vpn` returns `{"error": ...}` where other modules raise, and the DHCP and DNS modules raise `ValueError` where others raise `ValidationError`.
 - Dry-run replies differ between modules: `{"dry_run": True, "would_create": ...}` in `network_config` and `{"status": "dry_run", ...}` in `dhcp_reservations`.
 - `qos.py` maps site UUIDs to names by hand through `client._site_uuid_to_name`, which the client now does for v2 paths anyway.

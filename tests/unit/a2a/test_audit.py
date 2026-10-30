@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/audit.py."""
+"""Unit tests for src/unifi_mcp_server/a2a/audit.py."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from typing import Any
 
 import pytest
 
-from src.a2a import audit as audit_module
-from src.a2a.audit import AuditLog, AuditLogger, get_audit_logger
+from unifi_mcp_server.a2a import audit as audit_module
+from unifi_mcp_server.a2a.audit import AuditLog, AuditLogger, get_audit_logger
 
 
 def make_entry(

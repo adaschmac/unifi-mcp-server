@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 
-from src.tools import client_management
-from src.utils import ValidationError
 from tests.integration.test_harness import TestEnvironment, TestSuite
+from unifi_mcp_server.tools import client_management
+from unifi_mcp_server.utils import ValidationError
 
 
 @pytest.mark.integration

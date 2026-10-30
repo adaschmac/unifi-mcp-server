@@ -8,9 +8,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.webhooks import receiver as receiver_module
-from src.webhooks.handlers import WebhookEventHandler
-from src.webhooks.receiver import WebhookEvent, WebhookReceiver
+from unifi_mcp_server.webhooks import receiver as receiver_module
+from unifi_mcp_server.webhooks.handlers import WebhookEventHandler
+from unifi_mcp_server.webhooks.receiver import WebhookEvent, WebhookReceiver
 
 
 @pytest.fixture

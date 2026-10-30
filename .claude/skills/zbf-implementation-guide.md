@@ -17,17 +17,17 @@ All ZBF tools are local-mode only.
 
 | Area | Module | Tools | API |
 |------|--------|-------|-----|
-| Policies | `src/tools/firewall_policies.py` | `list_firewall_policies`, `get_firewall_policy`, `create_firewall_policy`, `update_firewall_policy`, `delete_firewall_policy` | v2 `/firewall-policies` |
-| Zones (v2 view) | `src/tools/firewall_policies.py` | `list_firewall_zones_v2` | v2 `/firewall/zone` |
-| Policy overview | `src/tools/firewall_policies.py` | `get_zone_policy_matrix` | v2 policies plus integration zones, built locally |
-| Zones | `src/tools/firewall_zones.py` | `list_firewall_zones`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone` | integration `/firewall/zones` |
-| Zone networks | `src/tools/firewall_zones.py` | `assign_network_to_zone`, `unassign_network_from_zone`, `get_zone_networks` | integration zone `networkIds` |
+| Policies | `src/unifi_mcp_server/tools/firewall_policies.py` | `list_firewall_policies`, `get_firewall_policy`, `create_firewall_policy`, `update_firewall_policy`, `delete_firewall_policy` | v2 `/firewall-policies` |
+| Zones (v2 view) | `src/unifi_mcp_server/tools/firewall_policies.py` | `list_firewall_zones_v2` | v2 `/firewall/zone` |
+| Policy overview | `src/unifi_mcp_server/tools/firewall_policies.py` | `get_zone_policy_matrix` | v2 policies plus integration zones, built locally |
+| Zones | `src/unifi_mcp_server/tools/firewall_zones.py` | `list_firewall_zones`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone` | integration `/firewall/zones` |
+| Zone networks | `src/unifi_mcp_server/tools/firewall_zones.py` | `assign_network_to_zone`, `unassign_network_from_zone`, `get_zone_networks` | integration zone `networkIds` |
 
 Paths: v2 calls use `settings.get_v2_api_path(site_id)`, and integration calls use `settings.get_integration_path(...)` with a site UUID.
 
 ## What the UniFi API does not offer
 
-The UniFi API has no endpoint for a zone-to-zone policy matrix, for application blocking per zone, or for zone traffic statistics (`API.md`, "Zone-Based Firewall"). `src/tools/zbf_matrix.py` still holds stubs for those features. Every stub raises `NotImplementedError`, and `src/main.py` does not import the module, so none of them is registered. Do not register them. Users configure those features in the UniFi console.
+The UniFi API has no endpoint for a zone-to-zone policy matrix, for application blocking per zone, or for zone traffic statistics (`API.md`, "Zone-Based Firewall"). `src/unifi_mcp_server/tools/zbf_matrix.py` still holds stubs for those features. Every stub raises `NotImplementedError`, and `src/unifi_mcp_server/main.py` does not import the module, so none of them is registered. Do not register them. Users configure those features in the UniFi console.
 
 ## Facts to get right
 

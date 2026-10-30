@@ -1,6 +1,6 @@
 """Unit tests for list_firewall_policies tool.
 
-TDD: Tests for src/tools/firewall_policies.py list_firewall_policies
+TDD: Tests for src/unifi_mcp_server/tools/firewall_policies.py list_firewall_policies
 Based on API discovery in docs/research/TRAFFIC_RULES_API_DISCOVERY.md
 
 Endpoint: GET /proxy/network/v2/api/site/{site}/firewall-policies
@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 
 class TestListFirewallPolicies:
@@ -85,9 +85,9 @@ class TestListFirewallPolicies:
         self, local_settings: Settings, sample_policy_response: list[dict]
     ) -> None:
         """Test successful listing of firewall policies."""
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -106,9 +106,9 @@ class TestListFirewallPolicies:
     @pytest.mark.asyncio
     async def test_list_firewall_policies_empty_response(self, local_settings: Settings) -> None:
         """Test listing when no firewall policies exist."""
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -125,7 +125,7 @@ class TestListFirewallPolicies:
         self, cloud_settings: Settings
     ) -> None:
         """Test that cloud API raises NotImplementedError."""
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
         with pytest.raises(NotImplementedError) as exc_info:
             await list_firewall_policies("default", cloud_settings)
@@ -135,10 +135,10 @@ class TestListFirewallPolicies:
     @pytest.mark.asyncio
     async def test_list_firewall_policies_api_error(self, local_settings: Settings) -> None:
         """Test error handling when API returns an error."""
-        from src.tools.firewall_policies import list_firewall_policies
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.utils.exceptions import APIError
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -153,9 +153,9 @@ class TestListFirewallPolicies:
         self, local_settings: Settings, sample_policy_response: list[dict]
     ) -> None:
         """Test that the correct v2 API endpoint is called."""
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             MockClient.return_value.__aenter__.return_value = mock_client
             mock_client.is_authenticated = True
@@ -175,11 +175,11 @@ class TestListFirewallPolicies:
         self, local_settings: Settings, sample_policy_response: list[dict]
     ) -> None:
         """Test listing policies for a custom site ID."""
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
         custom_site_id = "my-custom-site"
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             MockClient.return_value.__aenter__.return_value = mock_client
             mock_client.is_authenticated = True
@@ -197,9 +197,9 @@ class TestListFirewallPolicies:
         self, local_settings: Settings, sample_policy_response: list[dict]
     ) -> None:
         """Test that response is validated through FirewallPolicy model."""
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -215,9 +215,9 @@ class TestListFirewallPolicies:
         self, local_settings: Settings, sample_policy_response: list[dict]
     ) -> None:
         """Test that client authenticates if not already authenticated."""
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -237,8 +237,8 @@ class TestListFirewallPolicies:
         Bug #72 (FIXED): The MatchingTarget enum now includes the 'APP' value that
         real UniFi controllers return. This test verifies the fix works correctly.
         """
-        from src.models.firewall_policy import MatchingTarget
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
         # API response with matching_target='APP' that previously caused validation error
         policy_with_app_target = [
@@ -263,7 +263,7 @@ class TestListFirewallPolicies:
             },
         ]
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             MockClient.return_value.__aenter__.return_value = mock_client
             mock_client.is_authenticated = True
@@ -288,8 +288,8 @@ class TestListFirewallPolicies:
         failed validation, and because the whole list is validated at once it
         took every other policy on the site down with it.
         """
-        from src.models.firewall_policy import MatchingTarget
-        from src.tools.firewall_policies import list_firewall_policies
+        from unifi_mcp_server.models.firewall_policy import MatchingTarget
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_policies
 
         policies_with_web_target = [
             {
@@ -332,7 +332,7 @@ class TestListFirewallPolicies:
             },
         ]
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             MockClient.return_value.__aenter__.return_value = mock_client
             mock_client.is_authenticated = True
@@ -399,9 +399,9 @@ class TestGetFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test successful retrieval of a firewall policy."""
-        from src.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -421,10 +421,10 @@ class TestGetFirewallPolicy:
     @pytest.mark.asyncio
     async def test_get_firewall_policy_not_found(self, local_settings: Settings) -> None:
         """Test that ResourceNotFoundError is raised when policy not found."""
-        from src.tools.firewall_policies import get_firewall_policy
-        from src.utils.exceptions import ResourceNotFoundError
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -441,7 +441,7 @@ class TestGetFirewallPolicy:
         self, cloud_settings: Settings
     ) -> None:
         """Test that cloud API raises NotImplementedError."""
-        from src.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
 
         with pytest.raises(NotImplementedError) as exc_info:
             await get_firewall_policy("682a0e42220317278bb0b2cb", "default", cloud_settings)
@@ -453,11 +453,11 @@ class TestGetFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test that the correct v2 API endpoint with policy_id is called."""
-        from src.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
 
         policy_id = "682a0e42220317278bb0b2cb"
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -478,11 +478,11 @@ class TestGetFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test handling of wrapped API response with 'data' key."""
-        from src.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
 
         wrapped_response = {"data": sample_policy}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -501,10 +501,10 @@ class TestGetFirewallPolicy:
         self, local_settings: Settings
     ) -> None:
         """Test that empty response raises ResourceNotFoundError."""
-        from src.tools.firewall_policies import get_firewall_policy
-        from src.utils.exceptions import ResourceNotFoundError
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -517,10 +517,10 @@ class TestGetFirewallPolicy:
     @pytest.mark.asyncio
     async def test_get_firewall_policy_api_error(self, local_settings: Settings) -> None:
         """Test error handling when API returns an error."""
-        from src.tools.firewall_policies import get_firewall_policy
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.utils.exceptions import APIError
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -535,9 +535,9 @@ class TestGetFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test that client authenticates if not already authenticated."""
-        from src.tools.firewall_policies import get_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import get_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -608,9 +608,9 @@ class TestUpdateFirewallPolicy:
         sample_updated_policy: dict,
     ) -> None:
         """Test successful update of a firewall policy with confirm=True."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -648,7 +648,7 @@ class TestUpdateFirewallPolicy:
         self, local_settings: Settings
     ) -> None:
         """Test that update is rejected without confirm=True."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         with pytest.raises(ValueError) as exc_info:
             await update_firewall_policy(
@@ -666,9 +666,9 @@ class TestUpdateFirewallPolicy:
         self, local_settings: Settings, sample_existing_policy: dict
     ) -> None:
         """Test dry_run mode returns preview without making changes."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -693,10 +693,10 @@ class TestUpdateFirewallPolicy:
     @pytest.mark.asyncio
     async def test_update_firewall_policy_not_found(self, local_settings: Settings) -> None:
         """Test 404 when policy not found."""
-        from src.tools.firewall_policies import update_firewall_policy
-        from src.utils.exceptions import ResourceNotFoundError
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -719,7 +719,7 @@ class TestUpdateFirewallPolicy:
         self, cloud_settings: Settings
     ) -> None:
         """Test that cloud API raises NotImplementedError."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         with pytest.raises(NotImplementedError) as exc_info:
             await update_firewall_policy(
@@ -741,9 +741,9 @@ class TestUpdateFirewallPolicy:
     ) -> None:
         """A name override must be merged into the existing object and the
         full object PUT back (partial PUT is rejected by the v2 endpoint)."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -778,12 +778,12 @@ class TestUpdateFirewallPolicy:
         sample_existing_policy: dict,
     ) -> None:
         """Toggling enabled=False flows through without touching other fields."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         disabled_policy = sample_existing_policy.copy()
         disabled_policy["enabled"] = False
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -814,12 +814,12 @@ class TestUpdateFirewallPolicy:
     ) -> None:
         """Enabling ``logging`` forces CPU inspection so the matched flows
         show up in the v2 traffic-flows endpoint."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         logging_on = sample_existing_policy.copy()
         logging_on["logging"] = True
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -847,11 +847,11 @@ class TestUpdateFirewallPolicy:
         self, local_settings: Settings, sample_existing_policy: dict
     ) -> None:
         """Predefined system policies must not be updatable."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         system_policy = {**sample_existing_policy, "predefined": True}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -871,7 +871,7 @@ class TestUpdateFirewallPolicy:
     async def test_update_firewall_policy_invalid_ip_version_raises(
         self, local_settings: Settings
     ) -> None:
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         with pytest.raises(ValueError, match="Invalid ip_version"):
             await update_firewall_policy(
@@ -894,11 +894,11 @@ class TestUpdateFirewallPolicy:
         Bug #73 (FIXED): update_firewall_policy() now uses _site_uuid_to_name mapping
         to normalize UUIDs to short-names like "default" before building the endpoint.
         """
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         site_uuid = "62d2c5fdbf6b8c7ef80c0f2a"  # Example site UUID
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             MockClient.return_value.__aenter__.return_value = mock_client
             mock_client.is_authenticated = True
@@ -995,9 +995,9 @@ class TestDeleteFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test successful deletion of a firewall policy with confirm=True."""
-        from src.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1022,7 +1022,7 @@ class TestDeleteFirewallPolicy:
         self, local_settings: Settings
     ) -> None:
         """Test that delete is rejected without confirm=True."""
-        from src.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
 
         with pytest.raises(ValueError) as exc_info:
             await delete_firewall_policy(
@@ -1039,9 +1039,9 @@ class TestDeleteFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test dry_run mode returns what would be deleted without making changes."""
-        from src.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1065,10 +1065,10 @@ class TestDeleteFirewallPolicy:
     @pytest.mark.asyncio
     async def test_delete_firewall_policy_not_found(self, local_settings: Settings) -> None:
         """Test 404 when policy not found."""
-        from src.tools.firewall_policies import delete_firewall_policy
-        from src.utils.exceptions import ResourceNotFoundError
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1090,7 +1090,7 @@ class TestDeleteFirewallPolicy:
         self, cloud_settings: Settings
     ) -> None:
         """Test that cloud API raises NotImplementedError."""
-        from src.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
 
         with pytest.raises(NotImplementedError) as exc_info:
             await delete_firewall_policy(
@@ -1107,9 +1107,9 @@ class TestDeleteFirewallPolicy:
         self, local_settings: Settings, predefined_policy: dict
     ) -> None:
         """Test that predefined system rules cannot be deleted."""
-        from src.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1132,11 +1132,11 @@ class TestDeleteFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test that the correct v2 API endpoint with policy_id is called."""
-        from src.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
 
         policy_id = "682a0e42220317278bb0b2cb"
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1163,9 +1163,9 @@ class TestDeleteFirewallPolicy:
         self, local_settings: Settings, sample_policy: dict
     ) -> None:
         """Test that client authenticates if not already authenticated."""
-        from src.tools.firewall_policies import delete_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import delete_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1230,9 +1230,9 @@ class TestCreateFirewallPolicy:
         self, local_settings: Settings, sample_created_policy: dict
     ) -> None:
         """Test successful creation of a firewall policy with confirm=True."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1258,7 +1258,7 @@ class TestCreateFirewallPolicy:
         self, local_settings: Settings
     ) -> None:
         """Test that create is rejected without confirm=True (safety check)."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
         with pytest.raises(ValueError) as exc_info:
             await create_firewall_policy(
@@ -1274,9 +1274,9 @@ class TestCreateFirewallPolicy:
     @pytest.mark.asyncio
     async def test_create_firewall_policy_dry_run_mode(self, local_settings: Settings) -> None:
         """Test dry_run mode returns preview without making changes."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1298,10 +1298,10 @@ class TestCreateFirewallPolicy:
     @pytest.mark.asyncio
     async def test_create_firewall_policy_api_error(self, local_settings: Settings) -> None:
         """Test error handling when API returns an error."""
-        from src.tools.firewall_policies import create_firewall_policy
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.utils.exceptions import APIError
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1322,7 +1322,7 @@ class TestCreateFirewallPolicy:
         self, cloud_settings: Settings
     ) -> None:
         """Test that cloud API raises NotImplementedError."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
         with pytest.raises(NotImplementedError) as exc_info:
             await create_firewall_policy(
@@ -1340,9 +1340,9 @@ class TestCreateFirewallPolicy:
         self, local_settings: Settings, sample_created_policy: dict
     ) -> None:
         """Test that the correct v2 API endpoint is called."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1368,7 +1368,7 @@ class TestCreateFirewallPolicy:
         self, local_settings: Settings, sample_created_policy: dict
     ) -> None:
         """Test creation with specific zone IDs resolved via the v2 zone index."""
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         # Prime the zone cache so tests don't need to mock /firewall/zone.
         _zone_cache["default"] = {
@@ -1376,7 +1376,7 @@ class TestCreateFirewallPolicy:
             "zone-lan": "zone-lan",
         }
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1410,7 +1410,7 @@ class TestCreateFirewallPolicy:
     ) -> None:
         """Zone names ('Internal') and external UUIDs should resolve to the
         internal ObjectId via the v2 zone index."""
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         # Simulated zone index: zone name + external UUID → internal _id
         _zone_cache["default"] = {
@@ -1421,7 +1421,7 @@ class TestCreateFirewallPolicy:
             "690d6e64e9671173fd71c58b": "690d6e64e9671173fd71c58b",
         }
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1450,11 +1450,11 @@ class TestCreateFirewallPolicy:
         self, local_settings: Settings
     ) -> None:
         """Unresolvable zone identifiers raise ValueError with a helpful hint."""
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"known": "abc123"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1478,7 +1478,7 @@ class TestCreateFirewallPolicy:
     @pytest.mark.asyncio
     async def test_create_firewall_policy_invalid_action(self, local_settings: Settings) -> None:
         """Test that invalid action raises ValueError."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
         with pytest.raises(ValueError) as exc_info:
             await create_firewall_policy(
@@ -1496,7 +1496,7 @@ class TestCreateFirewallPolicy:
     @pytest.mark.asyncio
     async def test_create_firewall_policy_allow_action(self, local_settings: Settings) -> None:
         """Test creation with ALLOW action."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
         allow_policy = {
             "_id": "allow-policy-id",
@@ -1512,7 +1512,7 @@ class TestCreateFirewallPolicy:
             "destination": {"zone_id": "zone-wan", "matching_target": "ANY"},
         }
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1537,9 +1537,9 @@ class TestCreateFirewallPolicy:
         self, local_settings: Settings, sample_created_policy: dict
     ) -> None:
         """Test that client authenticates if not already authenticated."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1574,7 +1574,7 @@ class TestListFirewallZonesV2:
         """Each returned entry exposes both internal and external IDs plus
         zone name and zone_key so callers can look up zones by any
         identifier."""
-        from src.tools.firewall_policies import list_firewall_zones_v2
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_zones_v2
 
         raw_zones = [
             {
@@ -1595,7 +1595,7 @@ class TestListFirewallZonesV2:
             },
         ]
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1632,11 +1632,11 @@ class TestListFirewallZonesV2:
         ``{"data": None}`` (how UniFiClient surfaces an empty reply) must
         take this path too, not raise TypeError.
         """
-        from src.tools.firewall_policies import list_firewall_zones_v2
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.tools.firewall_policies import list_firewall_zones_v2
+        from unifi_mcp_server.utils.exceptions import APIError
 
         for empty_response in ({"data": None}, {"data": []}, []):
-            with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+            with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
                 mock_client = AsyncMock()
                 mock_client._site_uuid_to_name = {}
                 MockClient.return_value.__aenter__.return_value = mock_client
@@ -1664,7 +1664,7 @@ class TestCreateFirewallPolicyConfirmCoercion:
     @pytest.mark.asyncio
     async def test_string_false_confirm_does_not_bypass(self, local_settings: Settings) -> None:
         """confirm='False' (a truthy string) must not bypass the gate."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
         with pytest.raises(ValueError, match="requires confirm=True"):
             await create_firewall_policy(
@@ -1678,11 +1678,11 @@ class TestCreateFirewallPolicyConfirmCoercion:
     @pytest.mark.asyncio
     async def test_string_true_confirm_is_accepted(self, local_settings: Settings) -> None:
         """confirm='true' (JSON-RPC stringified bool) must be coerced."""
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"zone-a": "zone-a", "zone-b": "zone-b"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1713,7 +1713,7 @@ class TestCreateFirewallPolicyConfirmCoercion:
 
     @pytest.mark.asyncio
     async def test_invalid_ip_version_raises(self, local_settings: Settings) -> None:
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
         with pytest.raises(ValueError, match="Invalid ip_version"):
             await create_firewall_policy(
@@ -1755,11 +1755,11 @@ class TestCreateFirewallPolicyPortMatching:
     async def test_specific_destination_port_auto_sets_mode(
         self, local_settings: Settings, created_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"z1": "z1", "z2": "z2"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1792,11 +1792,11 @@ class TestCreateFirewallPolicyPortMatching:
     async def test_destination_port_range(
         self, local_settings: Settings, created_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"z1": "z1", "z2": "z2"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1825,11 +1825,11 @@ class TestCreateFirewallPolicyPortMatching:
     async def test_port_group_id_auto_sets_object_mode(
         self, local_settings: Settings, created_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"z1": "z1", "z2": "z2"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1859,11 +1859,11 @@ class TestCreateFirewallPolicyPortMatching:
     async def test_port_and_port_group_id_conflict(
         self, local_settings: Settings, created_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"z1": "z1", "z2": "z2"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1889,11 +1889,11 @@ class TestCreateFirewallPolicyPortMatching:
     async def test_match_opposite_ports_passthrough(
         self, local_settings: Settings, created_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"z1": "z1", "z2": "z2"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1921,11 +1921,11 @@ class TestCreateFirewallPolicyPortMatching:
     @pytest.mark.asyncio
     async def test_specific_without_port_raises(self, local_settings: Settings) -> None:
         """port_matching_type='SPECIFIC' without a port value must error."""
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"z1": "z1", "z2": "z2"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -1949,11 +1949,11 @@ class TestCreateFirewallPolicyPortMatching:
     @pytest.mark.asyncio
     async def test_object_without_port_group_id_raises(self, local_settings: Settings) -> None:
         """port_matching_type='OBJECT' without a port_group_id must error."""
-        from src.tools.firewall_policies import _zone_cache, create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import _zone_cache, create_firewall_policy
 
         _zone_cache["default"] = {"z1": "z1", "z2": "z2"}
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2014,9 +2014,9 @@ class TestUpdateFirewallPolicyPortMatching:
     async def test_switch_object_to_specific_clears_port_group_id(
         self, local_settings: Settings, existing_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2045,9 +2045,9 @@ class TestUpdateFirewallPolicyPortMatching:
     async def test_switch_to_any_clears_both_port_fields(
         self, local_settings: Settings, existing_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2072,9 +2072,9 @@ class TestUpdateFirewallPolicyPortMatching:
     async def test_change_only_port_group_id(
         self, local_settings: Settings, existing_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2100,9 +2100,9 @@ class TestUpdateFirewallPolicyPortMatching:
         self, local_settings: Settings, existing_policy: dict
     ) -> None:
         """A name-only update must leave existing port settings alone."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2126,9 +2126,9 @@ class TestUpdateFirewallPolicyPortMatching:
     async def test_port_and_port_group_id_conflict_on_update(
         self, local_settings: Settings, existing_policy: dict
     ) -> None:
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2186,9 +2186,9 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_existing_policy: dict, sample_updated_policy: dict
     ) -> None:
         """icmp_typename flows into the PUT body."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2212,9 +2212,9 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_existing_policy: dict, sample_updated_policy: dict
     ) -> None:
         """icmp_v6_typename flows into the PUT body."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2238,9 +2238,9 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_existing_policy: dict, sample_updated_policy: dict
     ) -> None:
         """match_ip_sec=True flows into the PUT body."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2264,9 +2264,9 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_existing_policy: dict, sample_updated_policy: dict
     ) -> None:
         """match_opposite_protocol=True flows into the PUT body."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2290,9 +2290,9 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_existing_policy: dict, sample_updated_policy: dict
     ) -> None:
         """connection_state_type='ALL' is uppercased and placed in PUT body."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2317,9 +2317,9 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_existing_policy: dict, sample_updated_policy: dict
     ) -> None:
         """connection_state_type=CUSTOM with states flows into PUT body."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2345,7 +2345,7 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings
     ) -> None:
         """CUSTOM type without connection_states raises ValueError."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         with pytest.raises(ValueError, match="connection_states must be non-empty"):
             await update_firewall_policy(
@@ -2361,7 +2361,7 @@ class TestUpdateFirewallPolicyNewFields:
         self, local_settings: Settings
     ) -> None:
         """Providing connection_states without connection_state_type raises ValueError."""
-        from src.tools.firewall_policies import update_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import update_firewall_policy
 
         with pytest.raises(ValueError, match="connection_state_type='CUSTOM' is required"):
             await update_firewall_policy(
@@ -2405,9 +2405,9 @@ class TestCreateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_created_policy: dict
     ) -> None:
         """icmp_typename flows into the POST body."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2431,9 +2431,9 @@ class TestCreateFirewallPolicyNewFields:
         self, local_settings: Settings, sample_created_policy: dict
     ) -> None:
         """connection_state_type=CUSTOM with states flows into the POST body."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2459,7 +2459,7 @@ class TestCreateFirewallPolicyNewFields:
         self, local_settings: Settings
     ) -> None:
         """CUSTOM type without connection_states raises ValueError."""
-        from src.tools.firewall_policies import create_firewall_policy
+        from unifi_mcp_server.tools.firewall_policies import create_firewall_policy
 
         with pytest.raises(ValueError, match="connection_states must be non-empty"):
             await create_firewall_policy(
@@ -2541,9 +2541,9 @@ class TestGetZonePolicyMatrix:
         sample_policies: list[dict],
     ) -> None:
         """Test matrix returns zones, matrix, and summary."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2567,9 +2567,9 @@ class TestGetZonePolicyMatrix:
         sample_policies: list[dict],
     ) -> None:
         """Zones and policies are fetched via asyncio.gather (both calls fire)."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2594,9 +2594,9 @@ class TestGetZonePolicyMatrix:
         sample_policies: list[dict],
     ) -> None:
         """Test policies are grouped by source/destination zone pair."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2627,9 +2627,9 @@ class TestGetZonePolicyMatrix:
         sample_policies: list[dict],
     ) -> None:
         """Test summary counts are correct."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2652,9 +2652,9 @@ class TestGetZonePolicyMatrix:
         sample_policies: list[dict],
     ) -> None:
         """Test that policy summaries include required fields."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2675,9 +2675,9 @@ class TestGetZonePolicyMatrix:
         sample_zones_response: dict,
     ) -> None:
         """Test empty policies returns empty matrix."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2699,9 +2699,9 @@ class TestGetZonePolicyMatrix:
         sample_policies: list[dict],
     ) -> None:
         """Test zones list is included with name and id."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
-        with patch("src.tools.firewall_policies.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_policies.UniFiClient") as MockClient:
             mock_client = AsyncMock()
             mock_client._site_uuid_to_name = {}
             MockClient.return_value.__aenter__.return_value = mock_client
@@ -2719,7 +2719,7 @@ class TestGetZonePolicyMatrix:
     @pytest.mark.asyncio
     async def test_get_zone_policy_matrix_cloud_api_raises(self, cloud_settings: Settings) -> None:
         """Test cloud API raises NotImplementedError."""
-        from src.tools.firewall_policies import get_zone_policy_matrix
+        from unifi_mcp_server.tools.firewall_policies import get_zone_policy_matrix
 
         with pytest.raises(NotImplementedError):
             await get_zone_policy_matrix("default", cloud_settings)

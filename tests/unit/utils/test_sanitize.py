@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.utils.sanitize import (
+from unifi_mcp_server.utils.sanitize import (
     _redact_value,
     is_production,
     sanitize_dict,
@@ -252,7 +252,7 @@ class TestSanitizeCredentials:
 
     def test_credentials_redacted_identifiers_kept(self):
         """Secrets go, identifiers stay."""
-        from src.utils.sanitize import sanitize_credentials
+        from unifi_mcp_server.utils.sanitize import sanitize_credentials
 
         result = sanitize_credentials(
             {
@@ -274,7 +274,7 @@ class TestSanitizeCredentials:
 
     def test_recurses_into_nested_structures(self):
         """Nested dicts and lists of dicts are covered."""
-        from src.utils.sanitize import sanitize_credentials
+        from unifi_mcp_server.utils.sanitize import sanitize_credentials
 
         result = sanitize_credentials(
             {"outer": {"token": "abc"}, "items": [{"psk": "xyz"}, {"vlan": 10}]}
@@ -286,13 +286,13 @@ class TestSanitizeCredentials:
 
     def test_none_stays_none(self):
         """An unset credential is not turned into a redaction marker."""
-        from src.utils.sanitize import sanitize_credentials
+        from unifi_mcp_server.utils.sanitize import sanitize_credentials
 
         assert sanitize_credentials({"password": None})["password"] is None
 
     def test_non_dict_passthrough(self):
         """Non-dict input is returned unchanged."""
-        from src.utils.sanitize import sanitize_credentials
+        from unifi_mcp_server.utils.sanitize import sanitize_credentials
 
         assert sanitize_credentials("not-a-dict") == "not-a-dict"
 

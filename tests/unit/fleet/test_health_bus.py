@@ -23,9 +23,14 @@ fakeredis = pytest.importorskip("fakeredis")
 # sys.modules["redis"].
 pytest.importorskip("redis.asyncio")
 
-from src.api.pool import CircuitBreaker, CircuitOpenError, ClientPool, connection_key  # noqa: E402
-from src.config.config import Settings  # noqa: E402
-from src.fleet.bus import HEALTH_CHANNEL, HealthBus  # noqa: E402
+from unifi_mcp_server.api.pool import (  # noqa: E402
+    CircuitBreaker,
+    CircuitOpenError,
+    ClientPool,
+    connection_key,
+)
+from unifi_mcp_server.config.config import Settings  # noqa: E402
+from unifi_mcp_server.fleet.bus import HEALTH_CHANNEL, HealthBus  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -182,8 +187,10 @@ class TestBus:
 
 class TestServerWiring:
     def test_no_listener_without_redis(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        settings = _settings(monkeypatch)  # before importing src.main, which reads them
-        from src.main import start_health_listener
+        settings = _settings(
+            monkeypatch
+        )  # before importing unifi_mcp_server.main, which reads them
+        from unifi_mcp_server.main import start_health_listener
 
         assert start_health_listener(settings, ClientPool()) is None
 
@@ -191,7 +198,7 @@ class TestServerWiring:
         self, monkeypatch: pytest.MonkeyPatch, redis_port: int
     ) -> None:
         settings = _settings(monkeypatch, f"redis://127.0.0.1:{redis_port}/0")
-        from src.main import start_health_listener
+        from unifi_mcp_server.main import start_health_listener
 
         task = start_health_listener(settings, ClientPool())
         assert task is not None

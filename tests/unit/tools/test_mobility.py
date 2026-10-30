@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import mobility
+from unifi_mcp_server.tools import mobility
 
 _WORKSPACE = "11111111-2222-3333-4444-555555555555"
 _DEVICE = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
@@ -35,7 +35,7 @@ def _make_client(response):
 
 
 def _patch_client(cm):
-    return patch("src.tools.mobility.SiteManagerClient", return_value=cm)
+    return patch("unifi_mcp_server.tools.mobility.SiteManagerClient", return_value=cm)
 
 
 # ── reads ────────────────────────────────────────────────────────────

@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.port_profiles as port_profiles_module
-from src.tools.port_profiles import (
+import unifi_mcp_server.tools.port_profiles as port_profiles_module
+from unifi_mcp_server.tools.port_profiles import (
     create_port_profile,
     delete_port_profile,
     get_device_by_mac,
@@ -15,7 +15,11 @@ from src.tools.port_profiles import (
     set_device_port_overrides,
     update_port_profile,
 )
-from src.utils.exceptions import DuplicateResourceError, ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import (
+    DuplicateResourceError,
+    ResourceNotFoundError,
+    ValidationError,
+)
 
 
 @pytest.fixture

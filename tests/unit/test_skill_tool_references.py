@@ -21,7 +21,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILLS_DIR = ROOT / "skills"
-FLEET_DIR = ROOT / "src" / "fleet"
+FLEET_DIR = ROOT / "src" / "unifi_mcp_server" / "fleet"
 
 #: The environment the registry is read under. The local mode registers the
 #: full tool surface.
@@ -73,13 +73,13 @@ def _registered_tools() -> set[str]:
     """Return the tool names the server registers in local mode.
 
     The registry is read in a subprocess. Importing the server in-process
-    would reuse whatever ``src.main`` another test module already cached
+    would reuse whatever ``unifi_mcp_server.main`` another test module already cached
     under a different environment, and the tool surface is what this test
     compares against. A subprocess gives a clean import every time and
     leaves the test session's module cache alone.
     """
     script = (
-        "import src.main as M\n"
+        "import unifi_mcp_server.main as M\n"
         "print('\\n'.join(sorted("
         "k[len('tool:'):].split('@', 1)[0] "
         "for k in M.mcp._local_provider._components if k.startswith('tool:'))))\n"
@@ -105,7 +105,7 @@ def _registered_tools_by_module() -> dict[str, list[str]]:
     the module that defines its function.
     """
     script = (
-        "import src.main as M\n"
+        "import unifi_mcp_server.main as M\n"
         "out = {}\n"
         "for key, component in M.mcp._local_provider._components.items():\n"
         "    if not key.startswith('tool:'):\n"
@@ -135,7 +135,7 @@ def _registered_tools_by_module() -> dict[str, list[str]]:
 
 def _registered_tool_module_count() -> int:
     """Return how many tool modules the server registers in local mode."""
-    script = "import src.main as M\n" "print(len(M._TOOL_MODULES))\n"
+    script = "import unifi_mcp_server.main as M\n" "print(len(M._TOOL_MODULES))\n"
     result = subprocess.run(
         [sys.executable, "-c", script],
         cwd=str(ROOT),
@@ -319,7 +319,9 @@ class TestCorrectedSkills:
         """The Protect skill's module, function and tool counts are exact."""
         text = (SKILLS_DIR / "unifi-protect-tools" / "SKILL.md").read_text()
         protect = _registered_tools_by_module()
-        protect_modules = {module for module in protect if module.startswith("src.tools.protect_")}
+        protect_modules = {
+            module for module in protect if module.startswith("unifi_mcp_server.tools.protect_")
+        }
 
         assert f"{len(protect_modules)} modules" in text
         registered = sum(len(protect[module]) for module in protect_modules)

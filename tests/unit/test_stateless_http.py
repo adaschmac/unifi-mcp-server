@@ -17,7 +17,7 @@ import pytest
 from fastmcp import FastMCP
 from starlette.middleware import Middleware
 
-from src.utils.session_guard import SessionlessRequestGuard
+from unifi_mcp_server.utils.session_guard import SessionlessRequestGuard
 
 HEADERS = {"accept": "application/json, text/event-stream", "content-type": "application/json"}
 CALL = {

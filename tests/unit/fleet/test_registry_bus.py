@@ -20,9 +20,9 @@ fakeredis = pytest.importorskip("fakeredis")
 # Bound at import, before tests/unit/test_cache.py stubs sys.modules["redis"].
 import redis.asyncio  # noqa: E402,F401
 
-from src.config.config import Settings  # noqa: E402
-from src.fleet.bus import RegistryBus  # noqa: E402
-from src.fleet.postgres_registry import PostgresRegistry  # noqa: E402
+from unifi_mcp_server.config.config import Settings  # noqa: E402
+from unifi_mcp_server.fleet.bus import RegistryBus  # noqa: E402
+from unifi_mcp_server.fleet.postgres_registry import PostgresRegistry  # noqa: E402
 
 
 @pytest.fixture(scope="module")

@@ -57,17 +57,17 @@ Identify all components needed:
 
 **Component Checklist:**
 
-1. **Data Models** (`src/models/`)
+1. **Data Models** (`src/unifi_mcp_server/models/`)
    - Pydantic models for API responses
    - Validation rules
    - Type-safe structures
 
-2. **API Client Integration** (`src/api/client.py`)
+2. **API Client Integration** (`src/unifi_mcp_server/api/client.py`)
    - New endpoint methods (if needed)
    - Request/response handling
    - Error handling patterns
 
-3. **MCP Tools** (`src/tools/`)
+3. **MCP Tools** (`src/unifi_mcp_server/tools/`)
    - Read-only tools (list, get)
    - Mutating tools (create, update, delete)
    - Specialized tools (apply templates, etc.)
@@ -83,7 +83,7 @@ Identify all components needed:
    - Usage examples
    - Best practices guide
 
-6. **Integration** (`src/main.py`)
+6. **Integration** (`src/unifi_mcp_server/main.py`)
    - Register tools with MCP server
    - Initialize caching if needed
 
@@ -148,7 +148,7 @@ async def explore_qos():
 Create type-safe models:
 
 ```python
-# src/models/qos.py
+# src/unifi_mcp_server/models/qos.py
 
 from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Literal
@@ -199,7 +199,7 @@ class ProAVProfile(BaseModel):
 # tests/unit/test_qos_models.py
 
 import pytest
-from src.models.qos import QoSProfile, TrafficRoute
+from unifi_mcp_server.models.qos import QoSProfile, TrafficRoute
 
 class TestQoSProfile:
     def test_valid_profile(self):
@@ -342,11 +342,11 @@ Errors:
 **Step 1: Create Tool File**
 
 ```python
-# src/tools/qos.py
+# src/unifi_mcp_server/tools/qos.py
 
 from fastmcp import FastMCP
-from src.api.client import UniFiClient
-from src.models.qos import QoSProfile, TrafficRoute
+from unifi_mcp_server.api.client import UniFiClient
+from unifi_mcp_server.models.qos import QoSProfile, TrafficRoute
 from typing import List, Optional
 
 mcp = FastMCP("QoS Tools")
@@ -445,7 +445,7 @@ Use `test-strategy` skill to create comprehensive tests:
 
 import pytest
 from unittest.mock import AsyncMock
-from src.tools.qos import list_qos_profiles, create_qos_profile
+from unifi_mcp_server.tools.qos import list_qos_profiles, create_qos_profile
 
 @pytest.mark.asyncio
 async def test_list_qos_profiles(mock_unifi_client):
@@ -488,9 +488,9 @@ async def test_create_qos_profile_validates_priority(mock_unifi_client):
 **Step 3: Register Tools with MCP Server**
 
 ```python
-# src/main.py
+# src/unifi_mcp_server/main.py
 
-from src.tools.qos import (
+from unifi_mcp_server.tools.qos import (
     list_qos_profiles,
     get_qos_profile,
     create_qos_profile,
@@ -667,8 +667,8 @@ Load for context:
 - `DEVELOPMENT_PLAN.md` - Feature requirements and roadmap
 - `TODO.md` - Implementation progress tracking
 - `API.md` - Existing tool patterns
-- `src/models/*.py` - Existing model patterns
-- `src/tools/*.py` - Existing tool implementations
+- `src/unifi_mcp_server/models/*.py` - Existing model patterns
+- `src/unifi_mcp_server/tools/*.py` - Existing tool implementations
 - `tests/unit/*.py` - Existing test patterns
 
 ## Success Metrics

@@ -95,7 +95,7 @@ services:
         - -c
         - |
           import sys, urllib.request
-          from src.config import Settings
+          from unifi_mcp_server.config import Settings
           s = Settings()
           if s.server_transport.value == "stdio":
               sys.exit(0)

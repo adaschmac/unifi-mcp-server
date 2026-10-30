@@ -1,11 +1,11 @@
-"""Caller identity (src/access.py)."""
+"""Caller identity (src/unifi_mcp_server/access.py)."""
 
 from typing import Any
 
 import pytest
 from fastmcp.server.auth import AccessToken
 
-from src.access import (
+from unifi_mcp_server.access import (
     LOCAL_PRINCIPAL,
     PermissionDeniedError,
     Principal,
@@ -13,8 +13,8 @@ from src.access import (
     request_principal,
     token_fingerprint,
 )
-from src.tool_registry import _make_tool_wrapper
-from src.utils import tool_kind
+from unifi_mcp_server.tool_registry import _make_tool_wrapper
+from unifi_mcp_server.utils import tool_kind
 
 TOKEN = "s3cret-bearer-token-value"  # pragma: allowlist secret
 
@@ -29,7 +29,7 @@ def test_no_request_is_the_local_principal():
 
 
 def test_env_token_is_break_glass_fleet_admin(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setattr("src.access.get_access_token", _access_token)
+    monkeypatch.setattr("unifi_mcp_server.access.get_access_token", _access_token)
 
     principal = request_principal()
 
@@ -40,7 +40,7 @@ def test_env_token_is_break_glass_fleet_admin(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_principal_never_contains_the_token(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setattr("src.access.get_access_token", _access_token)
+    monkeypatch.setattr("unifi_mcp_server.access.get_access_token", _access_token)
 
     principal = request_principal()
 
@@ -53,7 +53,7 @@ def test_distinct_tokens_get_distinct_ids():
 
 
 async def test_wrapper_binds_principal_for_the_call_only(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setattr("src.access.get_access_token", _access_token)
+    monkeypatch.setattr("unifi_mcp_server.access.get_access_token", _access_token)
     seen: list[Any] = []
 
     @tool_kind.read_tool
@@ -121,7 +121,7 @@ def test_issued_token_claims_become_the_principal(monkeypatch: pytest.MonkeyPatc
         "controller_labels": {"group": "retail"},
     }
     monkeypatch.setattr(
-        "src.access.get_access_token",
+        "unifi_mcp_server.access.get_access_token",
         lambda: AccessToken(token="umcp_x", client_id="ops-bot", scopes=[], claims=claims),
     )
 
@@ -145,7 +145,7 @@ def test_local_role_can_be_lowered():
 @pytest.mark.parametrize("role", ["viewer", "operator", "admin"])
 def test_static_token_role_becomes_the_principal(monkeypatch: pytest.MonkeyPatch, role):
     monkeypatch.setattr(
-        "src.access.get_access_token",
+        "unifi_mcp_server.access.get_access_token",
         lambda: AccessToken(
             token=TOKEN, client_id="mcp-client", scopes=[], claims={"static_role": role}
         ),
@@ -160,7 +160,7 @@ def test_static_token_role_becomes_the_principal(monkeypatch: pytest.MonkeyPatch
 
 def test_static_fleet_admin_token_stays_break_glass(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
-        "src.access.get_access_token",
+        "unifi_mcp_server.access.get_access_token",
         lambda: AccessToken(
             token=TOKEN, client_id="mcp-client", scopes=[], claims={"static_role": "fleet-admin"}
         ),
@@ -174,7 +174,7 @@ def test_static_fleet_admin_token_stays_break_glass(monkeypatch: pytest.MonkeyPa
 
 def test_static_token_with_unknown_role_is_refused(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
-        "src.access.get_access_token",
+        "unifi_mcp_server.access.get_access_token",
         lambda: AccessToken(
             token=TOKEN, client_id="mcp-client", scopes=[], claims={"static_role": "root"}
         ),
@@ -186,7 +186,7 @@ def test_static_token_with_unknown_role_is_refused(monkeypatch: pytest.MonkeyPat
 
 async def test_static_viewer_token_cannot_write(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
-        "src.access.get_access_token",
+        "unifi_mcp_server.access.get_access_token",
         lambda: AccessToken(
             token=TOKEN, client_id="mcp-client", scopes=[], claims={"static_role": "viewer"}
         ),

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.diagnostics import (
+from unifi_mcp_server.tools.diagnostics import (
     get_historical_stats,
     get_network_references,
     get_spectrum_scan,
@@ -14,7 +14,7 @@ from src.tools.diagnostics import (
     run_speed_test,
     start_spectrum_scan,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -66,7 +66,7 @@ class TestGetNetworkReferences:
             }
         }
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_network_references("site-1", "net-123", mock_settings)
@@ -83,7 +83,7 @@ class TestGetNetworkReferences:
         """Test network references with empty response."""
         response = {"data": {"referenceResources": []}}
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_network_references("site-1", "net-123", mock_settings)
@@ -104,7 +104,7 @@ class TestRunSpeedTest:
         """Test successful speed test initiation."""
         response = {"data": {"status": "started", "test_id": "st-123"}}
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client()
             mock_client_class.return_value.post = AsyncMock(return_value=response)
 
@@ -165,7 +165,7 @@ class TestGetSpeedTestStatus:
         """The gateway record's last result maps into the tool shape."""
         response = {"data": [self._ap(), self._gateway()]}
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_speed_test_status("site-1", mock_settings)
@@ -182,7 +182,7 @@ class TestGetSpeedTestStatus:
         """A non-empty pending-interfaces list means a test is in flight."""
         response = {"data": [self._gateway(pending=["eth4"])]}
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_speed_test_status("site-1", mock_settings)
@@ -196,7 +196,7 @@ class TestGetSpeedTestStatus:
         del gateway["speedtest-status"]
         response = {"data": [gateway]}
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_speed_test_status("site-1", mock_settings)
@@ -207,11 +207,11 @@ class TestGetSpeedTestStatus:
     @pytest.mark.asyncio
     async def test_get_speed_test_status_no_gateway(self, mock_settings):
         """A site with no gateway device raises instead of guessing."""
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.utils.exceptions import APIError
 
         response = {"data": [self._ap()]}
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             with pytest.raises(APIError, match="gateway"):
@@ -231,7 +231,7 @@ class TestGetSpeedTestStatus:
         del gateway["speedtest-status"]
         response = {"data": [self._ap(), gateway]}
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_speed_test_status("site-1", mock_settings)
@@ -278,7 +278,7 @@ class TestGetSpeedTestHistory:
         mock_client = create_mock_client()
         mock_client.post = AsyncMock(return_value=response)
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await get_speed_test_history("site-1", mock_settings)
@@ -302,7 +302,7 @@ class TestGetSpeedTestHistory:
         mock_client = create_mock_client()
         mock_client.post = AsyncMock(return_value={"data": []})
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             await get_speed_test_history("site-1", mock_settings, hours=24)
@@ -316,7 +316,7 @@ class TestGetSpeedTestHistory:
         mock_client = create_mock_client()
         mock_client.post = AsyncMock(return_value={"data": []})
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await get_speed_test_history("site-1", mock_settings)
@@ -338,7 +338,7 @@ class TestGetSpeedTestHistory:
         mock_client = create_mock_client()
         mock_client.post = AsyncMock(return_value={"data": [newer, older]})
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await get_speed_test_history("site-1", mock_settings)
@@ -384,7 +384,7 @@ class TestGetSpectrumScan:
 
         mock_client = create_mock_client([devices, scan])
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await get_spectrum_scan("site-1", mock_settings)
@@ -404,7 +404,7 @@ class TestGetSpectrumScan:
         scan = {"data": [self._scan_entry()]}
         mock_client = create_mock_client([scan])
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await get_spectrum_scan("site-1", mock_settings, ap_mac="00:00:5e:00:53:41")
@@ -418,7 +418,7 @@ class TestGetSpectrumScan:
         """A site with no APs reports an empty result, not an error."""
         mock_client = create_mock_client([{"data": []}])
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await get_spectrum_scan("site-1", mock_settings)
@@ -451,7 +451,7 @@ class TestListSpectrumInterference:
         }
         mock_client = create_mock_client([devices, scan])
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await list_spectrum_interference("site-1", mock_settings)
@@ -475,7 +475,7 @@ class TestListSpectrumInterference:
         }
         mock_client = create_mock_client([devices, scan])
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await list_spectrum_interference("site-1", mock_settings)
@@ -491,7 +491,7 @@ class TestListSpectrumInterference:
         scan = {"data": [TestGetSpectrumScan._scan_entry()]}
         mock_client = create_mock_client([devices, scan])
 
-        with patch("src.tools.diagnostics.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient") as mock_client_class:
             mock_client_class.return_value = mock_client
 
             result = await list_spectrum_interference("site-1", mock_settings)
@@ -512,7 +512,7 @@ class TestSpeedTestStatusGuards:
         }
         client = create_mock_client([{"data": ["junk", 42, None, gateway]}])
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await get_speed_test_status("site-1", mock_settings)
 
         assert result["download_speed_mbps"] == 900.0
@@ -527,7 +527,7 @@ class TestSpectrumEdgeCoverage:
         """A malformed device list produces an empty scan, not an error."""
         client = create_mock_client([{"data": "garbage"}])
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await get_spectrum_scan("site-1", mock_settings)
 
         assert result == {"site_id": "site-1", "aps": []}
@@ -550,7 +550,7 @@ class TestSpectrumEdgeCoverage:
             ]
         )
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await list_spectrum_interference("site-1", mock_settings)
 
         assert len(result) == 1
@@ -569,7 +569,7 @@ class TestGetHistoricalStats:
         client = create_mock_client()
         client.post = AsyncMock(return_value={"data": samples})
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await get_historical_stats(
                 "default", mock_settings, subject="ap", interval="hourly", hours=48
             )
@@ -592,7 +592,7 @@ class TestGetHistoricalStats:
         client = create_mock_client()
         client.post = AsyncMock(return_value={"data": []})
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             await get_historical_stats(
                 "default",
                 mock_settings,
@@ -621,7 +621,7 @@ class TestGetHistoricalStats:
         client = create_mock_client()
         client.post = AsyncMock(return_value={"data": []})
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await get_historical_stats("default", mock_settings)
 
         assert result["samples"] == []
@@ -633,7 +633,7 @@ class TestStartSpectrumScan:
     async def test_posts_devmgr_spectrum_scan(self, mock_settings):
         client = create_mock_client()
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await start_spectrum_scan(
                 "default", mock_settings, ap_mac="00:00:5e:00:53:41", confirm=True
             )
@@ -648,7 +648,7 @@ class TestStartSpectrumScan:
     async def test_dry_run_warns_and_does_not_post(self, mock_settings):
         client = create_mock_client()
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await start_spectrum_scan(
                 "default", mock_settings, ap_mac="00:00:5e:00:53:41", confirm=True, dry_run=True
             )
@@ -670,7 +670,7 @@ class TestReviewFollowUps:
         client = create_mock_client()
         client.post = AsyncMock(return_value={"data": []})
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             await get_historical_stats("default", mock_settings, subject="gw")
 
         body = client.post.call_args[1]["json_data"]
@@ -681,7 +681,7 @@ class TestReviewFollowUps:
         """The JSON-RPC string "false" must not downgrade a scan to a preview."""
         client = create_mock_client()
 
-        with patch("src.tools.diagnostics.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.diagnostics.UniFiClient", return_value=client):
             result = await start_spectrum_scan(
                 "default",
                 mock_settings,

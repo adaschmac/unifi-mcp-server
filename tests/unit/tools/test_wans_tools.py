@@ -1,11 +1,11 @@
-"""Unit tests for src/tools/wans.py."""
+"""Unit tests for src/unifi_mcp_server/tools/wans.py."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import APIType
-from src.tools.wans import (
+from unifi_mcp_server.config import APIType
+from unifi_mcp_server.tools.wans import (
     create_dynamic_dns,
     delete_dynamic_dns,
     get_dynamic_dns,
@@ -13,7 +13,7 @@ from src.tools.wans import (
     list_wan_connections,
     update_dynamic_dns,
 )
-from src.utils.exceptions import APIError, ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import APIError, ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -83,7 +83,7 @@ class TestListWanConnections:
     async def test_returns_list_when_api_returns_list(self, mock_settings):
         wan = make_wan()
         mock_client = create_mock_client([wan])
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await list_wan_connections("default", mock_settings)
         assert len(result) == 1
         assert result[0]["name"] == "WAN1"
@@ -91,14 +91,14 @@ class TestListWanConnections:
     async def test_returns_list_when_api_returns_dict(self, mock_settings):
         wan = make_wan()
         mock_client = create_mock_client({"data": [wan]})
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await list_wan_connections("default", mock_settings)
         assert len(result) == 1
         assert result[0]["wan_type"] == "dhcp"
 
     async def test_empty_response(self, mock_settings):
         mock_client = create_mock_client([])
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await list_wan_connections("default", mock_settings)
         assert result == []
 
@@ -106,14 +106,14 @@ class TestListWanConnections:
         wan = make_wan()
         mock_client = create_mock_client([wan])
         mock_client.is_authenticated = False
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             await list_wan_connections("default", mock_settings)
         mock_client.authenticate.assert_called_once()
 
     async def test_accepts_sparse_integration_api_response(self, mock_settings):
         """Integration v1 returns only id and name; that must not raise."""
         mock_client = create_mock_client({"data": [make_sparse_wan()]})
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await list_wan_connections("default", mock_settings)
 
         # Absent fields are dropped from the output rather than failing
@@ -125,7 +125,7 @@ class TestListWanConnections:
     async def test_populated_optional_fields_are_preserved(self, mock_settings):
         """Relaxing the model must not drop values when they are present."""
         mock_client = create_mock_client({"data": [make_wan()]})
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await list_wan_connections("default", mock_settings)
 
         assert result[0]["site_id"] == "default"
@@ -144,7 +144,7 @@ class TestDynamicDNS:
         record = make_dynamic_dns()
         mock_client = create_mock_client({"data": [record]})
 
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await list_dynamic_dns("default", mock_settings)
 
         mock_client.get.assert_called_once_with("/ea/sites/default/rest/dynamicdns")
@@ -166,7 +166,7 @@ class TestDynamicDNS:
     async def test_get_dynamic_dns(self, mock_settings):
         mock_client = create_mock_client({"data": [make_dynamic_dns()]})
 
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await get_dynamic_dns("ddns-1", "default", mock_settings)
 
         mock_client.get.assert_called_once_with("/ea/sites/default/rest/dynamicdns/ddns-1")
@@ -176,7 +176,7 @@ class TestDynamicDNS:
     async def test_get_dynamic_dns_handles_direct_dict_response(self, mock_settings):
         mock_client = create_mock_client(make_dynamic_dns())
 
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             result = await get_dynamic_dns("ddns-1", "default", mock_settings)
 
         assert result["id"] == "ddns-1"
@@ -185,7 +185,7 @@ class TestDynamicDNS:
     async def test_get_dynamic_dns_empty_response_raises_not_found(self, mock_settings):
         mock_client = create_mock_client({"data": []})
 
-        with patch("src.tools.wans.UniFiClient", return_value=mock_client):
+        with patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client):
             with pytest.raises(ResourceNotFoundError):
                 await get_dynamic_dns("ddns-1", "default", mock_settings)
 
@@ -193,8 +193,8 @@ class TestDynamicDNS:
         mock_client = create_mock_client({"data": [make_dynamic_dns()]})
 
         with (
-            patch("src.tools.wans.UniFiClient", return_value=mock_client),
-            patch("src.tools.wans.log_audit") as mock_audit,
+            patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client),
+            patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit,
         ):
             result = await create_dynamic_dns(
                 site_id="default",
@@ -241,8 +241,8 @@ class TestDynamicDNS:
         mock_client.post = AsyncMock(side_effect=APIError("create failed"))
 
         with (
-            patch("src.tools.wans.UniFiClient", return_value=mock_client),
-            patch("src.tools.wans.log_audit") as mock_audit,
+            patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client),
+            patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit,
         ):
             with pytest.raises(APIError):
                 await create_dynamic_dns(
@@ -264,7 +264,7 @@ class TestDynamicDNS:
             )
 
     async def test_create_dynamic_dns_dry_run_redacts_password(self, mock_settings):
-        with patch("src.tools.wans.log_audit") as mock_audit:
+        with patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit:
             result = await create_dynamic_dns(
                 site_id="default",
                 settings=mock_settings,
@@ -293,8 +293,8 @@ class TestDynamicDNS:
         )
 
         with (
-            patch("src.tools.wans.UniFiClient", return_value=mock_client),
-            patch("src.tools.wans.log_audit") as mock_audit,
+            patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client),
+            patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit,
         ):
             result = await update_dynamic_dns(
                 dynamic_dns_id="ddns-1",
@@ -326,8 +326,8 @@ class TestDynamicDNS:
         mock_client = create_mock_client({"data": []})
 
         with (
-            patch("src.tools.wans.UniFiClient", return_value=mock_client),
-            patch("src.tools.wans.log_audit") as mock_audit,
+            patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client),
+            patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit,
         ):
             with pytest.raises(ResourceNotFoundError):
                 await update_dynamic_dns(
@@ -342,8 +342,8 @@ class TestDynamicDNS:
 
     async def test_update_dynamic_dns_dry_run_skips_api_call(self, mock_settings):
         with (
-            patch("src.tools.wans.UniFiClient") as mock_client_cls,
-            patch("src.tools.wans.log_audit") as mock_audit,
+            patch("unifi_mcp_server.tools.wans.UniFiClient") as mock_client_cls,
+            patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit,
         ):
             result = await update_dynamic_dns(
                 dynamic_dns_id="ddns-1",
@@ -365,8 +365,8 @@ class TestDynamicDNS:
         mock_client = create_mock_client({})
 
         with (
-            patch("src.tools.wans.UniFiClient", return_value=mock_client),
-            patch("src.tools.wans.log_audit") as mock_audit,
+            patch("unifi_mcp_server.tools.wans.UniFiClient", return_value=mock_client),
+            patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit,
         ):
             result = await delete_dynamic_dns(
                 dynamic_dns_id="ddns-1",
@@ -384,7 +384,7 @@ class TestDynamicDNS:
         }
 
     async def test_delete_dynamic_dns_dry_run(self, mock_settings):
-        with patch("src.tools.wans.log_audit") as mock_audit:
+        with patch("unifi_mcp_server.tools.wans.log_audit") as mock_audit:
             result = await delete_dynamic_dns(
                 dynamic_dns_id="ddns-1",
                 site_id="default",

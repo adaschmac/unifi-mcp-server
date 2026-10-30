@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.vpn as vpn_module
-from src.tools.vpn import list_vpn_servers, list_vpn_tunnels
+import unifi_mcp_server.tools.vpn as vpn_module
+from unifi_mcp_server.tools.vpn import list_vpn_servers, list_vpn_tunnels
 
 
 @pytest.fixture

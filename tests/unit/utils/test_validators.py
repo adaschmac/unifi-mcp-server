@@ -2,8 +2,8 @@
 
 import pytest
 
-from src.utils.exceptions import ValidationError
-from src.utils.validators import (
+from unifi_mcp_server.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.validators import (
     coerce_bool,
     validate_confirmation,
     validate_device_id,
@@ -347,7 +347,7 @@ class TestDuplicateResourceError:
     """Tests for DuplicateResourceError exception."""
 
     def test_basic_creation(self):
-        from src.utils.exceptions import DuplicateResourceError
+        from unifi_mcp_server.utils.exceptions import DuplicateResourceError
 
         err = DuplicateResourceError("port_profile", "IoT Profile", "abc123")
         assert err.resource_type == "port_profile"
@@ -358,7 +358,7 @@ class TestDuplicateResourceError:
         assert "abc123" in str(err)
 
     def test_details_dict(self):
-        from src.utils.exceptions import DuplicateResourceError
+        from unifi_mcp_server.utils.exceptions import DuplicateResourceError
 
         err = DuplicateResourceError("network", "Guest LAN", "net456")
         assert err.details["resource_type"] == "network"
@@ -366,7 +366,7 @@ class TestDuplicateResourceError:
         assert err.details["existing_id"] == "net456"
 
     def test_is_unifi_exception(self):
-        from src.utils.exceptions import DuplicateResourceError, UniFiMCPException
+        from unifi_mcp_server.utils.exceptions import DuplicateResourceError, UniFiMCPException
 
         err = DuplicateResourceError("port_profile", "Test", "id1")
         assert isinstance(err, UniFiMCPException)
@@ -376,7 +376,7 @@ class TestConfirmationRequiredError:
     """Tests for ConfirmationRequiredError exception."""
 
     def test_basic_creation(self):
-        from src.utils.exceptions import ConfirmationRequiredError
+        from unifi_mcp_server.utils.exceptions import ConfirmationRequiredError
 
         err = ConfirmationRequiredError("delete_network")
         assert err.operation == "delete_network"
@@ -384,13 +384,13 @@ class TestConfirmationRequiredError:
         assert "requires confirmation" in str(err)
 
     def test_details_dict(self):
-        from src.utils.exceptions import ConfirmationRequiredError
+        from unifi_mcp_server.utils.exceptions import ConfirmationRequiredError
 
         err = ConfirmationRequiredError("restart_device")
         assert err.details["operation"] == "restart_device"
 
     def test_is_unifi_exception(self):
-        from src.utils.exceptions import ConfirmationRequiredError, UniFiMCPException
+        from unifi_mcp_server.utils.exceptions import ConfirmationRequiredError, UniFiMCPException
 
         err = ConfirmationRequiredError("test")
         assert isinstance(err, UniFiMCPException)
@@ -400,7 +400,7 @@ class TestRateLimitError:
     """Tests for RateLimitError exception."""
 
     def test_basic_creation(self):
-        from src.utils.exceptions import RateLimitError
+        from unifi_mcp_server.utils.exceptions import RateLimitError
 
         err = RateLimitError()
         assert err.status_code == 429
@@ -408,14 +408,14 @@ class TestRateLimitError:
         assert "Rate limit" in str(err)
 
     def test_with_retry_after(self):
-        from src.utils.exceptions import RateLimitError
+        from unifi_mcp_server.utils.exceptions import RateLimitError
 
         err = RateLimitError(retry_after=60)
         assert err.retry_after == 60
         assert err.status_code == 429
 
     def test_custom_message(self):
-        from src.utils.exceptions import RateLimitError
+        from unifi_mcp_server.utils.exceptions import RateLimitError
 
         err = RateLimitError(message="Too many requests", retry_after=30)
         assert "Too many requests" in str(err)

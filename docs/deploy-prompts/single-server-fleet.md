@@ -55,5 +55,5 @@ Steps:
 7. Tell me how to connect my MCP client (URL through an SSH tunnel or a TLS
    proxy, the bearer header, and how to read the token with
    `ansible-vault view`), and how to issue per-person tokens with roles:
-   `docker exec unifi-mcp-0 python -m src.fleet.cli tokens create --name <who> --role <role>`,
+   `docker exec unifi-mcp-0 python -m unifi_mcp_server.fleet.cli tokens create --name <who> --role <role>`,
    with a role of `viewer`, `operator`, `admin` or `fleet-admin` (SECURITY.md).

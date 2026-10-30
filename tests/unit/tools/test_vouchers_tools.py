@@ -10,15 +10,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.vouchers as vouchers_module
-from src.tools.vouchers import (
+import unifi_mcp_server.tools.vouchers as vouchers_module
+from unifi_mcp_server.tools.vouchers import (
     bulk_delete_vouchers,
     create_vouchers,
     delete_voucher,
     get_voucher,
     list_vouchers,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 VOUCHER_ID = "3c2a8f52-9c11-4b5e-9c2f-6d1a2b3c4d5e"
 
@@ -400,12 +400,12 @@ class TestVoucherItemsUnwrap:
     """Close the codecov gaps reported on merged PR #122."""
 
     def test_bare_list_filters_non_dict_items(self):
-        from src.tools.vouchers import _voucher_items
+        from unifi_mcp_server.tools.vouchers import _voucher_items
 
         assert _voucher_items(["junk", {"id": "v1"}, 7]) == [{"id": "v1"}]
 
     def test_scalar_reply_yields_empty_list(self):
-        from src.tools.vouchers import _voucher_items
+        from unifi_mcp_server.tools.vouchers import _voucher_items
 
         assert _voucher_items("ok") == []
         assert _voucher_items(None) == []

@@ -1,11 +1,11 @@
-"""Unit tests for src/tools/sites.py."""
+"""Unit tests for src/unifi_mcp_server/tools/sites.py."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.sites import get_site_details, get_site_statistics, list_sites
-from src.utils.exceptions import ResourceNotFoundError
+from unifi_mcp_server.tools.sites import get_site_details, get_site_statistics, list_sites
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ class TestGetSiteDetails:
             {"_id": "site-456", "name": "Branch", "desc": "Branch Office"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_site_details("site-123", mock_settings)
@@ -64,7 +64,7 @@ class TestGetSiteDetails:
             {"_id": "site-123", "name": "Default", "desc": "Main site"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_site_details("Default", mock_settings)
@@ -80,7 +80,7 @@ class TestGetSiteDetails:
             ]
         }
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_site_details("site-123", mock_settings)
@@ -99,7 +99,7 @@ class TestGetSiteDetails:
             },
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_site_details("default", mock_settings)
@@ -112,7 +112,7 @@ class TestGetSiteDetails:
             {"_id": "site-abc", "name": "OtherSite", "desc": "Another site"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             with pytest.raises(ResourceNotFoundError):
@@ -127,7 +127,7 @@ class TestListSites:
             {"_id": "site-2", "name": "Site2", "desc": "Second"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_sites(mock_settings)
@@ -144,7 +144,7 @@ class TestListSites:
             ]
         }
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_sites(mock_settings)
@@ -158,7 +158,7 @@ class TestListSites:
             {"_id": f"site-{i}", "name": f"Site{i}", "desc": f"Site {i}"} for i in range(10)
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_sites(mock_settings, limit=3)
@@ -173,7 +173,7 @@ class TestListSites:
             {"_id": "site-2", "name": "Site2", "desc": "Third"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_sites(mock_settings, offset=1, limit=2)
@@ -187,7 +187,7 @@ class TestListSites:
             {"_id": "local-site", "name": "LocalSite", "desc": "Local gateway site"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_sites(mock_local_settings)
@@ -199,7 +199,7 @@ class TestListSites:
     async def test_list_sites_empty(self, mock_settings):
         mock_response = []
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_sites(mock_settings)
@@ -208,7 +208,7 @@ class TestListSites:
 
     @pytest.mark.asyncio
     async def test_list_sites_context_enter_error(self, mock_settings):
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client = AsyncMock()
             mock_client.__aenter__ = AsyncMock(side_effect=Exception("Connection Error"))
             mock_client.__aexit__ = AsyncMock()
@@ -225,7 +225,7 @@ class TestListSites:
             {"invalid_field_only": "no _id or name"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             with pytest.raises((Exception, ValueError, KeyError)):  # noqa: B017
@@ -250,7 +250,7 @@ class TestGetSiteStatistics:
             {"_id": "net2", "name": "Guest"},
         ]
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(
@@ -287,7 +287,7 @@ class TestGetSiteStatistics:
         }
         networks_response = {"data": [{"_id": "net1", "name": "LAN"}]}
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(
@@ -311,7 +311,7 @@ class TestGetSiteStatistics:
         clients_response = []
         networks_response = []
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(
@@ -333,7 +333,7 @@ class TestGetSiteStatistics:
         clients_response = []
         networks_response = []
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(
@@ -349,7 +349,7 @@ class TestGetSiteStatistics:
 
     @pytest.mark.asyncio
     async def test_get_site_statistics_empty(self, mock_settings):
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(side_effect=[[], [], []])
@@ -372,7 +372,7 @@ class TestGetSiteStatistics:
         ]
         networks_response = []
 
-        with patch("src.tools.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.sites.UniFiClient") as mock_client_class:
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(

@@ -1,6 +1,6 @@
 ---
 description: UniFi API integration guidelines and patterns
-globs: ["src/api/**/*.py", "src/tools/**/*.py"]
+globs: ["src/unifi_mcp_server/api/**/*.py", "src/unifi_mcp_server/tools/**/*.py"]
 alwaysApply: true
 ---
 
@@ -25,7 +25,7 @@ headers = {
 }
 
 # ✅ GOOD - Load from environment
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 settings = Settings()
 headers = {
@@ -167,7 +167,7 @@ async def safe_api_request(
 Keep all API interactions in dedicated modules:
 
 ```python
-# src/api/client.py
+# src/unifi_mcp_server/api/client.py
 class UniFiClient:
     async def request(
         self,

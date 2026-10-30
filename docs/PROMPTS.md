@@ -418,10 +418,10 @@ Both are manual acceptance steps. They are deliberately not part of CI.
 
 | File | Contents |
 |---|---|
-| `src/prompts/templates.py` | The data model, argument validation and the pure renderer |
-| `src/prompts/catalog.py` | The workflow catalog: names, arguments, evidence tools and steps |
-| `src/prompts/registry.py` | Availability rules and the FastMCP registration |
-| `src/main.py` | The registration call, after the tools are registered |
+| `src/unifi_mcp_server/prompts/templates.py` | The data model, argument validation and the pure renderer |
+| `src/unifi_mcp_server/prompts/catalog.py` | The workflow catalog: names, arguments, evidence tools and steps |
+| `src/unifi_mcp_server/prompts/registry.py` | Availability rules and the FastMCP registration |
+| `src/unifi_mcp_server/main.py` | The registration call, after the tools are registered |
 
 The prompts register after the tools, so availability follows the tools that
-are actually present. `src/main.py` holds one call to `register_prompts`.
+are actually present. `src/unifi_mcp_server/main.py` holds one call to `register_prompts`.

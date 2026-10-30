@@ -1,10 +1,10 @@
-"""Unit tests for src/resources/site_manager.py."""
+"""Unit tests for src/unifi_mcp_server/resources/site_manager.py."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.resources.site_manager import SiteManagerResource
+from unifi_mcp_server.resources.site_manager import SiteManagerResource
 
 DISABLED = "Site Manager API is not enabled. Set UNIFI_SITE_MANAGER_ENABLED=true"
 
@@ -35,7 +35,7 @@ def _client(**methods):
 
 
 def _patch(client):
-    return patch("src.resources.site_manager.SiteManagerClient", return_value=client)
+    return patch("unifi_mcp_server.resources.site_manager.SiteManagerClient", return_value=client)
 
 
 class TestDisabled:
@@ -44,7 +44,7 @@ class TestDisabled:
         "method", ["get_all_sites", "get_health_metrics", "get_internet_health_status"]
     )
     async def test_returns_hint_without_calling_api(self, disabled_settings, method):
-        with patch("src.resources.site_manager.SiteManagerClient") as client_class:
+        with patch("unifi_mcp_server.resources.site_manager.SiteManagerClient") as client_class:
             result = await getattr(SiteManagerResource(disabled_settings), method)()
 
         assert result == DISABLED

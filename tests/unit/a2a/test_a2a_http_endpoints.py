@@ -29,12 +29,12 @@ _TOKENS = "viewer:tok-view,operator:tok-op,admin:tok-admin,fleet-admin:tok-fleet
 
 
 def _reload_main(**extra_env: str) -> Any:
-    """Re-import src.main with a clean module cache under a known env."""
+    """Re-import unifi_mcp_server.main with a clean module cache under a known env."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", {**_BASE_ENV, **extra_env}, clear=False):
-        return importlib.import_module("src.main")
+        return importlib.import_module("unifi_mcp_server.main")
 
 
 def _auth(token: str) -> dict[str, str]:
@@ -239,7 +239,7 @@ class TestDelegationExecution:
         """Return a server carrying one stub tool that records its call."""
         from fastmcp.tools import Tool
 
-        from src.utils.tool_kind import read_tool
+        from unifi_mcp_server.utils.tool_kind import read_tool
 
         calls: list[dict[str, Any]] = []
 
@@ -280,7 +280,7 @@ class TestDelegationExecution:
                 },
             )
 
-        import src.main as main
+        import unifi_mcp_server.main as main
 
         entries = main.a2a_state.audit_logger.get_audit_trail()
         assert any(entry.agent_id == "agent-7" for entry in entries)
@@ -332,7 +332,7 @@ class TestConfirmationReauthorizes:
         """Return a server carrying a stub tool that records its call."""
         from fastmcp.tools import Tool
 
-        from src.utils.tool_kind import write_tool
+        from unifi_mcp_server.utils.tool_kind import write_tool
 
         calls: list[dict[str, Any]] = []
 
@@ -420,7 +420,7 @@ class TestConfirmationRateLimit:
         """Add a destructive stub tool that records its calls."""
         from fastmcp.tools import Tool
 
-        from src.utils.tool_kind import write_tool
+        from unifi_mcp_server.utils.tool_kind import write_tool
 
         calls: list[dict[str, Any]] = []
 

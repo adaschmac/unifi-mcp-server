@@ -5,7 +5,7 @@ prove that a gateway or a remote client sees the prompts over the wire. They
 also cover the transport authentication, because prompt retrieval must sit
 behind the same bearer-token guard as the tools.
 
-The pattern follows tests/unit/test_transport_auth.py: ``src.main`` is
+The pattern follows tests/unit/test_transport_auth.py: ``unifi_mcp_server.main`` is
 re-imported with a known environment so the server is configured for the
 network transport.
 """
@@ -35,12 +35,12 @@ _AUTH_HEADERS = {**_ACCEPT, "Authorization": f"Bearer {_TOKEN}"}
 
 
 def _reload_main(**extra_env: str) -> Any:
-    """Re-import src.main with a clean module cache under a known env."""
+    """Re-import unifi_mcp_server.main with a clean module cache under a known env."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", {**_BASE_ENV, **extra_env}, clear=False):
-        return importlib.import_module("src.main")
+        return importlib.import_module("unifi_mcp_server.main")
 
 
 def _http_app(**extra_env: str) -> Any:
@@ -262,5 +262,5 @@ class TestHttpPromptAuthentication:
 
 
 def teardown_module(module: Any) -> None:  # noqa: D401
-    """Restore a pristine src.main for any later tests in the session."""
+    """Restore a pristine unifi_mcp_server.main for any later tests in the session."""
     _reload_main()

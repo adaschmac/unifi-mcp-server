@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-protect_devices = pytest.importorskip("src.tools.protect_devices")
+protect_devices = pytest.importorskip("unifi_mcp_server.tools.protect_devices")
 
 
 def _tool(*names: str):

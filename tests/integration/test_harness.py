@@ -24,7 +24,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from src.config import Settings
+from unifi_mcp_server.config import Settings
 
 
 class TestStatus(Enum):

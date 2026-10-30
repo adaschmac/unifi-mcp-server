@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.device_control as dc_module
-from src.tools.device_control import locate_device, restart_device, upgrade_device
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+import unifi_mcp_server.tools.device_control as dc_module
+from unifi_mcp_server.tools.device_control import locate_device, restart_device, upgrade_device
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -598,7 +598,7 @@ async def test_set_radio_channel_writes_and_unwraps_echo(mock_settings):
     to raise IndexError while parsing the reply to a write that had
     already landed.
     """
-    from src.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -651,7 +651,7 @@ def _provision_client(devices=None):
 @pytest.mark.asyncio
 async def test_force_provision_by_mac(mock_settings):
     """A MAC goes straight to cmd/devmgr with no device enumeration."""
-    from src.tools.device_control import force_provision_device
+    from unifi_mcp_server.tools.device_control import force_provision_device
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -678,7 +678,7 @@ async def test_force_provision_by_mac(mock_settings):
 @pytest.mark.asyncio
 async def test_force_provision_resolves_id_to_mac(mock_settings):
     """A device _id is resolved to its MAC via stat/device first."""
-    from src.tools.device_control import force_provision_device
+    from unifi_mcp_server.tools.device_control import force_provision_device
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -702,7 +702,7 @@ async def test_force_provision_resolves_id_to_mac(mock_settings):
 @pytest.mark.asyncio
 async def test_force_provision_unknown_id_raises(mock_settings):
     """An _id absent from stat/device raises ResourceNotFoundError."""
-    from src.tools.device_control import force_provision_device
+    from unifi_mcp_server.tools.device_control import force_provision_device
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -724,7 +724,7 @@ async def test_force_provision_unknown_id_raises(mock_settings):
 @pytest.mark.asyncio
 async def test_force_provision_dry_run(mock_settings):
     """Dry run previews the target MAC without posting."""
-    from src.tools.device_control import force_provision_device
+    from unifi_mcp_server.tools.device_control import force_provision_device
 
     client = _provision_client()
 
@@ -744,7 +744,7 @@ async def test_force_provision_dry_run(mock_settings):
 @pytest.mark.asyncio
 async def test_force_provision_requires_confirm(mock_settings):
     """The provision command is mutating and demands confirm=True."""
-    from src.tools.device_control import force_provision_device
+    from unifi_mcp_server.tools.device_control import force_provision_device
 
     with pytest.raises(ValidationError):
         await force_provision_device(
@@ -757,7 +757,7 @@ async def test_force_provision_requires_confirm(mock_settings):
 @pytest.mark.asyncio
 async def test_force_provision_separatorless_mac(mock_settings):
     """A 12-hex MAC without separators is a MAC, not a device id."""
-    from src.tools.device_control import force_provision_device
+    from unifi_mcp_server.tools.device_control import force_provision_device
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -781,8 +781,8 @@ async def test_force_provision_separatorless_mac(mock_settings):
 @pytest.mark.asyncio
 async def test_force_provision_failure_audits_failed(mock_settings):
     """A failed provision POST audits result=failed and re-raises."""
-    from src.tools.device_control import force_provision_device
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.tools.device_control import force_provision_device
+    from unifi_mcp_server.utils.exceptions import APIError
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -860,7 +860,7 @@ async def test_set_radio_power_writes_config_record(mock_settings):
     dropping the radio change (a tx_power write observed live to not
     stick).
     """
-    from src.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -897,7 +897,7 @@ async def test_set_radio_power_writes_config_record(mock_settings):
 @pytest.mark.asyncio
 async def test_set_radio_power_warns_when_not_stored(mock_settings):
     """A 200 whose echo lacks the change must not report success."""
-    from src.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -925,7 +925,7 @@ async def test_set_radio_power_warns_when_not_stored(mock_settings):
 @pytest.mark.asyncio
 async def test_set_radio_power_warns_on_unechoed_write(mock_settings):
     """An empty echo is an unconfirmed change, not a success."""
-    from src.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -953,7 +953,7 @@ async def test_unconfirmed_write_audits_unconfirmed(mock_settings):
     """The audit record must not claim success when the echo does not."""
     from unittest.mock import ANY
 
-    from src.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -992,8 +992,8 @@ async def test_set_radio_falls_back_to_stat_record_on_config_error(mock_settings
     radio_table mirrors applied config and the write sends only that
     table, so the change must still land.
     """
-    from src.tools.device_control import set_ap_radio_channel
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.utils.exceptions import APIError
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1025,7 +1025,7 @@ async def test_set_radio_falls_back_to_stat_record_on_config_error(mock_settings
 @pytest.mark.asyncio
 async def test_set_radio_falls_back_when_config_record_is_empty(mock_settings):
     """An empty config payload is treated the same as a refusal."""
-    from src.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1051,7 +1051,7 @@ async def test_set_radio_falls_back_when_config_record_is_empty(mock_settings):
 @pytest.mark.asyncio
 async def test_set_radio_verifies_channel_width_echo(mock_settings):
     """A requested width is verified against the echo like the other fields."""
-    from src.tools.device_control import set_ap_radio_channel
+    from unifi_mcp_server.tools.device_control import set_ap_radio_channel
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1081,7 +1081,7 @@ async def test_set_radio_verifies_channel_width_echo(mock_settings):
 @pytest.mark.asyncio
 async def test_set_min_rssi_writes_and_verifies(mock_settings):
     """The floor lands in the radio_table and the echo is verified."""
-    from src.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1122,7 +1122,7 @@ async def test_set_min_rssi_disable_does_not_write_a_floor(mock_settings):
     reads like a floor still in force, so the disable path must touch
     ``min_rssi_enabled`` and nothing else.
     """
-    from src.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1172,8 +1172,8 @@ async def test_set_min_rssi_disable_does_not_write_a_floor(mock_settings):
 
 @pytest.mark.asyncio
 async def test_set_min_rssi_bounds_and_confirm(mock_settings):
-    from src.tools.device_control import set_ap_min_rssi
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     with pytest.raises(ValidationError):
         await set_ap_min_rssi(
@@ -1197,8 +1197,8 @@ async def test_set_min_rssi_bounds_and_confirm(mock_settings):
 @pytest.mark.asyncio
 async def test_set_min_rssi_rejects_unknown_band(mock_settings):
     """An unrecognised band fails before any network I/O."""
-    from src.tools.device_control import set_ap_min_rssi
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     with pytest.raises(ValidationError, match="Unknown band"):
         await set_ap_min_rssi(
@@ -1213,7 +1213,7 @@ async def test_set_min_rssi_rejects_unknown_band(mock_settings):
 @pytest.mark.asyncio
 async def test_set_min_rssi_dry_run_previews_without_writing(mock_settings):
     """dry_run returns the intended change and never opens a client."""
-    from src.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
 
     result = await set_ap_min_rssi(
         site_id="default",
@@ -1232,8 +1232,8 @@ async def test_set_min_rssi_dry_run_previews_without_writing(mock_settings):
 @pytest.mark.asyncio
 async def test_set_min_rssi_unknown_device_raises(mock_settings):
     """A device neither id nor MAC matches is reported, not written to."""
-    from src.tools.device_control import set_ap_min_rssi
-    from src.utils.exceptions import ResourceNotFoundError
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1262,8 +1262,8 @@ async def test_set_min_rssi_falls_back_to_stat_record(mock_settings):
     """
     import copy
 
-    from src.tools.device_control import set_ap_min_rssi
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.utils.exceptions import APIError
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1296,8 +1296,8 @@ async def test_set_min_rssi_falls_back_to_stat_record(mock_settings):
 @pytest.mark.asyncio
 async def test_set_min_rssi_missing_radio_raises(mock_settings):
     """Asking for a band the AP does not have is a caller error."""
-    from src.tools.device_control import set_ap_min_rssi
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1322,7 +1322,7 @@ async def test_set_min_rssi_warns_when_controller_stores_something_else(mock_set
     """A divergent echo is surfaced as a warning, not reported as success."""
     import copy
 
-    from src.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1352,7 +1352,7 @@ async def test_set_min_rssi_warns_when_controller_stores_something_else(mock_set
 @pytest.mark.asyncio
 async def test_set_min_rssi_warns_when_echo_is_empty(mock_settings):
     """No radio table back means the change is unconfirmed, not successful."""
-    from src.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1382,8 +1382,8 @@ async def test_set_min_rssi_audits_the_failure_and_reraises(mock_settings):
     trace at all, which is precisely the case someone later needs to
     reconstruct.
     """
-    from src.tools.device_control import set_ap_min_rssi
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.tools.device_control import set_ap_min_rssi
+    from unifi_mcp_server.utils.exceptions import APIError
 
     mock_settings.get_site_api_path = MagicMock(
         side_effect=lambda site, ep: f"/proxy/network/api/s/{site}/{ep}"
@@ -1410,8 +1410,8 @@ async def test_set_min_rssi_audits_the_failure_and_reraises(mock_settings):
 @pytest.mark.asyncio
 async def test_set_min_rssi_band_error_lists_every_alias(mock_settings):
     """The error should name what it accepts, not a subset of it."""
-    from src.tools.device_control import RADIO_BAND_MAP, set_ap_min_rssi
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.tools.device_control import RADIO_BAND_MAP, set_ap_min_rssi
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     with pytest.raises(ValidationError) as exc:
         await set_ap_min_rssi(

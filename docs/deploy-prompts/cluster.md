@@ -61,5 +61,5 @@ Steps:
      exists on the first `mcp` host only.
 8. Tell me the client URL and header, how to read the token with
    `ansible-vault view`, how to issue per-person tokens
-   (`python -m src.fleet.cli tokens create`, run in any replica), and how to
+   (`python -m unifi_mcp_server.fleet.cli tokens create`, run in any replica), and how to
    scale (change `unifi_mcp_replicas` and rerun).

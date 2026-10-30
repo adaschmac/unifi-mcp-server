@@ -15,12 +15,12 @@ component store, which is what the server actually exposes:
 unset PYTHONPATH; cd /home/elvis/projects/unifi-mcp-server-prompts
 UNIFI_API_KEY=*** UNIFI_API_TYPE=local UNIFI_LOCAL_HOST=192.0.2.1 \
 AGNOST_ENABLED=false ./.venv/bin/python -c "
-import src.main as M
+import unifi_mcp_server.main as M
 print(len([k for k in M.mcp._local_provider._components if k.startswith('tool:')]))"
 ```
 
 Local mode registers 343 tools from 60 modules; cloud mode registers 71. The
-tier of every tool is in `src/tool_registry.py:TOOL_TIERS`, which is populated
+tier of every tool is in `src/unifi_mcp_server/tool_registry.py:TOOL_TIERS`, which is populated
 at registration and is the same source the A2A safety layer and the tool
 wrapper consult.
 
@@ -43,7 +43,7 @@ bespoke JSON-over-HTTP shape, not the A2A JSON-RPC binding:
 | Task/Message/Part/Artifact data model | No |
 
 The surface is `GET /a2a/agent-card`, `POST /a2a/discover`, `POST /a2a/delegate`,
-`POST /a2a/confirm`, `GET /a2a/audit` (`src/main.py:334-339`). It is a
+`POST /a2a/confirm`, `GET /a2a/audit` (`src/unifi_mcp_server/main.py:334-339`). It is a
 capability-discovery and delegation facade, and the repository's own `A2A.md`
 describes it that way. The A2A spec's `AgentCard` object shape (§5.5) is a
 reasonable target for the *card document* even without the task protocol, so
@@ -57,17 +57,17 @@ transport is enabled. The first exists; the second does not.
 ### 2.2 Implemented and tested
 
 - The five `/a2a/*` routes are registered only on the network transports
-  (`src/main.py:1037`), never on stdio.
+  (`src/unifi_mcp_server/main.py:1037`), never on stdio.
 - Every `/a2a/*` route is behind the same bearer token as `/mcp`
-  (`src/main.py:289-311`). A missing or wrong token is answered `401` with a
+  (`src/unifi_mcp_server/main.py:289-311`). A missing or wrong token is answered `401` with a
   `WWW-Authenticate: Bearer` header.
-- `build_agent_card()` (`src/a2a/agent_card.py:223`) builds skills, resources
+- `build_agent_card()` (`src/unifi_mcp_server/a2a/agent_card.py:223`) builds skills, resources
   and safety requirements from the **live** component store, so it matches the
   tools this deployment registered. Confirmed: 343 skills in local mode.
 - The tool tier used for authorization and safety comes from `TOOL_TIERS`, the
-  same registry the tool wrapper uses (`src/a2a/auth.py:176`,
-  `src/a2a/route_policy.py:140`).
-- `src/a2a/route_policy.py` applies a per-tool rate limit, a risk
+  same registry the tool wrapper uses (`src/unifi_mcp_server/a2a/auth.py:176`,
+  `src/unifi_mcp_server/a2a/route_policy.py:140`).
+- `src/unifi_mcp_server/a2a/route_policy.py` applies a per-tool rate limit, a risk
   classification and a confirmation requirement before a delegated call runs.
 - `agent-card.json` at the repository root is checked against the served card
   by `tests/unit/a2a/test_agent_card.py:377`.
@@ -75,12 +75,12 @@ transport is enabled. The first exists; the second does not.
 ### 2.3 Implemented but insufficiently tested or documented
 
 - **`GET /a2a/agent-card` and `POST /a2a/discover` return two unrelated
-  documents.** `get_agent_card_handler()` (`src/a2a/http_handlers.py:85`)
+  documents.** `get_agent_card_handler()` (`src/unifi_mcp_server/a2a/http_handlers.py:85`)
   returns a hand-maintained summary with a static `capabilities` list; the
   richer `build_agent_card()` is never called by any route.
   `A2A.md:16` claims `/a2a/discover` returns "the full card from
   `build_agent_card()` ... built from the live tool registry". That is false
-  today: `discover_handler()` (`src/a2a/http_handlers.py:111`) returns a
+  today: `discover_handler()` (`src/unifi_mcp_server/a2a/http_handlers.py:111`) returns a
   hardcoded three-entry `skills` list (`read-network-state`,
   `mutate-network-state`, `destructive-operations`) that does not correspond
   to any registered tool, and contains no live tool names at all. Confirmed by
@@ -92,32 +92,32 @@ transport is enabled. The first exists; the second does not.
 - **The summary card advertises `authentication.modes` as all three API
   types** (`local`, `cloud-v1`, `cloud-ea`) regardless of the running mode.
 - **`authenticationMode` is always `BOTH`**
-  (`src/a2a/agent_card.py:191-199`): every branch returns `BOTH`.
+  (`src/unifi_mcp_server/a2a/agent_card.py:191-199`): every branch returns `BOTH`.
 - **`get_agent_card_handler()` exposes no `skills`, no `url` and no
   `securitySchemes`.** A client cannot learn the tool surface or the
   preferred endpoint from the card it is given.
 - **The `protocol` field says `"MCP/1.0"`**, which is not an A2A protocol
   version and not the MCP protocol version either.
 - **The A2A `AuthManager` and the server's real RBAC are two separate
-  systems.** `src/a2a/auth.py` derives permissions from the `auth` block in
+  systems.** `src/unifi_mcp_server/a2a/auth.py` derives permissions from the `auth` block in
   the request body — a caller-asserted field — while the enforced boundary is
-  `src/access.py`, which binds a `Principal` to the request and checks
+  `src/unifi_mcp_server/access.py`, which binds a `Principal` to the request and checks
   `ROLE_TIERS`. Confirmed by probe: a body carrying
   `{"permissions": ["destructive", "admin"]}` satisfies
   `AuthManager.validate_permissions` for a `create_` tool. The A2A layer
   therefore grants more than the server's role model would, and
   `/a2a/audit` is documented as `requiredAuth="admin"` in the route policy
-  (`src/a2a/route_policy.py:117`) but the HTTP route never checks the
+  (`src/unifi_mcp_server/a2a/route_policy.py:117`) but the HTTP route never checks the
   role — a `viewer` token is answered `200` with the audit trail.
 - **The `delegate` route cannot execute a tool.** `A2AState.tool_executor` is
-  `None` in the `main.py` wiring (`src/main.py:1020-1026`), so
+  `None` in the `main.py` wiring (`src/unifi_mcp_server/main.py:1020-1026`), so
   `delegate_handler` returns `{"status": "accepted", "message": "no tool
   executor configured"}` for every call. A2A.md:17 advertises "Delegated tool
   calls".
 - **`/a2a/confirm` cannot complete anything.** `confirm_handler`
-  (`src/a2a/http_handlers.py:236`) verifies the token and expires it; it
+  (`src/unifi_mcp_server/a2a/http_handlers.py:236`) verifies the token and expires it; it
   never executes the confirmed call, and the confirmation token stores only a
-  `params_hash`, not the parameters (`src/a2a/route_policy.py:46-56`). A
+  `params_hash`, not the parameters (`src/unifi_mcp_server/a2a/route_policy.py:46-56`). A
   confirmed destructive call is therefore acknowledged and dropped.
 - **The `delegate` confirmation path is unreachable.** `AuthManager` grants
   only `{"read"}` for a request with no credentials, so a mutating tool is
@@ -125,7 +125,7 @@ transport is enabled. The first exists; the second does not.
   issue a confirmation token.
 - **`/a2a/audit` has no role check** (see above).
 - **`_is_destructive_tool` in the agent card is a heuristic**
-  (`src/a2a/agent_card.py:126-152`) that scans names and descriptions, while
+  (`src/unifi_mcp_server/a2a/agent_card.py:126-152`) that scans names and descriptions, while
   the authoritative tier is `TOOL_TIERS`. The two can disagree, so the card's
   `safetyRequirements` need not match the tier the server enforces. The
   `_SENSITIVE_FIELD_NAMES` set also contains `ssid` and `description`, which
@@ -144,29 +144,29 @@ transport is enabled. The first exists; the second does not.
 
 ### What was changed, and why
 
-- **`src/a2a/capabilities.py` (new).** The single source of truth. It reads
+- **`src/unifi_mcp_server/a2a/capabilities.py` (new).** The single source of truth. It reads
   the live FastMCP component store and `TOOL_TIERS` and derives the tool
   counts, the capability domains, the API mode, the read-only, dry-run and
   fleet flags, the advertised URL and the security schemes. The card, the
   discovery manifest and the repository artifact all come from it.
-- **`src/a2a/agent_card.py` (rewritten).** Emits the A2A 0.3.0
+- **`src/unifi_mcp_server/a2a/agent_card.py` (rewritten).** Emits the A2A 0.3.0
   `AgentCard` shape. The safety requirements now come from the tool
   registry's tier, so the card cannot call a tool safe that the server
   would refuse. The card no longer carries the controller address, and a
   credential parameter's example is a redaction placeholder.
-- **`src/a2a/executor.py` (new).** Runs a registered tool through its
+- **`src/unifi_mcp_server/a2a/executor.py` (new).** Runs a registered tool through its
   registered wrapper. That is what keeps the delegation path identical to
   the MCP path.
-- **`src/a2a/auth.py`.** The permissions now come from the caller's
-  authenticated role. The role table mirrors `src.access.ROLE_TIERS`.
-- **`src/a2a/route_policy.py`.** `ConfirmationWorkflow` keeps the pending
+- **`src/unifi_mcp_server/a2a/auth.py`.** The permissions now come from the caller's
+  authenticated role. The role table mirrors `unifi_mcp_server.access.ROLE_TIERS`.
+- **`src/unifi_mcp_server/a2a/route_policy.py`.** `ConfirmationWorkflow` keeps the pending
   call, so an approved confirmation can execute it.
-- **`src/a2a/http_handlers.py` (rewritten).** A delegation that cannot run
+- **`src/unifi_mcp_server/a2a/http_handlers.py` (rewritten).** A delegation that cannot run
   answers `unavailable`, never `ok`.
-- **`src/main.py`.** The A2A state carries the MCP server and the
+- **`src/unifi_mcp_server/main.py`.** The A2A state carries the MCP server and the
   executor; the caller's role is resolved from the verified token and bound
   to the request; `/a2a/audit` requires the `admin` role.
-- **`src/tool_registry.py`.** `_request_ids()` guarded the lookup of the
+- **`src/unifi_mcp_server/tool_registry.py`.** `_request_ids()` guarded the lookup of the
   request context but not the read of the session id, so a tool called
   outside an MCP session raised `RuntimeError`. Both ids are now optional.
 
@@ -208,7 +208,7 @@ developer-facing for the tool-set mechanics (`unifi-mcp-tool-builder`,
 | `skills/unifi-security-tools/SKILL.md` | 8 | "see `zbf-implementation-guide.md` **in this folder**" | The file is not in `skills/unifi-security-tools/`; it is in `.claude/skills/` |
 | `skills/unifi-mcp-tool-builder/SKILL.md` | 13 | "extending the current 74-tool implementation" | The server registers 343 tools in local mode |
 | `skills/unifi-system/SKILL.md` | 147 | `create_radius_profile` example implies a name only | `create_radius_profile` requires `name`, `auth_server` and `auth_secret`; the secret is mandatory |
-| `skills/unifi-system/SKILL.md` | — | "Create traffic route" | No traffic-route creation tool exists; `src/tools/qos.py` exposes `list_traffic_routes` (read) and `configure_smart_queue` only |
+| `skills/unifi-system/SKILL.md` | — | "Create traffic route" | No traffic-route creation tool exists; `src/unifi_mcp_server/tools/qos.py` exposes `list_traffic_routes` (read) and `configure_smart_queue` only |
 
 ### 3.2 Coverage
 
@@ -243,7 +243,7 @@ the carrier/connector/mobility/innerspace cloud tools.
 | Wireless planning | channel planning | `unifi-channel-planning` | Ops | — | — |
 | Fleet | registry, tokens, snapshot and fan-out tools | `unifi-cloud-fleet-tools` (dev only) | Dev | No operator view | `unifi-fleet-operations` added |
 | Discovery / A2A | the agent card, the manifest, delegation | None | Dev | Nothing documented the A2A surface or how it relates to the tools | `unifi-discovery` (operator) and `unifi-docs-sync` (developer) |
-| Prompt catalog | `src/prompts/catalog.py` | None | Dev | The catalog hardcodes tool names, so a rename silently breaks a workflow | `unifi-docs-sync` documents the coupling; `tests/unit/prompts/test_prompt_catalog.py` checks every name |
+| Prompt catalog | `src/unifi_mcp_server/prompts/catalog.py` | None | Dev | The catalog hardcodes tool names, so a rename silently breaks a workflow | `unifi-docs-sync` documents the coupling; `tests/unit/prompts/test_prompt_catalog.py` checks every name |
 
 The cloud-only per-tool surface (40 Site Manager, connector, Mobility,
 InnerSpace and Carrier Fabric tools) remains developer-facing. An operator
@@ -287,7 +287,7 @@ production credential and no gateway change was involved.
 | Lint | `ruff check src/ tests/` | clean |
 | Type check | `mypy src/` | clean, 194 source files |
 | Security scan | `bandit -r src/ -ll -q` | no medium or high findings |
-| Docstring coverage | `interrogate src/tools/ src/api/ --fail-under 80` | 98.4% |
+| Docstring coverage | `interrogate src/unifi_mcp_server/tools/ src/unifi_mcp_server/api/ --fail-under 80` | 98.4% |
 | Pre-commit | `pre-commit run --files <changed>` | all hooks pass |
 
 ### Parameter-level skill defects, and the guard that now catches them
@@ -433,11 +433,11 @@ collected that combination.
 Two tests compare a document against the live tool registry: the agent card
 artifact test and the skill-reference test. Both have to import the server,
 and that import is **order-dependent**: another test module may have
-imported `src.main` first, under a different environment, so the module is
+imported `unifi_mcp_server.main` first, under a different environment, so the module is
 already cached with a different tool surface. The comparison then fails for
 reasons unrelated to the change under test.
 
-Both tests re-import `src.main` from scratch and build their `Settings`
+Both tests re-import `unifi_mcp_server.main` from scratch and build their `Settings`
 from explicit values rather than from the environment, and both read the
 reference environment from `scripts/generate_agent_card.py` so the artifact
 and the test cannot drift apart. The `unifi-docs-sync` skill records the

@@ -12,8 +12,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.webhooks.handlers import WebhookEventHandler
-from src.webhooks.receiver import WebhookEvent
+from unifi_mcp_server.webhooks.handlers import WebhookEventHandler
+from unifi_mcp_server.webhooks.receiver import WebhookEvent
 
 STATE_CHANGES = ["device.online", "device.offline", "client.connected", "client.disconnected"]
 INFORMATIONAL = ["alert.raised", "event.occurred"]
@@ -65,7 +65,7 @@ async def test_without_a_read_cache_nothing_touches_redis(event_type: str) -> No
     # when Redis was not configured.
     handlers = WebhookEventHandler(_settings()).get_default_handlers()
 
-    with patch("src.cache.CacheClient") as legacy_client:
+    with patch("unifi_mcp_server.cache.CacheClient") as legacy_client:
         await handlers[event_type](_event(event_type))
 
     legacy_client.assert_not_called()

@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/types.py."""
+"""Unit tests for src/unifi_mcp_server/a2a/types.py."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from src.a2a.types import (
+from unifi_mcp_server.a2a.types import (
     A2AJSONEncoder,
     AgentCard,
     AuthenticationMode,

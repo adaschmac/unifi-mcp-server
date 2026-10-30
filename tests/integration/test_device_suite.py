@@ -9,9 +9,9 @@ from typing import Any
 
 import pytest
 
-from src.tools import devices
-from src.utils import ResourceNotFoundError
 from tests.integration.test_harness import TestEnvironment, TestHarness, TestSuite
+from unifi_mcp_server.tools import devices
+from unifi_mcp_server.utils import ResourceNotFoundError
 
 
 @pytest.mark.integration

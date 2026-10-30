@@ -13,9 +13,9 @@ each can drift. This skill is the checklist for keeping them aligned.
 
 | Surface | Source of truth | Artifact |
 |---|---|---|
-| MCP tools | `src/tool_registry.py` registration | Live at runtime |
-| A2A agent card | `src/a2a/capabilities.py` (the live registry) | `agent-card.json` |
-| Native MCP prompts | `src/prompts/catalog.py` | Live at runtime |
+| MCP tools | `src/unifi_mcp_server/tool_registry.py` registration | Live at runtime |
+| A2A agent card | `src/unifi_mcp_server/a2a/capabilities.py` (the live registry) | `agent-card.json` |
+| Native MCP prompts | `src/unifi_mcp_server/prompts/catalog.py` | Live at runtime |
 | Documentation | `API.md`, `README.md`, `skills/` | Files |
 
 The rule that keeps them aligned: **never write a tool name into a
@@ -27,7 +27,7 @@ document from memory.** Read it from the registry.
 unset PYTHONPATH; cd /home/elvis/projects/unifi-mcp-server-prompts
 UNIFI_API_KEY=*** UNIFI_API_TYPE=local UNIFI_LOCAL_HOST=192.0.2.1 \
 AGNOST_ENABLED=false ./.venv/bin/python -c "
-import src.main as M
+import unifi_mcp_server.main as M
 tools = sorted(
     k[5:].split('@', 1)[0]
     for k in M.mcp._local_provider._components
@@ -40,13 +40,13 @@ print('\n'.join(tools))"
 The count differs by mode and profile. Local mode registers 343 tools; the
 cloud modes register 71. Check the mode you are documenting.
 
-The risk tier of each tool is in `src/tool_registry.py:TOOL_TIERS`, filled
+The risk tier of each tool is in `src/unifi_mcp_server/tool_registry.py:TOOL_TIERS`, filled
 at registration. It is what the server authorizes against, so a document
 that calls a tool read-only when the registry says write is wrong.
 
 ## When you add a tool
 
-1. **Implement it** in the right `src/tools/` module, with `@read_tool` or
+1. **Implement it** in the right `src/unifi_mcp_server/tools/` module, with `@read_tool` or
    `@write_tool`. `register_module_tools` refuses a tool with no
    declaration, so this is not optional.
 2. **Give a write tool a `confirm` parameter** and, where the operation can
@@ -59,7 +59,7 @@ that calls a tool read-only when the registry says write is wrong.
 5. **Add it to the right skill** under `skills/`. The operator skills cover
    the tool surface; the developer skills cover the module mechanics.
 6. **If it is a new module**, add it to the profile lists in
-   `src/tool_registry.py` and to the module map in the developer skill.
+   `src/unifi_mcp_server/tool_registry.py` and to the module map in the developer skill.
 7. **Regenerate the agent card** if the tool surface changed:
 
    ```bash
@@ -82,17 +82,17 @@ The places a tool name appears:
 
 - `API.md` — the tool's entry.
 - `skills/*/SKILL.md` — the operator and developer skills.
-- `src/prompts/catalog.py` — the prompt catalog names the tools each
+- `src/unifi_mcp_server/prompts/catalog.py` — the prompt catalog names the tools each
   workflow reads. **A prompt whose evidence tool is renamed must be
   updated too**, or the workflow silently loses its evidence.
-- `src/a2a/capabilities.py` — the module-to-domain map, if the module
+- `src/unifi_mcp_server/a2a/capabilities.py` — the module-to-domain map, if the module
   changed.
-- `src/a2a/agent_card.py` — the safety-requirement logic, if the tool's
+- `src/unifi_mcp_server/a2a/agent_card.py` — the safety-requirement logic, if the tool's
   tier changed.
 
 ## The native prompt catalog
 
-`src/prompts/catalog.py` names the tools each workflow reads, in two
+`src/unifi_mcp_server/prompts/catalog.py` names the tools each workflow reads, in two
 places: the `evidence` list and the `requirements` groups.
 
 A workflow is advertised only when the tools its requirements name are
@@ -114,7 +114,7 @@ have.
 The card is built from the live registry, so it follows the tools
 automatically. What it does **not** follow is anything you wrote by hand:
 
-- `capabilities` in `src/a2a/capabilities.py` — the advertised capability
+- `capabilities` in `src/unifi_mcp_server/a2a/capabilities.py` — the advertised capability
   names. A new domain needs a new entry there.
 - `_MODULE_DOMAINS` in the same module — the tool-module-to-domain map. A
   new module must be placed, or it lands in `fleet` by default.
@@ -130,7 +130,7 @@ asserts that.
 
 A test that compares a document against the live tool registry has to
 import the server itself, and that import is **order-dependent**. Another
-test module may have imported `src.main` first, under a different
+test module may have imported `unifi_mcp_server.main` first, under a different
 environment, so the module is already in `sys.modules` with a different tool
 surface. The comparison then fails, or passes, for reasons that have
 nothing to do with the change under test.
@@ -143,10 +143,10 @@ import sys
 
 os.environ.update(REFERENCE_ENV)
 for module_name in list(sys.modules):
-    if module_name == "src.main" or module_name.startswith("src.main."):
+    if module_name == "unifi_mcp_server.main" or module_name.startswith("unifi_mcp_server.main."):
         del sys.modules[module_name]
 sys.path.insert(0, str(ROOT))
-import src.main as main
+import unifi_mcp_server.main as main
 ```
 
 Build the `Settings` from explicit values rather than from the

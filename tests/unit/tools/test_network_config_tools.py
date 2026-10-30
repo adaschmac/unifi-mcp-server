@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.network_config as nc_module
-from src.tools.network_config import create_network, delete_network, update_network
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+import unifi_mcp_server.tools.network_config as nc_module
+from unifi_mcp_server.tools.network_config import create_network, delete_network, update_network
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture

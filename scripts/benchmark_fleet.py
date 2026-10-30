@@ -34,15 +34,16 @@ from unittest import mock
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from src.api.client import UniFiClient  # noqa: E402
-from src.api.pool import ClientPool  # noqa: E402
-from src.config.config import APIType, Settings  # noqa: E402
-from src.fleet.registry import ControllerProfile  # noqa: E402
-from src.fleet.router import FleetRouter  # noqa: E402
-from src.tool_registry import _make_tool_wrapper  # noqa: E402
-from src.utils.exceptions import ResourceNotFoundError  # noqa: E402
-from src.utils.tool_kind import read_tool  # noqa: E402
+from unifi_mcp_server.api.client import UniFiClient  # noqa: E402
+from unifi_mcp_server.api.pool import ClientPool  # noqa: E402
+from unifi_mcp_server.config.config import APIType, Settings  # noqa: E402
+from unifi_mcp_server.fleet.registry import ControllerProfile  # noqa: E402
+from unifi_mcp_server.fleet.router import FleetRouter  # noqa: E402
+from unifi_mcp_server.tool_registry import _make_tool_wrapper  # noqa: E402
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError  # noqa: E402
+from unifi_mcp_server.utils.tool_kind import read_tool  # noqa: E402
 
 
 class _Registry:
@@ -166,7 +167,7 @@ async def run_mode(
     )
     read_cache = None
     if mode == "pool+cache":
-        from src.cache import ReadCache
+        from unifi_mcp_server.cache import ReadCache
 
         read_cache = ReadCache.from_settings(settings)
         await read_cache._redis().flushdb()
@@ -189,7 +190,7 @@ async def run_mode(
             await tool("default", controller=name)
             result.latencies.append(time.perf_counter() - start)
 
-    with mock.patch("src.api.client.httpx.AsyncClient", client_with_transport):
+    with mock.patch("unifi_mcp_server.api.client.httpx.AsyncClient", client_with_transport):
         for _ in range(repeats):
             await asyncio.gather(*(one(p.name) for p in profiles))
     if pool is not None:

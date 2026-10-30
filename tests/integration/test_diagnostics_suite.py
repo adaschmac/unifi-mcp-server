@@ -9,8 +9,8 @@ from typing import Any
 
 import pytest
 
-from src.tools import diagnostics
 from tests.integration.test_harness import TestEnvironment, TestHarness, TestSuite
+from unifi_mcp_server.tools import diagnostics
 
 
 @pytest.mark.integration
@@ -24,7 +24,7 @@ async def test_get_network_references(settings, env: TestEnvironment) -> dict[st
 
     try:
         # First, discover a network
-        from src.tools.networks import list_vlans
+        from unifi_mcp_server.tools.networks import list_vlans
 
         network_list = await list_vlans(
             site_id=env.site_id,

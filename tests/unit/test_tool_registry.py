@@ -20,9 +20,13 @@ if importlib.util.find_spec("fastmcp") is None:
     fastmcp_stub.FastMCP = FastMCP
     sys.modules["fastmcp"] = fastmcp_stub
 
-from src.tool_registry import check_tool_declaration, is_mutating_tool, register_module_tools
-from src.tools import dpi_tools, reference_data
-from src.utils.tool_kind import UndeclaredToolError, read_tool, write_tool
+from unifi_mcp_server.tool_registry import (
+    check_tool_declaration,
+    is_mutating_tool,
+    register_module_tools,
+)
+from unifi_mcp_server.tools import dpi_tools, reference_data
+from unifi_mcp_server.utils.tool_kind import UndeclaredToolError, read_tool, write_tool
 
 
 class FakeMCP:
@@ -132,17 +136,17 @@ async def _dry_run_tool(site_id: str, dry_run: bool | str = False, settings: Any
 
 
 def _iter_tool_modules() -> list[ModuleType]:
-    """Import and return every public module under ``src.tools``."""
+    """Import and return every public module under ``unifi_mcp_server.tools``."""
     import importlib
     import pkgutil
 
-    import src.tools as tools_pkg
+    import unifi_mcp_server.tools as tools_pkg
 
     modules = []
     for info in pkgutil.iter_modules(tools_pkg.__path__):
         if info.name.startswith("_"):
             continue
-        modules.append(importlib.import_module(f"src.tools.{info.name}"))
+        modules.append(importlib.import_module(f"unifi_mcp_server.tools.{info.name}"))
     return modules
 
 
@@ -372,7 +376,7 @@ async def test_dry_run_mode_forces_dry_run_on_gated_tools(dry_run_settings: Magi
         seen.append(dry_run)
         return {"dry_run": dry_run}
 
-    from src.tool_registry import _make_tool_wrapper
+    from unifi_mcp_server.tool_registry import _make_tool_wrapper
 
     wrapped = _make_tool_wrapper(_spy_tool, dry_run_settings)
     result = await wrapped("default", dry_run=False)
@@ -390,7 +394,7 @@ async def test_default_mode_respects_caller_dry_run(settings: MagicMock) -> None
         seen.append(dry_run)
         return {"dry_run": dry_run}
 
-    from src.tool_registry import _make_tool_wrapper
+    from unifi_mcp_server.tool_registry import _make_tool_wrapper
 
     wrapped = _make_tool_wrapper(_spy_tool, settings)
     result = await wrapped("default", dry_run=False)
@@ -418,7 +422,7 @@ async def test_string_dry_run_is_coerced_before_the_tool_sees_it(
         seen.append(dry_run)
         return {}
 
-    from src.tool_registry import _make_tool_wrapper
+    from unifi_mcp_server.tool_registry import _make_tool_wrapper
 
     await _make_tool_wrapper(_spy_tool, settings)("default", dry_run=sent)
 
@@ -433,7 +437,7 @@ def test_sync_wrapper_coerces_string_dry_run(settings: MagicMock) -> None:
         seen.append(dry_run)
         return {}
 
-    from src.tool_registry import _make_tool_wrapper
+    from unifi_mcp_server.tool_registry import _make_tool_wrapper
 
     _make_tool_wrapper(_spy_tool, settings)("default", dry_run="false")
 
@@ -448,10 +452,10 @@ def test_sync_wrapper_coerces_string_dry_run(settings: MagicMock) -> None:
 @pytest.fixture
 def fresh_metrics(monkeypatch: pytest.MonkeyPatch) -> Any:
     """Swap the tool-registry metrics singleton for an isolated registry."""
-    from src.utils.metrics import MetricsRegistry
+    from unifi_mcp_server.utils.metrics import MetricsRegistry
 
     registry = MetricsRegistry()
-    monkeypatch.setattr("src.tool_registry.METRICS", registry)
+    monkeypatch.setattr("unifi_mcp_server.tool_registry.METRICS", registry)
     return registry
 
 
@@ -462,7 +466,7 @@ async def test_metrics_disabled_records_nothing(settings: MagicMock, fresh_metri
     async def _spy_tool(site_id: str, settings: Any = None) -> dict:
         return {}
 
-    from src.tool_registry import _make_tool_wrapper
+    from unifi_mcp_server.tool_registry import _make_tool_wrapper
 
     wrapped = _make_tool_wrapper(_spy_tool, settings)
     await wrapped("default")
@@ -485,7 +489,7 @@ async def test_metrics_records_success_and_error(
 
     monkeypatch.setattr(settings, "metrics_enabled", True)
 
-    from src.tool_registry import _make_tool_wrapper
+    from unifi_mcp_server.tool_registry import _make_tool_wrapper
 
     ok = _make_tool_wrapper(_ok_tool, settings)
     fail = _make_tool_wrapper(_fail_tool, settings)

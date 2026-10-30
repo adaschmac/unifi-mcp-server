@@ -18,7 +18,7 @@ This command scans all MCP tools and resources, extracts documentation from code
 **Steps to execute:**
 
 1. Discover all MCP tools:
-   - Scan `src/tools/` directory for all tool modules
+   - Scan `src/unifi_mcp_server/tools/` directory for all tool modules
    - Import each module and extract tool functions
    - Parse docstrings to get:
      - Description
@@ -28,7 +28,7 @@ This command scans all MCP tools and resources, extracts documentation from code
      - Example usage
 
 2. Discover all MCP resources:
-   - Scan `src/resources/` directory for resource handlers
+   - Scan `src/unifi_mcp_server/resources/` directory for resource handlers
    - Extract resource URI templates
    - Document available operations (list, read, subscribe)
 

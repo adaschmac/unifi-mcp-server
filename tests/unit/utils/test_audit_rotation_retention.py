@@ -12,11 +12,15 @@ from typing import Any
 
 import pytest
 
-from src.utils import audit as audit_module
-from src.utils import audit_retention, audit_verify
-from src.utils.audit import AuditLogger, audit_files, resolve_rotate_bytes
-from src.utils.audit_archive import RetentionRefusedError
-from src.utils.audit_retention import checkpoints_path, purge_expired_files, read_checkpoints
+from unifi_mcp_server.utils import audit as audit_module
+from unifi_mcp_server.utils import audit_retention, audit_verify
+from unifi_mcp_server.utils.audit import AuditLogger, audit_files, resolve_rotate_bytes
+from unifi_mcp_server.utils.audit_archive import RetentionRefusedError
+from unifi_mcp_server.utils.audit_retention import (
+    checkpoints_path,
+    purge_expired_files,
+    read_checkpoints,
+)
 
 verify_cli = audit_verify.main
 retention_cli = audit_retention.main
@@ -273,7 +277,7 @@ class TestRetention:
     def test_the_admin_event_comes_before_the_delete(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from src.utils.audit import AuditUnavailableError
+        from unifi_mcp_server.utils.audit import AuditUnavailableError
 
         log, logger = _old_then_new(tmp_path, monkeypatch)
         before = audit_files(log)

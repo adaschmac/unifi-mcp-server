@@ -1,0 +1,680 @@
+"""Tool registration helper for UniFi MCP Server.
+
+Provides auto-registration of tool module functions onto a FastMCP instance,
+eliminating the per-tool boilerplate in main.py.
+
+Each tool module exposes plain async functions that accept ``settings`` as a
+positional or keyword argument.  ``register_module_tools`` inspects a module,
+finds all public async callables, and registers a ``functools.partial`` wrapper
+(with ``settings`` pre-bound) as an MCP tool, preserving the public signature
+visible to MCP clients (i.e. the signature *without* the ``settings`` param).
+"""
+
+from __future__ import annotations
+
+import functools
+import inspect
+import time
+import types
+from typing import Annotated, Any, cast
+
+from fastmcp import FastMCP
+from fastmcp.server.dependencies import get_context
+from pydantic import Field
+
+from .access import ROLES, PermissionDeniedError, Role, Tier, current_principal, request_principal
+from .api.pool import ClientPool, active_pool
+from .config import Settings
+from .fleet import DEFAULT_CONTROLLER_NAME
+from .fleet.router import FleetRouter, current_controller
+from .utils.audit import AuditLogger, ToolCallRecorder, get_audit_logger
+from .utils.exceptions import ResourceNotFoundError, ValidationError
+from .utils.logger import get_logger
+from .utils.metrics import REGISTRY as METRICS
+from .utils.tool_kind import UndeclaredToolError, declared_kind
+from .utils.validators import coerce_bool
+
+#: Type of the ``fresh`` argument cached read tools gain.
+FreshArg = Annotated[
+    bool,
+    Field(description="Skip cached results and read from the controller (refreshes the cache)."),
+]
+
+#: Type of the ``controller`` argument every controller-bound tool gains.
+ControllerArg = Annotated[
+    str | None,
+    Field(
+        description=(
+            "Controller to run against (see list_controllers). Defaults to the "
+            "controller chosen with select_controller, then the server default."
+        )
+    ),
+]
+
+#: Parameters that only a write tool may take.
+#:
+#: A tool declared with ``@read_tool`` that takes either is refused at
+#: registration: the declaration and the signature disagree.
+_MUTATION_MARKERS = ("confirm", "dry_run")
+
+
+#: Mutating tools whose name starts with one of these are always destructive,
+#: so a newly added delete tool cannot land in a lower tier by omission.
+_DESTRUCTIVE_PREFIXES = ("delete_", "remove_", "bulk_delete_")
+
+#: Mutating tools that delete, restore, re-image, cut service, lock out or
+#: change firewall policy, and whose names do not carry a destructive prefix.
+DESTRUCTIVE_TOOLS = frozenset(
+    {
+        # Raw API passthrough: arbitrary requests to the controller.
+        "connector_network_delete",
+        "connector_network_patch",
+        "connector_network_post",
+        "connector_network_put",
+        "connector_protect_delete",
+        "connector_protect_patch",
+        "connector_protect_post",
+        "connector_protect_put",
+        "debug_api_request",
+        # Restore, re-image, or hand a device to another controller.
+        "migrate_device",
+        "restore_backup",
+        "upgrade_device",
+        # Service interruption.
+        "execute_port_action",
+        "force_provision_device",
+        "move_device_to_site",
+        "restart_device",
+        "suspend_carrier_subscriber",
+        # Blocking clients or traffic.
+        "block_application_by_zone",
+        "block_client",
+        "block_flow_application",
+        "block_flow_destination_ip",
+        "block_flow_source_ip",
+        # Physical security posture.
+        "disable_protect_alarm",
+        "set_current_protect_arm_profile",
+        # Firewall policy: these decide which traffic is allowed, so a bad
+        # change can open the network or lock the operator out. Admin only.
+        "assign_network_to_zone",
+        "create_firewall_policy",
+        "create_firewall_rule",
+        "unassign_network_from_zone",
+        "update_firewall_policy",
+        "update_firewall_rule",
+        "update_zbf_policy",
+    }
+)
+
+#: Tier of every tool registered through :func:`register_module_tools`, by
+#: public tool name. A2A delegation looks tiers up here instead of guessing
+#: from tool names.
+TOOL_TIERS: dict[str, Tier] = {}
+
+
+def tool_tier(fn: Any) -> Tier:
+    """Return the risk tier of tool *fn*.
+
+    Args:
+        fn: The tool function to classify.
+
+    Returns:
+        ``read`` for non-mutating tools, ``destructive`` for mutating tools in
+        :data:`DESTRUCTIVE_TOOLS` or with a destructive name prefix, and
+        ``write`` for every other mutating tool.
+    """
+    if not is_mutating_tool(fn):
+        return "read"
+    name = getattr(fn, "__name__", "").lstrip("_")
+    if name in DESTRUCTIVE_TOOLS or name.startswith(_DESTRUCTIVE_PREFIXES):
+        return "destructive"
+    return "write"
+
+
+def _audit_logger_for(settings: Any) -> AuditLogger | None:
+    """Return the audit logger for wrapper records, or None when auditing is off."""
+    if getattr(settings, "audit_log_enabled", False) is not True:
+        return None
+    log_file = getattr(settings, "audit_log_file", None)
+    return get_audit_logger(log_file if isinstance(log_file, str) else None)
+
+
+def _request_ids() -> tuple[str | None, str | None]:
+    """Return the MCP session and request ids of the current call, if any.
+
+    Both are optional. A tool can run outside an MCP request — the A2A
+    delegation endpoint calls tools from a plain HTTP route, and a
+    background worker calls them with no session at all — so the absence of
+    a session or a request id is not an error. It only means the audit
+    record carries no session reference.
+    """
+    try:
+        ctx = get_context()
+    except RuntimeError:
+        return None, None
+    try:
+        return ctx.session_id, ctx.request_id
+    except RuntimeError:
+        # A context without a session: the ids are simply not available.
+        return None, None
+
+
+def is_mutating_tool(fn: Any) -> bool:
+    """Return whether *fn* can change controller state.
+
+    The answer is the tool's ``@read_tool``/``@write_tool`` declaration
+    (:mod:`unifi_mcp_server.utils.tool_kind`). A function with no declaration counts as
+    mutating, so a missing declaration can only hide a tool, never expose one.
+
+    Args:
+        fn: The tool function to classify.
+
+    Returns:
+        True unless the tool is declared read-only.
+    """
+    return declared_kind(fn) != "read"
+
+
+def check_tool_declaration(fn: Any) -> None:
+    """Refuse a tool whose read/write declaration is missing or contradicts it.
+
+    Args:
+        fn: The tool function about to be registered.
+
+    Raises:
+        UndeclaredToolError: If *fn* has no ``@read_tool``/``@write_tool``
+            declaration, or is declared read but takes ``confirm`` or ``dry_run``.
+    """
+    name = getattr(fn, "__name__", repr(fn))
+    module = getattr(fn, "__module__", "?")
+    kind = declared_kind(fn)
+    if kind is None:
+        raise UndeclaredToolError(
+            f"Tool {module}.{name} has no read/write declaration: decorate it with "
+            "@read_tool or @write_tool from unifi_mcp_server.utils.tool_kind"
+        )
+    if kind == "read":
+        try:
+            params = inspect.signature(fn).parameters
+        except (TypeError, ValueError):  # pragma: no cover - defensive
+            return
+        markers = [m for m in _MUTATION_MARKERS if m in params]
+        if markers:
+            raise UndeclaredToolError(
+                f"Tool {module}.{name} is declared @read_tool but takes "
+                f"{', '.join(markers)}, which only write tools take"
+            )
+
+
+def _get_registered_tool_names(mcp: FastMCP) -> set[str]:
+    """Return the tool names already registered on this MCP instance.
+
+    FastMCP's duplicate-component warnings are emitted when the same tool name
+    is registered more than once on a live server instance.  We keep a per-
+    instance registry so repeated registration passes can safely skip names that
+    were already seen, instead of relying on FastMCP's warning path.
+    """
+    try:
+        registry = mcp.__dict__
+    except AttributeError:
+        registered = getattr(mcp, "_registered_tool_names", None)
+        if registered is None:
+            registered = set()
+            mcp._registered_tool_names = registered  # type: ignore[attr-defined]
+        return registered
+
+    registered = registry.get("_registered_tool_names")
+    if registered is None:
+        registered = set()
+        registry["_registered_tool_names"] = registered
+    return registered
+
+
+def _make_tool_wrapper(
+    fn: Any,
+    settings: Settings,
+    router: FleetRouter | None = None,
+    *,
+    routed: bool = True,
+    tier: Tier | None = None,
+    event_type: str = "tool_call",
+    module: str | None = None,
+    always_audit: bool = False,
+    pool: ClientPool | None = None,
+    read_cache: Any = None,
+) -> Any:
+    """Return an async wrapper for *fn* with ``settings`` bound.
+
+    The wrapper's ``__signature__`` is set to the public signature (all
+    parameters except ``settings``) so FastMCP generates the correct JSON
+    schema for MCP clients.
+
+    Async tools also gain an optional keyword-only ``controller`` argument.
+    Each call is resolved to one controller by *router*, and the tool receives
+    that controller's settings. Without a router the wrapper serves only the
+    ``default`` controller with *settings*, exactly as before routing existed.
+
+    Args:
+        fn: The original async tool function.
+        settings: Application settings instance to bind.
+        router: Resolves each call to a controller (see ``src/unifi_mcp_server/fleet/router.py``).
+        routed: False for tools that manage the registry rather than act on a
+            controller: no ``controller`` argument and no resolution.
+        tier: Overrides the tier derived from *fn* (e.g. ``fleet-admin``).
+        event_type: Audit event type of the tool's records.
+        module: Module name checked against a caller's module filters
+            (default: the last component of *fn*'s module).
+        always_audit: Audit the call even though the tool does not mutate
+            (e.g. audit log queries).
+        pool: Shared per-controller connections for the API clients the tool
+            builds (see ``src/unifi_mcp_server/api/pool.py``).
+        read_cache: ``unifi_mcp_server.cache.ReadCache``: caches this tool's results if it
+            is a cached read, or invalidates the controller's cache if it writes.
+
+    Returns:
+        An async callable with the ``settings`` parameter removed from its
+        visible signature.
+
+    Raises:
+        UndeclaredToolError: If *fn* has no ``@read_tool``/``@write_tool``
+            declaration; see :func:`check_tool_declaration`.
+    """
+    sig = inspect.signature(fn)
+    params = sig.parameters
+
+    # Determine whether settings is a positional-or-keyword vs keyword-only param
+    # and build the public signature without it.
+    public_params = [p for name, p in params.items() if name != "settings"]
+    public_sig = sig.replace(parameters=public_params)
+
+    # Global change-safe mode: a tool that declares a dry_run parameter can be
+    # forced into preview mode regardless of what the caller passes. Tools
+    # without a dry_run gate never reach this point in dry-run mode (they are
+    # filtered at registration), so forcing here is always safe.
+    force_dry_run = "dry_run" in params
+
+    # Every tool that takes ``confirm`` is refused here unless the caller
+    # confirmed or asked for a preview, so a handler that forgets the check, or
+    # tests the raw string with a bare ``if``, cannot write unconfirmed.
+    requires_confirm = "confirm" in params
+
+    # Metric labels must match the public MCP tool name, not the private
+    # module-level spelling (tools are defined as ``_list_devices`` but
+    # registered as ``list_devices``).
+    metric_tool_name = fn.__name__.lstrip("_")
+    check_tool_declaration(fn)
+    mutating = is_mutating_tool(fn)
+    tier = tier or tool_tier(fn)
+    module = module or fn.__module__.rsplit(".", 1)[-1]
+    family: str | None = None
+    ttl = 0
+    if read_cache is not None and routed and not mutating:
+        from .cache import CacheConfig, cache_family
+
+        family = cache_family(module, metric_tool_name)
+        ttl = CacheConfig.get_ttl(family) if family else 0
+    # UNIFI_AUDIT_READS: give read calls the same attempt and outcome records.
+    # The outcome never carries the tool's result, so no response payload
+    # (client lists, device inventory) reaches the audit store.
+    audit_reads = getattr(settings, "audit_reads", False) is True
+    role_setting = getattr(settings, "stdio_role", None)
+    local_role = cast(Role, role_setting if role_setting in ROLES else "fleet-admin")
+
+    if inspect.iscoroutinefunction(fn):
+        if routed:
+            public_sig = _with_controller_param(public_sig)
+        if family is not None:
+            public_sig = _with_keyword_param(public_sig, "fresh", False, FreshArg)
+
+        @functools.wraps(fn)
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            _coerce_dry_run(kwargs)
+            _coerce_confirm(kwargs)
+            requested = kwargs.pop("controller", None)
+            fresh = coerce_bool(kwargs.pop("fresh", False)) if family is not None else False
+            principal = request_principal(local_role)
+            audit = _audit_logger_for(settings)
+            # Every mutating call is audited (plan §3.7); reads only when refused,
+            # unless UNIFI_AUDIT_READS is on.
+            audited = audit is not None and (mutating or always_audit or audit_reads)
+            context: dict[str, Any] = {}
+            if audit is not None:
+                session_id, request_id = _request_ids()
+                arguments = dict(public_sig.bind_partial(*args, **kwargs).arguments)
+                context = {
+                    "operation": metric_tool_name,
+                    "tool": metric_tool_name,
+                    "tier": tier,
+                    "principal": principal.audit_view(),
+                    "user": principal.id,
+                    "site_id": arguments.get("site_id"),
+                    "session_id": session_id,
+                    "request_id": request_id,
+                    "parameters": arguments,
+                }
+
+            async def record_denied(error: Exception, target: str | None) -> None:
+                if audit is not None:
+                    await audit.alog_event(
+                        "denied", result="denied", error=str(error), controller=target, **context
+                    )
+
+            refusal = None
+            if not principal.can_use(tier):
+                refusal = PermissionDeniedError(
+                    f"Permission denied: {metric_tool_name} needs the '{tier}' tier"
+                )
+            elif not principal.allows_module(module):
+                refusal = PermissionDeniedError(
+                    f"Permission denied: tools from module '{module}' are not allowed "
+                    "for this caller"
+                )
+            if refusal is not None:
+                await record_denied(refusal, requested)
+                raise refusal
+
+            labels: dict[str, str] = {}
+            try:
+                if not routed:
+                    controller, call_settings = None, settings
+                elif router is None:
+                    if requested not in (None, DEFAULT_CONTROLLER_NAME):
+                        raise ResourceNotFoundError("controller", requested)
+                    controller, call_settings = DEFAULT_CONTROLLER_NAME, settings
+                else:
+                    resolution = await router.resolve(requested, mutating=mutating)
+                    controller, call_settings = resolution.name, resolution.settings
+                    labels = dict(resolution.labels)
+            except (ResourceNotFoundError, ValidationError) as e:
+                if mutating or audited:
+                    await record_denied(e, requested)
+                raise
+
+            if controller is not None and not principal.allows_controller(labels):
+                refusal = PermissionDeniedError(
+                    f"Permission denied: controller '{controller}' is outside this caller's scope"
+                )
+                await record_denied(refusal, controller)
+                raise refusal
+
+            if force_dry_run and getattr(settings, "dry_run", False):
+                kwargs["dry_run"] = True
+            if requires_confirm:
+                unconfirmed = _confirmation_refusal(metric_tool_name, public_sig, args, kwargs)
+                if unconfirmed is not None:
+                    await record_denied(unconfirmed, controller)
+                    raise unconfirmed
+            cache_key = None
+            if family is not None and controller is not None:
+                cache_arguments = dict(public_sig.bind_partial(*args, **kwargs).arguments)
+                cache_key = read_cache.key(controller, family, metric_tool_name, cache_arguments)
+            invalidates = (
+                read_cache is not None
+                and mutating
+                and controller is not None
+                and not coerce_bool(kwargs.get("dry_run", False))
+            )
+            kwargs["settings"] = call_settings
+            recorder = None
+            if audited:
+                assert audit is not None  # noqa: S101 - implied by `audited`
+                recorder = ToolCallRecorder(
+                    audit,
+                    fail_closed=getattr(settings, "audit_fail_closed", True) is not False,
+                    event_type=event_type,
+                    controller=controller,
+                    **context,
+                )
+                await recorder.attempt()
+
+            metrics_on = getattr(settings, "metrics_enabled", False)
+            token = current_controller.set(controller)
+            principal_token = current_principal.set(principal)
+            pool_token = active_pool.set(pool)
+            try:
+                if metrics_on and controller is not None:
+                    METRICS.record_controller_call(controller)
+                start = time.perf_counter()
+
+                async def call() -> Any:
+                    return await fn(*args, **kwargs)
+
+                try:
+                    if cache_key is not None:
+                        result = await read_cache.read_through(cache_key, ttl, call, fresh=fresh)
+                    else:
+                        result = await call()
+                except Exception as e:
+                    if invalidates:
+                        await read_cache.invalidate_controller(controller)
+                    if metrics_on:
+                        METRICS.record_tool_call(
+                            metric_tool_name, "error", time.perf_counter() - start
+                        )
+                    if recorder is not None:
+                        await recorder.outcome("error", error=str(e))
+                    raise
+                if invalidates:
+                    await read_cache.invalidate_controller(controller)
+                if metrics_on:
+                    METRICS.record_tool_call(
+                        metric_tool_name, "success", time.perf_counter() - start
+                    )
+                if recorder is not None:
+                    dry_run = coerce_bool(kwargs.get("dry_run", False))
+                    await recorder.outcome("dry_run" if dry_run else "success")
+                return result
+            finally:
+                active_pool.reset(pool_token)
+                current_principal.reset(principal_token)
+                current_controller.reset(token)
+
+        # functools.wraps shares fn's annotation dict; give the wrapper its own
+        # so the added parameter reaches the schema without touching fn.
+        if routed:
+            annotations = {**fn.__annotations__, "controller": ControllerArg}
+            if family is not None:
+                annotations["fresh"] = FreshArg
+            wrapper.__annotations__ = annotations
+
+    else:
+
+        @functools.wraps(fn)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            _coerce_dry_run(kwargs)
+            _coerce_confirm(kwargs)
+            if force_dry_run and getattr(settings, "dry_run", False):
+                kwargs["dry_run"] = True
+            if requires_confirm:
+                refusal = _confirmation_refusal(metric_tool_name, public_sig, args, kwargs)
+                if refusal is not None:
+                    raise refusal
+            kwargs["settings"] = settings
+            if not getattr(settings, "metrics_enabled", False):
+                return fn(*args, **kwargs)
+            start = time.perf_counter()
+            try:
+                result = fn(*args, **kwargs)
+            except Exception:
+                METRICS.record_tool_call(metric_tool_name, "error", time.perf_counter() - start)
+                raise
+            METRICS.record_tool_call(metric_tool_name, "success", time.perf_counter() - start)
+            return result
+
+    wrapper.__signature__ = public_sig  # type: ignore[attr-defined]
+    return wrapper
+
+
+def _coerce_dry_run(kwargs: dict[str, Any]) -> None:
+    """Normalise a caller-supplied ``dry_run`` to a bool in place.
+
+    MCP clients may send ``"false"``; tools typed ``bool | str`` test the raw
+    value with a bare ``if``, where any non-empty string is truthy. A string
+    that is not clearly false stays a preview rather than becoming a change.
+    """
+    if "dry_run" in kwargs:
+        value = kwargs["dry_run"]
+        if isinstance(value, str):
+            kwargs["dry_run"] = value.strip().lower() not in ("false", "0", "no", "")
+        else:
+            kwargs["dry_run"] = coerce_bool(value)
+
+
+def _coerce_confirm(kwargs: dict[str, Any]) -> None:
+    """Normalise a caller-supplied ``confirm`` to a bool in place.
+
+    Only ``"true"``, ``"1"`` and ``"yes"`` confirm; any other string, including
+    ``"false"``, does not. Handlers then see a real bool, so a bare
+    ``if not confirm`` reads the caller's intent rather than string truthiness.
+    """
+    if "confirm" in kwargs:
+        kwargs["confirm"] = coerce_bool(kwargs["confirm"])
+
+
+def _confirmation_refusal(
+    name: str, sig: inspect.Signature, args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> ValidationError | None:
+    """Return the error refusing an unconfirmed call, or None if it may proceed.
+
+    A call proceeds when ``confirm`` is true or ``dry_run`` is true (a preview
+    changes nothing). Both are read after coercion, so ``"false"`` counts as
+    false. If the arguments do not bind, only the keyword arguments are read,
+    so a malformed call is still refused rather than waved through.
+    """
+    try:
+        arguments: dict[str, Any] = dict(sig.bind_partial(*args, **kwargs).arguments)
+    except TypeError:
+        arguments = kwargs
+    if coerce_bool(arguments.get("dry_run", False)) or coerce_bool(arguments.get("confirm", False)):
+        return None
+    return ValidationError(
+        f"Operation '{name}' requires confirmation. Set confirm=true to proceed."
+    )
+
+
+def _with_controller_param(sig: inspect.Signature) -> inspect.Signature:
+    """Return *sig* with an optional keyword-only ``controller`` parameter."""
+    return _with_keyword_param(sig, "controller", None, ControllerArg)
+
+
+def _with_keyword_param(
+    sig: inspect.Signature, name: str, default: Any, annotation: Any
+) -> inspect.Signature:
+    """Return *sig* with an optional keyword-only parameter added."""
+    param = inspect.Parameter(
+        name, inspect.Parameter.KEYWORD_ONLY, default=default, annotation=annotation
+    )
+    params = list(sig.parameters.values())
+    if params and params[-1].kind is inspect.Parameter.VAR_KEYWORD:
+        params.insert(len(params) - 1, param)
+    else:
+        params.append(param)
+    return sig.replace(parameters=params)
+
+
+def register_module_tools(
+    mcp: FastMCP,
+    module: types.ModuleType,
+    settings: Settings,
+    *,
+    include: list[str] | None = None,
+    exclude: list[str] | None = None,
+    router: FleetRouter | None = None,
+    pool: ClientPool | None = None,
+    read_cache: Any = None,
+) -> list[str]:
+    """Register all public async functions from *module* as MCP tools.
+
+    Functions are registered only if:
+    - They are async callables defined in *module* (not imported from elsewhere).
+    - Their name does not start with ``_``.
+    - They are in *include* (if specified) or not in *exclude* (if specified).
+    - They accept a ``settings`` parameter (otherwise registered as-is).
+    - They are non-mutating, when ``settings.read_only`` is enabled.
+
+    Args:
+        mcp: The FastMCP server instance.
+        module: The tool module to introspect.
+        settings: Settings instance to bind.
+        include: Optional explicit list of function names to register.
+        exclude: Optional list of function names to skip.
+        router: Resolves each call to a controller; see :func:`_make_tool_wrapper`.
+        pool: Shared per-controller connections; see :func:`_make_tool_wrapper`.
+        read_cache: Read-through cache; see :func:`_make_tool_wrapper`.
+
+    Returns:
+        List of registered tool names.
+    """
+    registered: list[str] = []
+    skipped: list[str] = []
+    skipped_dry_run: list[str] = []
+    exclude_set = set(exclude or [])
+    registered_names = _get_registered_tool_names(mcp)
+
+    for name, obj in inspect.getmembers(module, inspect.isfunction):
+        # Skip private / dunder names
+        if name.startswith("_"):
+            continue
+        # Only functions defined in this module (not re-exported imports)
+        if obj.__module__ != module.__name__:
+            continue
+        if include is not None and name not in include:
+            continue
+        if name in exclude_set:
+            continue
+        if not inspect.iscoroutinefunction(obj):
+            continue
+        # Every tool declares read or write; refuse to start rather than guess.
+        check_tool_declaration(obj)
+        # Read-only mode: never expose state-changing tools to the client.
+        # Filtering at registration means the tool is absent from the MCP tool
+        # list entirely, rather than relying on a caller-supplied ``confirm``.
+        if getattr(settings, "read_only", False) and is_mutating_tool(obj):
+            skipped.append(name)
+            continue
+
+        # Global dry-run mode: gated tools get dry_run forced on at call time,
+        # but a mutating tool with no dry_run parameter at all cannot honour
+        # the "no write reaches the controller" promise — leave it out.
+        if (
+            getattr(settings, "dry_run", False)
+            and "dry_run" not in inspect.signature(obj).parameters
+            and is_mutating_tool(obj)
+        ):
+            skipped_dry_run.append(name)
+            continue
+
+        params = inspect.signature(obj).parameters
+        if "settings" in params:
+            tool_fn = _make_tool_wrapper(obj, settings, router, pool=pool, read_cache=read_cache)
+        else:
+            tool_fn = obj
+
+        if name in registered_names:
+            # Keep the first registered variant when multiple modules define the
+            # same public tool name.
+            continue
+
+        mcp.tool()(tool_fn)
+        TOOL_TIERS[name] = tool_tier(obj)
+        registered_names.add(name)
+        METRICS.note_tool_registered()
+        registered.append(name)
+
+    if skipped:
+        get_logger(__name__).info(
+            "Read-only mode: skipped %d mutating tool(s) from %s: %s",
+            len(skipped),
+            module.__name__,
+            ", ".join(sorted(skipped)),
+        )
+    if skipped_dry_run:
+        get_logger(__name__).info(
+            "Dry-run mode: skipped %d mutating tool(s) without a dry_run gate from %s: %s",
+            len(skipped_dry_run),
+            module.__name__,
+            ", ".join(sorted(skipped_dry_run)),
+        )
+
+    return registered

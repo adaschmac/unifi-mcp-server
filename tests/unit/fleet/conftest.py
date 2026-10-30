@@ -44,7 +44,7 @@ def credential_key(monkeypatch: pytest.MonkeyPatch) -> str:
 
 @pytest.fixture
 async def engine(database_url: str) -> AsyncIterator[Any]:
-    from src.fleet.db.schema import make_engine
+    from unifi_mcp_server.fleet.db.schema import make_engine
 
     engine = make_engine(database_url)
     yield engine
@@ -53,7 +53,7 @@ async def engine(database_url: str) -> AsyncIterator[Any]:
 
 @pytest.fixture
 async def migrated_engine(engine: Any) -> Any:
-    from src.fleet.db.schema import upgrade
+    from unifi_mcp_server.fleet.db.schema import upgrade
 
     await upgrade(engine)
     return engine

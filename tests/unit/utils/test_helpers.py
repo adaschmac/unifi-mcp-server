@@ -1,6 +1,6 @@
 """Unit tests for helper utility functions."""
 
-from src.utils.helpers import (
+from unifi_mcp_server.utils.helpers import (
     build_uri,
     first_response_item,
     format_bytes,

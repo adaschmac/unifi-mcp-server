@@ -26,13 +26,13 @@ Find all tools registered in the MCP server:
 
 ```bash
 # Search for @mcp.tool() decorators
-rg "@mcp\.tool\(\)" src/tools/ -A 5
+rg "@mcp\.tool\(\)" src/unifi_mcp_server/tools/ -A 5
 ```
 
 **Tool Categories to Scan:**
 
 ```
-src/tools/
+src/unifi_mcp_server/tools/
 ├── clients.py          # Client management (4 tools)
 ├── devices.py          # Device management (4 tools)
 ├── networks.py         # Network query (4 tools)
@@ -63,7 +63,7 @@ For each tool, extract:
 **Example Extraction:**
 
 ```python
-# src/tools/devices.py
+# src/unifi_mcp_server/tools/devices.py
 
 @mcp.tool()
 async def list_devices(
@@ -524,7 +524,7 @@ def generate_markdown(tools: List[Dict[str, Any]]) -> str:
 
 def main():
     # Scan all tool files
-    tools_dir = Path("src/tools")
+    tools_dir = Path("src/unifi_mcp_server/tools")
     all_tools = []
 
     for tool_file in tools_dir.glob("*.py"):
@@ -555,7 +555,7 @@ if __name__ == "__main__":
 
 Load for context:
 
-- `src/tools/*.py` - All tool implementations
+- `src/unifi_mcp_server/tools/*.py` - All tool implementations
 - `API.md` - Current API documentation
 - `README.md` - Project overview (check consistency)
 - `CHANGELOG.md` - Version history

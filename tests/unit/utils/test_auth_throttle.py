@@ -14,7 +14,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
-from src.utils.auth_throttle import BearerFailureLimiter
+from unifi_mcp_server.utils.auth_throttle import BearerFailureLimiter
 
 TOKEN = "a-long-enough-test-token-value"  # pragma: allowlist secret
 

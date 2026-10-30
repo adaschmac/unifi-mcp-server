@@ -4,14 +4,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import protect_alarm_hubs
-from src.tools.protect_alarm_hubs import (
+from unifi_mcp_server.tools import protect_alarm_hubs
+from unifi_mcp_server.tools.protect_alarm_hubs import (
     get_protect_alarm_hub,
     list_protect_alarm_hubs,
     trigger_protect_alarm_hub_output,
     update_protect_alarm_hub,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ async def test_list_protect_alarm_hubs_success(mock_settings, mock_client):
             ],
         }
     )
-    with patch("src.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
         result = await list_protect_alarm_hubs(mock_settings, limit=10, offset=0)
     mock_client.get.assert_awaited_once_with(
         "/integration/v1/alarm-hubs", params={"limit": 10, "offset": 0}
@@ -63,7 +63,7 @@ async def test_list_protect_alarm_hubs_success(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_get_protect_alarm_hub_success(mock_settings, mock_client):
     mock_client.get = AsyncMock(return_value={"id": "hub-1", "name": "Main Hub"})
-    with patch("src.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
         result = await get_protect_alarm_hub("hub-1", mock_settings)
     mock_client.get.assert_awaited_once_with("/integration/v1/alarm-hubs/hub-1")
     assert result["id"] == "hub-1"
@@ -83,7 +83,7 @@ WRITES = [
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("name", "kwargs"), WRITES, ids=[n for n, _ in WRITES])
 async def test_write_refused_without_confirm(mock_settings, mock_client, name, kwargs):
-    with patch("src.tools.protect_alarm_hubs.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await getattr(protect_alarm_hubs, name)(settings=mock_settings, **kwargs)
         client_cls.assert_not_called()
@@ -92,7 +92,7 @@ async def test_write_refused_without_confirm(mock_settings, mock_client, name, k
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("name", "kwargs"), WRITES, ids=[f"{n}-strfalse" for n, _ in WRITES])
 async def test_write_refused_with_string_false_confirm(mock_settings, mock_client, name, kwargs):
-    with patch("src.tools.protect_alarm_hubs.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await getattr(protect_alarm_hubs, name)(
                 settings=mock_settings, confirm="false", **kwargs
@@ -106,7 +106,7 @@ async def test_write_refused_with_string_false_confirm(mock_settings, mock_clien
 @pytest.mark.asyncio
 async def test_update_protect_alarm_hub_success(mock_settings, mock_client):
     mock_client.patch = AsyncMock(return_value={"id": "hub-1", "name": "New Name"})
-    with patch("src.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
         result = await update_protect_alarm_hub(
             "hub-1", mock_settings, name="New Name", confirm=True
         )
@@ -118,7 +118,7 @@ async def test_update_protect_alarm_hub_success(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_update_protect_alarm_hub_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
         result = await update_protect_alarm_hub(
             "hub-1", mock_settings, name="New Name", confirm=True, dry_run=True
         )
@@ -139,7 +139,7 @@ async def test_update_protect_alarm_hub_requires_a_field(mock_settings, mock_cli
 @pytest.mark.asyncio
 async def test_trigger_output_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
         result = await trigger_protect_alarm_hub_output(
             "hub-1", "out-1", mock_settings, enable=True, delay=500, duration=1000, confirm=True
         )
@@ -155,7 +155,7 @@ async def test_trigger_output_success(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_trigger_output_toggle_omits_enable(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
         await trigger_protect_alarm_hub_output("hub-1", "out-1", mock_settings, confirm=True)
     mock_client.post.assert_awaited_once_with(
         "/integration/v1/alarm-hubs/hub-1/outputs/out-1/trigger", json_data=None
@@ -164,7 +164,7 @@ async def test_trigger_output_toggle_omits_enable(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_trigger_output_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm_hubs.ProtectClient", return_value=mock_client):
         result = await trigger_protect_alarm_hub_output(
             "hub-1",
             "out-1",

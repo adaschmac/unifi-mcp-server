@@ -74,14 +74,14 @@ Coverage by Category:
 ✗ Webhooks: 12.00% (needs +68.00%)
 
 Top Priority Files (from TESTING_PLAN.md Phase 1):
-1. src/api/client.py - 45.23% (55 missing lines)
+1. src/unifi_mcp_server/api/client.py - 45.23% (55 missing lines)
    - Need tests for: rate limiting, error handling, retry logic
-2. src/config/settings.py - 60.00% (20 missing lines)
+2. src/unifi_mcp_server/config/settings.py - 60.00% (20 missing lines)
    - Need tests for: environment variable loading, validation
-3. src/webhooks/receiver.py - 12.00% (88 missing lines)
+3. src/unifi_mcp_server/webhooks/receiver.py - 12.00% (88 missing lines)
    - Need tests for: webhook validation, signature checking
 
-Next Action: Focus on src/api/client.py
+Next Action: Focus on src/unifi_mcp_server/api/client.py
 Estimated effort: 8-10 test cases
 Expected coverage gain: +11.13%
 ```

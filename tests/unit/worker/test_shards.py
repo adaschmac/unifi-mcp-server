@@ -14,11 +14,17 @@ from collections.abc import Iterator
 import pytest
 
 fakeredis = pytest.importorskip("fakeredis")
-from src import cache  # noqa: E402
-from src.config.config import Settings  # noqa: E402
-from src.worker.shards import MEMBERS_KEY, RedisShards, SoloShards, lease_key, owner  # noqa: E402
+from unifi_mcp_server import cache  # noqa: E402
+from unifi_mcp_server.config.config import Settings  # noqa: E402
+from unifi_mcp_server.worker.shards import (  # noqa: E402
+    MEMBERS_KEY,
+    RedisShards,
+    SoloShards,
+    lease_key,
+    owner,
+)
 
-# The redis module src.cache (and so the code under test) uses. Not
+# The redis module unifi_mcp_server.cache (and so the code under test) uses. Not
 # ``import redis.asyncio``: tests/unit/test_cache.py swaps a stand-in into
 # sys.modules["redis"] at collection, before this directory is collected.
 aioredis = cache.redis

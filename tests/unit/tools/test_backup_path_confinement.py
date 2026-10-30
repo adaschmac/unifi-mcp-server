@@ -17,12 +17,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-import src.tools.backups as backups_module
-from src.api.client import UniFiClient
-from src.config import Settings
-from src.tools.backups import download_backup
-from src.utils.exceptions import ValidationError
-from src.utils.validators import validate_backup_filename
+import unifi_mcp_server.tools.backups as backups_module
+from unifi_mcp_server.api.client import UniFiClient
+from unifi_mcp_server.config import Settings
+from unifi_mcp_server.tools.backups import download_backup
+from unifi_mcp_server.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.validators import validate_backup_filename
 
 # --------------------------------------------------------------------------- #
 # validate_backup_filename

@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/prompt_playbook.py and the bundled playbooks."""
+"""Unit tests for src/unifi_mcp_server/a2a/prompt_playbook.py and the bundled playbooks."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from src.a2a.playbooks import PLAYBOOKS
-from src.a2a.prompt_playbook import (
+from unifi_mcp_server.a2a.playbooks import PLAYBOOKS
+from unifi_mcp_server.a2a.prompt_playbook import (
     DEFAULT_PLAYBOOK_REGISTRY,
     PlaybookRegistry,
     PlaybookStep,
@@ -149,7 +149,7 @@ class TestDefaultRegistry:
     def test_recovers_when_the_registry_was_built_before_the_playbooks_package(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Importing src.a2a.playbooks first used to leave the registry empty."""
+        """Importing unifi_mcp_server.a2a.playbooks first used to leave the registry empty."""
         monkeypatch.setattr(DEFAULT_PLAYBOOK_REGISTRY, "_playbooks", {})
 
         assert _default_registry().names() == EXPECTED_BUILTIN_NAMES
@@ -228,7 +228,7 @@ class TestRenderPlaybook:
 
 
 class TestBundledPlaybooks:
-    """Contract tests covering every playbook in src/a2a/playbooks."""
+    """Contract tests covering every playbook in src/unifi_mcp_server/a2a/playbooks."""
 
     def test_names_are_unique_and_complete(self) -> None:
         assert sorted(playbook.name for playbook in PLAYBOOKS) == EXPECTED_BUILTIN_NAMES

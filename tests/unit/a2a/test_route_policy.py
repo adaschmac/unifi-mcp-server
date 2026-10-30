@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/route_policy.py."""
+"""Unit tests for src/unifi_mcp_server/a2a/route_policy.py."""
 
 from __future__ import annotations
 
@@ -8,14 +8,14 @@ from typing import Any
 
 import pytest
 
-from src.a2a.route_policy import (
+from unifi_mcp_server.a2a.route_policy import (
     ConfirmationToken,
     ConfirmationWorkflow,
     RoutePolicy,
     SafetyController,
     SafetyResult,
 )
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 
 def auth(permissions: set[str] | None = None, **credentials: Any) -> SimpleNamespace:

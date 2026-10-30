@@ -17,13 +17,13 @@ from fastmcp import Client, FastMCP
 from fastmcp.exceptions import ToolError
 from fastmcp.server.auth import AccessToken
 
-from src.config.config import APIType, Settings
-from src.fleet.fleet_tools import register_fleet_read_tools
-from src.fleet.registry import ControllerProfile
-from src.fleet.router import FleetRouter
-from src.tool_registry import TOOL_TIERS, _make_tool_wrapper, tool_tier
-from src.utils import tool_kind
-from src.utils.exceptions import ResourceNotFoundError
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet.fleet_tools import register_fleet_read_tools
+from unifi_mcp_server.fleet.registry import ControllerProfile
+from unifi_mcp_server.fleet.router import FleetRouter
+from unifi_mcp_server.tool_registry import TOOL_TIERS, _make_tool_wrapper, tool_tier
+from unifi_mcp_server.utils import tool_kind
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
 KEY = "k"  # pragma: allowlist secret
 FLEET_SIZE = 1000
@@ -90,7 +90,7 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
     monkeypatch.setenv("UNIFI_FLEET_FANOUT_CONCURRENCY", "100")
     monkeypatch.setenv("UNIFI_FLEET_FANOUT_TIMEOUT_SECONDS", "0.5")
     monkeypatch.setenv("UNIFI_FLEET_FANOUT_DEADLINE_SECONDS", "10")
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 
@@ -115,7 +115,7 @@ def _as(monkeypatch: pytest.MonkeyPatch, role: str, **claims: Any) -> None:
         scopes=[],
         claims={"token_id": "tok-1", "name": "t", "role": role, **claims},
     )
-    monkeypatch.setattr("src.access.get_access_token", lambda: token)
+    monkeypatch.setattr("unifi_mcp_server.access.get_access_token", lambda: token)
 
 
 async def _fanout(server: FastMCP, **arguments: Any) -> dict[str, Any]:

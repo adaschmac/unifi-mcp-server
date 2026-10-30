@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/delegation.py."""
+"""Unit tests for src/unifi_mcp_server/a2a/delegation.py."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from typing import Any
 
 import pytest
 
-from src.a2a import delegation
-from src.a2a.delegation import (
+from unifi_mcp_server.a2a import delegation
+from unifi_mcp_server.a2a.delegation import (
     _active_mcp,
     _auth_mode_for_settings,
     _is_destructive_tool_name,
@@ -20,8 +20,8 @@ from src.a2a.delegation import (
     execute_delegated_call,
     validate_delegation,
 )
-from src.a2a.types import AuthenticationMode, DelegationContract, SafetyRequirement
-from src.config.config import Settings
+from unifi_mcp_server.a2a.types import AuthenticationMode, DelegationContract, SafetyRequirement
+from unifi_mcp_server.config.config import Settings
 
 from .conftest import FakeMCP, delete_site_device, list_site_clients, make_tool
 
@@ -97,7 +97,7 @@ class TestActiveMcp:
     def only_marker_counts_as_a_server(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Narrow the isinstance check so unrelated imports cannot match.
 
-        src/main.py holds a module-level FastMCP, so scanning the real
+        src/unifi_mcp_server/main.py holds a module-level FastMCP, so scanning the real
         sys.modules would otherwise make these tests depend on import order.
         """
         monkeypatch.setattr(delegation, "FastMCP", Marker)
@@ -213,7 +213,7 @@ class TestCreateDelegationContract:
     def test_read_only_registered_tools_do_not_require_confirmation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         monkeypatch.setitem(TOOL_TIERS, "list_site_clients", "read")
         mcp = FakeMCP({"tool:list_site_clients@": make_tool(list_site_clients)})

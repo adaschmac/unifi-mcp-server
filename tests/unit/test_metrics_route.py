@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from starlette.requests import Request
 
-from src.utils.metrics import REGISTRY
+from unifi_mcp_server.utils.metrics import REGISTRY
 
 _BASE_ENV = {
     "UNIFI_API_KEY": "test-key",
@@ -19,12 +19,12 @@ _BASE_ENV = {
 
 
 def _load_main() -> Any:
-    """Import src.main with a clean module cache and a valid minimal env."""
+    """Import unifi_mcp_server.main with a clean module cache and a valid minimal env."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", _BASE_ENV, clear=False):
-        return importlib.import_module("src.main")
+        return importlib.import_module("unifi_mcp_server.main")
 
 
 class StubServer:
