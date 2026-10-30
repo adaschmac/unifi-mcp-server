@@ -2744,7 +2744,7 @@ Download a backup file to local storage.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `backup_filename` | string | Yes | Backup filename (a single path component; separators and `..` are rejected) |
-| `output_path` | string | Yes | Filename to save under. Only the filename is used — any directory component is ignored and the file is written inside `UNIFI_BACKUP_DOWNLOAD_DIR` (default: the current working directory) |
+| `output_path` | string | Yes | Filename to save under. Only the filename is used — any directory component is ignored and the file is written inside `UNIFI_BACKUP_DOWNLOAD_DIR`, which must be an absolute directory (unset disables the tool). An existing file is never replaced |
 | `verify_checksum` | boolean | No | Calculate SHA256 checksum (default: true) |
 
 **Example Usage:**

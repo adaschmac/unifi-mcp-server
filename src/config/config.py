@@ -2,13 +2,20 @@
 
 import difflib
 import logging
+import os
 import re
 import ssl
 from enum import Enum
+from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import Field, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    DotEnvSettingsSource,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 
 class APIType(str, Enum):
@@ -103,15 +110,59 @@ def _parse_auth_token_entries(raw: str | None) -> dict[str, str]:
     return roles
 
 
+#: Environment variable naming the one dotenv file settings may be read from.
+ENV_FILE_VAR = "UNIFI_ENV_FILE"
+
+
+def _dotenv_sources(
+    settings_cls: type[BaseSettings],
+    init_settings: PydanticBaseSettingsSource,
+    env_settings: PydanticBaseSettingsSource,
+    dotenv_settings: PydanticBaseSettingsSource,
+    file_secret_settings: PydanticBaseSettingsSource,
+) -> tuple[PydanticBaseSettingsSource, ...]:
+    """Read a dotenv file only from an explicit ``UNIFI_ENV_FILE`` path.
+
+    A ``.env`` in the working directory is never discovered. An MCP client
+    chooses the server's working directory, often a project the user just
+    opened, and a ``.env`` there could otherwise fill in any setting the user
+    left unset: TLS trust, SIEM targets, the backup directory. Variables in the
+    process environment still take precedence over the named file, and a
+    caller passing ``_env_file=`` keeps that behaviour.
+    """
+    if getattr(dotenv_settings, "env_file", None) is None:
+        named = os.environ.get(ENV_FILE_VAR, "").strip()
+        if named:
+            path = Path(named).expanduser()
+            if not path.is_file():
+                logger.warning("%s names %s, which is not a readable file", ENV_FILE_VAR, path)
+            dotenv_settings = DotEnvSettingsSource(settings_cls, env_file=path)
+    return init_settings, env_settings, dotenv_settings, file_secret_settings
+
+
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables and .env file."""
+    """Application settings, from the environment and the ``UNIFI_ENV_FILE`` file, if named."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=None,
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Read a dotenv file only when ``UNIFI_ENV_FILE`` names it (see :func:`_dotenv_sources`)."""
+        return _dotenv_sources(
+            settings_cls, init_settings, env_settings, dotenv_settings, file_secret_settings
+        )
 
     # API Configuration
     api_key: str = Field(
@@ -571,12 +622,15 @@ class Settings(BaseSettings):
     )
 
     # Backup download location
-    backup_download_dir: str = Field(
-        default=".",
+    backup_download_dir: str | None = Field(
+        default=None,
         description=(
-            "Directory that download_backup writes into. The caller supplies "
-            "only the filename; any directory component is ignored and the "
-            "file is confined to this directory."
+            "Absolute directory that download_backup writes into. Unset (the "
+            "default) disables downloads: a backup holds every controller "
+            "secret, so it never lands in the working directory by default. "
+            "The caller supplies only the filename; any directory component is "
+            "ignored, the file is confined to this directory, and an existing "
+            "file is never replaced."
         ),
         validation_alias="UNIFI_BACKUP_DOWNLOAD_DIR",
     )
@@ -1015,11 +1069,25 @@ class AuditMaintenanceSettings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=None,
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Read a dotenv file only when ``UNIFI_ENV_FILE`` names it (see :func:`_dotenv_sources`)."""
+        return _dotenv_sources(
+            settings_cls, init_settings, env_settings, dotenv_settings, file_secret_settings
+        )
 
     read_only: bool = Field(default=False, validation_alias="UNIFI_READ_ONLY")
     audit_log_enabled: bool = Field(default=True, validation_alias="UNIFI_AUDIT_LOG_ENABLED")

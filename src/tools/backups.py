@@ -27,6 +27,12 @@ def _resolve_backup_dest(output_path: str, settings: Settings) -> Path:
     the file is placed inside ``settings.backup_download_dir``. This makes it
     impossible for a caller to overwrite an arbitrary file on the host.
 
+    Downloads are off until the operator sets ``UNIFI_BACKUP_DOWNLOAD_DIR`` to
+    an absolute directory. A backup holds every controller secret, and an MCP
+    client picks the server's working directory (often a project checkout),
+    so neither an unset nor a relative directory falls back to it. A file
+    that already exists is never replaced.
+
     Args:
         output_path: Caller-supplied name (only its basename is used)
         settings: Application settings (provides the download directory)
@@ -35,14 +41,28 @@ def _resolve_backup_dest(output_path: str, settings: Settings) -> Path:
         Absolute path inside the configured download directory
 
     Raises:
-        ValidationError: If no usable filename remains after stripping the
-            directory component
+        ValidationError: If the download directory is unset or relative, no
+            usable filename remains after stripping the directory component,
+            or the destination already exists
     """
+    configured = str(getattr(settings, "backup_download_dir", None) or "").strip()
+    if not configured:
+        raise ValidationError(
+            "download_backup is disabled: set UNIFI_BACKUP_DOWNLOAD_DIR to an absolute "
+            "directory to allow backup downloads"
+        )
+    base_path = Path(configured).expanduser()
+    if not base_path.is_absolute():
+        raise ValidationError(
+            "UNIFI_BACKUP_DOWNLOAD_DIR must be an absolute path; a relative one would "
+            "resolve against the server's working directory"
+        )
+
     name = os.path.basename(str(output_path).strip())
     if not name or name in (".", ".."):
         raise ValidationError(f"Invalid output_path: {output_path!r} (no filename component)")
 
-    base_dir = Path(settings.backup_download_dir).expanduser().resolve()
+    base_dir = base_path.resolve()
     dest = (base_dir / name).resolve()
 
     # Defence in depth: the join above already strips directories, but confirm
@@ -50,28 +70,35 @@ def _resolve_backup_dest(output_path: str, settings: Settings) -> Path:
     if base_dir != dest.parent:
         raise ValidationError(f"Refusing to write outside {base_dir}: {output_path!r}")
 
+    # Fail before downloading; _write_backup_file's O_EXCL closes the race.
+    if dest.exists() or dest.is_symlink():
+        raise ValidationError(
+            f"{name!r} already exists in the backup download directory; choose another output_path"
+        )
+
     return dest
 
 
 def _write_backup_file(dest: Path, content: bytes) -> None:
-    """Write backup bytes to ``dest`` without following a symlink.
+    """Write backup bytes to a new file at ``dest``.
 
-    Creates the confined directory if needed and opens the destination with
-    ``O_NOFOLLOW`` so a symlink planted at the path cannot redirect the write,
-    and mode ``0o600`` so the backup (which contains controller secrets) is
-    not world-readable.
+    Creates the confined directory if needed (mode ``0o700``) and opens the
+    destination with ``O_CREAT | O_EXCL``, so an existing file, or a symlink
+    planted at the path, is never written through or replaced. The file gets
+    mode ``0o600`` because a backup contains controller secrets.
 
     Args:
         dest: Absolute destination path inside the confined directory
         content: Backup file bytes
+
+    Raises:
+        FileExistsError: If anything already exists at ``dest``
     """
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, "O_NOFOLLOW", 0)
+    dest.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
     fd = os.open(dest, flags, 0o600)
-    try:
-        os.write(fd, content)
-    finally:
-        os.close(fd)
+    with os.fdopen(fd, "wb") as handle:
+        handle.write(content)
 
 
 @write_tool
@@ -347,8 +374,9 @@ async def download_backup(
         backup_filename: Backup filename to download
         output_path: Name to save the backup under. Only the filename
             component is used; any directory part is ignored and the file is
-            written inside ``UNIFI_BACKUP_DOWNLOAD_DIR`` (default: the current
-            working directory).
+            written inside ``UNIFI_BACKUP_DOWNLOAD_DIR``, which must be set to
+            an absolute directory or the tool refuses. An existing file is
+            never replaced.
         settings: Application settings
         verify_checksum: Whether to calculate and verify file checksum
 

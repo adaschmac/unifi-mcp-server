@@ -8093,7 +8093,7 @@
             "description": "Controller to run against (see list_controllers). Defaults to the controller chosen with select_controller, then the server default."
           },
           "output_path": {
-            "description": "Name to save the backup under. Only the filename\ncomponent is used; any directory part is ignored and the file is\nwritten inside ``UNIFI_BACKUP_DOWNLOAD_DIR`` (default: the current\nworking directory).",
+            "description": "Name to save the backup under. Only the filename\ncomponent is used; any directory part is ignored and the file is\nwritten inside ``UNIFI_BACKUP_DOWNLOAD_DIR``, which must be set to\nan absolute directory or the tool refuses. An existing file is\nnever replaced.",
             "type": "string"
           },
           "site_id": {

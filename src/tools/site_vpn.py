@@ -16,6 +16,24 @@ from ..utils import (
 )
 from ..utils.tool_kind import read_tool, write_tool
 
+_REDACTED = "***REDACTED***"
+_VPN_SECRET_FIELDS = ("x_ipsec_pre_shared_key",)
+
+
+def _redact_vpn(record: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of a site-to-site VPN record with its secrets masked.
+
+    The controller returns the plaintext IPsec pre-shared key in
+    ``rest/networkconf``. It must not be handed to an MCP client, where it ends
+    up in model context and transcripts. A field that is unset stays unset, so
+    the caller can still tell whether a key is configured.
+    """
+    redacted = dict(record)
+    for field in _VPN_SECRET_FIELDS:
+        if redacted.get(field):
+            redacted[field] = _REDACTED
+    return redacted
+
 
 @read_tool
 async def list_site_to_site_vpns(site_id: str, settings: Settings) -> list[dict[str, Any]]:
@@ -29,7 +47,7 @@ async def list_site_to_site_vpns(site_id: str, settings: Settings) -> list[dict[
         networks = response if isinstance(response, list) else response.get("data", [])
         vpns = [n for n in networks if n.get("purpose") == "site-vpn"]
         logger.info(sanitize_log_message(f"Retrieved {len(vpns)} site-to-site VPNs"))
-        return [SiteToSiteVPN(**v).model_dump() for v in vpns]
+        return [_redact_vpn(SiteToSiteVPN(**v).model_dump()) for v in vpns]
 
 
 @read_tool
@@ -46,7 +64,7 @@ async def get_site_to_site_vpn(site_id: str, vpn_id: str, settings: Settings) ->
         for n in networks:
             if n.get("_id") == vpn_id and n.get("purpose") == "site-vpn":
                 logger.info(sanitize_log_message(f"Retrieved VPN {vpn_id}"))
-                return SiteToSiteVPN(**n).model_dump()
+                return _redact_vpn(SiteToSiteVPN(**n).model_dump())
 
         raise ResourceNotFoundError("vpn", vpn_id)
 
@@ -97,10 +115,10 @@ async def update_site_to_site_vpn(
             updates["x_ipsec_pre_shared_key"] = x_ipsec_pre_shared_key
 
         if coerce_bool(dry_run):
-            return {"dry_run": True, "vpn_id": vpn_id, "updates": updates}
+            return {"dry_run": True, "vpn_id": vpn_id, "updates": _redact_vpn(updates)}
 
         # Merge and update
         payload = {**current, **updates}
         await client.put(f"/ea/sites/{site_id}/rest/networkconf/{vpn_id}", payload)
         logger.info(sanitize_log_message(f"Updated VPN {vpn_id}"))
-        return {"success": True, "vpn_id": vpn_id, "updates": updates}
+        return {"success": True, "vpn_id": vpn_id, "updates": _redact_vpn(updates)}

@@ -164,7 +164,8 @@ Configure the MCP server using environment variables:
 | `LOG_LEVEL` | Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR` | No | `INFO` |
 | `LOG_API_REQUESTS` | Log each controller API request | No | `true` |
 | `UNIFI_CACHE_TTL` | Accepted but not used: read-cache lifetimes are fixed per resource type (sites, networks and WLANs 5 min, devices 1 min, clients 30 s) | No | `300` |
-| `UNIFI_BACKUP_DOWNLOAD_DIR` | Directory `download_backup` writes into; the caller names only the file | No | `.` |
+| `UNIFI_ENV_FILE` | Dotenv file to read settings from; process environment variables take precedence over it. The server never reads a `.env` it finds in the working directory | No | unset |
+| `UNIFI_BACKUP_DOWNLOAD_DIR` | Absolute directory `download_backup` writes into; the caller names only the file. Unset disables downloads | No | unset |
 | `SUPERMEMORY_ENABLED` | Enable the Supermemory integration for operator notes | No | `false` |
 | `SUPERMEMORY_API_KEY` | Supermemory API key | With `SUPERMEMORY_ENABLED` | unset |
 
@@ -2329,6 +2330,8 @@ Update a site-to-site VPN's `networkconf` entry. Requires `confirm=True`.
 
 `vpn_id` must be a 24-character hex ObjectId (or a UUID), as returned by `list_site_to_site_vpns`. It is lowercased before use, and anything else raises `ValidationError` before the controller is contacted. `get_site_to_site_vpn` filters the list client-side and does not apply this check.
 
+`list_site_to_site_vpns`, `get_site_to_site_vpn` and this tool's response return `x_ipsec_pre_shared_key` as `***REDACTED***` when a key is set (and `null` when none is). The key you pass is still sent to the controller.
+
 ### Device Control
 
 #### `restart_device`
@@ -3897,7 +3900,7 @@ Download a backup file to local storage.
 
 - `site_id` (string, required): Site identifier
 - `backup_filename` (string, required): Backup filename (a single path component; separators and `..` are rejected)
-- `output_path` (string, required): Filename to save under. Only the filename is used — any directory component is ignored and the file is written inside `UNIFI_BACKUP_DOWNLOAD_DIR` (default: the current working directory)
+- `output_path` (string, required): Filename to save under. Only the filename is used — any directory component is ignored and the file is written inside `UNIFI_BACKUP_DOWNLOAD_DIR`, which must be an absolute directory (unset disables the tool). An existing file is never replaced
 - `verify_checksum` (boolean, optional): Calculate SHA-256 checksum (default: true)
 
 **Returns:**

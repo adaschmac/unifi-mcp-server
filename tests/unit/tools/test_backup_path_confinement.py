@@ -7,6 +7,9 @@ Covers the two halves of the fix:
   percent-encoded before use), and
 * ``download_backup`` writes only inside ``UNIFI_BACKUP_DOWNLOAD_DIR`` using the
   filename component of ``output_path``, refusing to follow a symlink.
+
+Downloads are off unless that directory is set to an absolute path, and an
+existing file is never replaced.
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -207,6 +210,83 @@ async def test_download_backup_does_not_follow_symlink(tmp_path) -> None:
 
     # The symlink target outside the confinement directory is untouched.
     assert outside.read_bytes() == b"original"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("base_dir", [None, ""])
+async def test_download_backup_disabled_without_download_dir(base_dir) -> None:
+    """With no UNIFI_BACKUP_DOWNLOAD_DIR the tool writes nothing and downloads nothing.
+
+    The old default was the working directory, which an MCP client picks and
+    which is often a project checkout.
+    """
+    settings = _tool_settings(base_dir)
+    settings.backup_download_dir = base_dir
+    client = _mock_backup_client()
+    with patch.object(backups_module, "UniFiClient", return_value=client):
+        with patch.object(backups_module, "log_audit"):
+            with pytest.raises(ValidationError, match="UNIFI_BACKUP_DOWNLOAD_DIR"):
+                await download_backup(
+                    site_id="default",
+                    backup_filename="b.unf",
+                    output_path="backup.unf",
+                    settings=settings,
+                )
+    client.download_backup.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_download_backup_rejects_relative_download_dir(tmp_path, monkeypatch) -> None:
+    """A relative directory would resolve against the working directory again."""
+    monkeypatch.chdir(tmp_path)
+    settings = _tool_settings(".")
+    client = _mock_backup_client()
+    with patch.object(backups_module, "UniFiClient", return_value=client):
+        with patch.object(backups_module, "log_audit"):
+            with pytest.raises(ValidationError, match="absolute"):
+                await download_backup(
+                    site_id="default",
+                    backup_filename="b.unf",
+                    output_path="backup.unf",
+                    settings=settings,
+                )
+    client.download_backup.assert_not_called()
+    assert not (tmp_path / "backup.unf").exists()
+
+
+@pytest.mark.asyncio
+async def test_download_backup_refuses_to_overwrite(tmp_path) -> None:
+    """An existing file in the download directory is never replaced."""
+    existing = tmp_path / "pyproject.toml"
+    existing.write_bytes(b"original")
+    settings = _tool_settings(tmp_path)
+    client = _mock_backup_client(b"backup-bytes")
+    with patch.object(backups_module, "UniFiClient", return_value=client):
+        with patch.object(backups_module, "log_audit"):
+            with pytest.raises(ValidationError, match="already exists"):
+                await download_backup(
+                    site_id="default",
+                    backup_filename="b.unf",
+                    output_path="pyproject.toml",
+                    settings=settings,
+                )
+    assert existing.read_bytes() == b"original"
+    client.download_backup.assert_not_called()
+
+
+def test_write_backup_file_never_replaces_a_file_created_after_the_check(tmp_path) -> None:
+    """The write itself refuses an existing file, closing the check-then-write race."""
+    dest = tmp_path / "late.unf"
+    dest.write_bytes(b"original")
+    with pytest.raises(FileExistsError):
+        backups_module._write_backup_file(dest, b"backup-bytes")
+    assert dest.read_bytes() == b"original"
+
+
+def test_backup_download_dir_defaults_to_unset(monkeypatch) -> None:
+    """Downloads are off until an operator names a directory."""
+    settings = _local_settings(monkeypatch)
+    assert settings.backup_download_dir is None
 
 
 @pytest.mark.asyncio

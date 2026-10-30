@@ -22,7 +22,7 @@ from src.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
-def mock_settings():
+def mock_settings(tmp_path):
     settings = MagicMock()
     settings.log_level = "INFO"
     settings.api_type = MagicMock()
@@ -35,7 +35,7 @@ def mock_settings():
     settings.request_timeout = 30.0
     settings.site_manager_enabled = False
     settings.get_headers = MagicMock(return_value={"X-API-Key": "test-key"})
-    settings.backup_download_dir = "."
+    settings.backup_download_dir = str(tmp_path / "backups")
     return settings
 
 
