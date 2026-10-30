@@ -35,7 +35,7 @@ spec:
             - name: audit-retention
               image: {{ include "unifi-mcp.image" . }}
               imagePullPolicy: {{ .Values.image.pullPolicy }}
-              command: [python, -m, src.fleet.cli, audit-retention, --confirm]
+              command: [python, -m, unifi_mcp_server.fleet.cli, audit-retention, --confirm]
               securityContext:
                 {{- toYaml .Values.securityContext | nindent 16 }}
               env:

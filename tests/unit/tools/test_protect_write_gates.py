@@ -12,8 +12,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.tools import diagnostics, protect_devices, protect_events, protect_views
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.tools import diagnostics, protect_devices, protect_events, protect_views
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 # (module, tool name, client symbol to patch, required kwargs)
 GATED_TOOLS = [

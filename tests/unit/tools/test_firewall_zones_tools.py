@@ -7,7 +7,7 @@ import pytest
 
 @pytest.fixture
 def mock_settings():
-    from src.config import APIType
+    from unifi_mcp_server.config import APIType
 
     settings = MagicMock(spec="Settings")
     settings.log_level = "INFO"
@@ -23,7 +23,7 @@ def mock_settings():
 
 @pytest.fixture
 def mock_settings_cloud():
-    from src.config import APIType
+    from unifi_mcp_server.config import APIType
 
     settings = MagicMock(spec="Settings")
     settings.log_level = "INFO"
@@ -56,9 +56,9 @@ def sample_firewall_zones():
 class TestListFirewallZones:
     @pytest.mark.asyncio
     async def test_list_firewall_zones_success(self, mock_settings, sample_firewall_zones):
-        from src.tools.firewall_zones import list_firewall_zones
+        from unifi_mcp_server.tools.firewall_zones import list_firewall_zones
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -74,9 +74,9 @@ class TestListFirewallZones:
 
     @pytest.mark.asyncio
     async def test_list_firewall_zones_empty(self, mock_settings):
-        from src.tools.firewall_zones import list_firewall_zones
+        from unifi_mcp_server.tools.firewall_zones import list_firewall_zones
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -90,8 +90,8 @@ class TestListFirewallZones:
 
     @pytest.mark.asyncio
     async def test_list_firewall_zones_requires_local_api(self, mock_settings_cloud):
-        from src.tools.firewall_zones import list_firewall_zones
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.firewall_zones import list_firewall_zones
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         with pytest.raises(ValidationError, match="local"):
             await list_firewall_zones("default", mock_settings_cloud)
@@ -100,7 +100,7 @@ class TestListFirewallZones:
 class TestCreateFirewallZone:
     @pytest.mark.asyncio
     async def test_create_firewall_zone_success(self, mock_settings):
-        from src.tools.firewall_zones import create_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import create_firewall_zone
 
         created_zone = {
             "_id": "zone-new",
@@ -112,8 +112,10 @@ class TestCreateFirewallZone:
         }
 
         with (
-            patch("src.tools.firewall_zones.UniFiClient") as mock_client,
-            patch("src.tools.firewall_zones.audit_action", new_callable=AsyncMock) as mock_audit,
+            patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client,
+            patch(
+                "unifi_mcp_server.tools.firewall_zones.audit_action", new_callable=AsyncMock
+            ) as mock_audit,
         ):
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
@@ -136,9 +138,9 @@ class TestCreateFirewallZone:
 
     @pytest.mark.asyncio
     async def test_create_firewall_zone_dry_run(self, mock_settings):
-        from src.tools.firewall_zones import create_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import create_firewall_zone
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -158,15 +160,15 @@ class TestCreateFirewallZone:
 
     @pytest.mark.asyncio
     async def test_create_firewall_zone_no_confirm_error(self, mock_settings):
-        from src.tools.firewall_zones import create_firewall_zone
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.firewall_zones import create_firewall_zone
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         with pytest.raises(ValidationError, match="requires confirmation"):
             await create_firewall_zone("default", "TestZone", mock_settings, confirm=False)
 
     @pytest.mark.asyncio
     async def test_create_firewall_zone_with_networks(self, mock_settings):
-        from src.tools.firewall_zones import create_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import create_firewall_zone
 
         created_zone = {
             "_id": "zone-with-nets",
@@ -176,8 +178,8 @@ class TestCreateFirewallZone:
         }
 
         with (
-            patch("src.tools.firewall_zones.UniFiClient") as mock_client,
-            patch("src.tools.firewall_zones.audit_action", new_callable=AsyncMock),
+            patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client,
+            patch("unifi_mcp_server.tools.firewall_zones.audit_action", new_callable=AsyncMock),
         ):
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
@@ -200,7 +202,7 @@ class TestCreateFirewallZone:
 class TestUpdateFirewallZone:
     @pytest.mark.asyncio
     async def test_update_firewall_zone_success(self, mock_settings, sample_firewall_zones):
-        from src.tools.firewall_zones import update_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import update_firewall_zone
 
         updated_zone = {
             "_id": "zone-001",
@@ -211,8 +213,8 @@ class TestUpdateFirewallZone:
         }
 
         with (
-            patch("src.tools.firewall_zones.UniFiClient") as mock_client,
-            patch("src.tools.firewall_zones.audit_action", new_callable=AsyncMock),
+            patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client,
+            patch("unifi_mcp_server.tools.firewall_zones.audit_action", new_callable=AsyncMock),
         ):
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
@@ -236,9 +238,9 @@ class TestUpdateFirewallZone:
 
     @pytest.mark.asyncio
     async def test_update_firewall_zone_dry_run(self, mock_settings, sample_firewall_zones):
-        from src.tools.firewall_zones import update_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import update_firewall_zone
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -261,7 +263,7 @@ class TestUpdateFirewallZone:
 
     @pytest.mark.asyncio
     async def test_update_firewall_zone_partial_fields(self, mock_settings, sample_firewall_zones):
-        from src.tools.firewall_zones import update_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import update_firewall_zone
 
         updated_zone = {
             "_id": "zone-001",
@@ -273,8 +275,8 @@ class TestUpdateFirewallZone:
         }
 
         with (
-            patch("src.tools.firewall_zones.UniFiClient") as mock_client,
-            patch("src.tools.firewall_zones.audit_action", new_callable=AsyncMock),
+            patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client,
+            patch("unifi_mcp_server.tools.firewall_zones.audit_action", new_callable=AsyncMock),
         ):
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
@@ -296,8 +298,8 @@ class TestUpdateFirewallZone:
 
     @pytest.mark.asyncio
     async def test_update_firewall_zone_no_confirm_error(self, mock_settings):
-        from src.tools.firewall_zones import update_firewall_zone
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.firewall_zones import update_firewall_zone
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         with pytest.raises(ValidationError, match="requires confirmation"):
             await update_firewall_zone("default", "zone-001", mock_settings, confirm=False)
@@ -306,11 +308,11 @@ class TestUpdateFirewallZone:
 class TestDeleteFirewallZone:
     @pytest.mark.asyncio
     async def test_delete_firewall_zone_success(self, mock_settings):
-        from src.tools.firewall_zones import delete_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import delete_firewall_zone
 
         with (
-            patch("src.tools.firewall_zones.UniFiClient") as mock_client,
-            patch("src.tools.firewall_zones.audit_action", new_callable=AsyncMock),
+            patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client,
+            patch("unifi_mcp_server.tools.firewall_zones.audit_action", new_callable=AsyncMock),
         ):
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
@@ -332,9 +334,9 @@ class TestDeleteFirewallZone:
 
     @pytest.mark.asyncio
     async def test_delete_firewall_zone_dry_run(self, mock_settings):
-        from src.tools.firewall_zones import delete_firewall_zone
+        from unifi_mcp_server.tools.firewall_zones import delete_firewall_zone
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -354,8 +356,8 @@ class TestDeleteFirewallZone:
 
     @pytest.mark.asyncio
     async def test_delete_firewall_zone_no_confirm_error(self, mock_settings):
-        from src.tools.firewall_zones import delete_firewall_zone
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.firewall_zones import delete_firewall_zone
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         with pytest.raises(ValidationError, match="requires confirmation"):
             await delete_firewall_zone("default", "zone-001", mock_settings, confirm=False)
@@ -364,7 +366,7 @@ class TestDeleteFirewallZone:
 class TestAssignNetworkToZone:
     @pytest.mark.asyncio
     async def test_assign_network_to_zone_success(self, mock_settings, sample_firewall_zones):
-        from src.tools.firewall_zones import assign_network_to_zone
+        from unifi_mcp_server.tools.firewall_zones import assign_network_to_zone
 
         # Use UUID-format IDs so _resolve_network_uuid passes through
         # without hitting the legacy API.
@@ -374,8 +376,8 @@ class TestAssignNetworkToZone:
         network_data = {"name": "NewNetwork"}
 
         with (
-            patch("src.tools.firewall_zones.UniFiClient") as mock_client,
-            patch("src.tools.firewall_zones.audit_action", new_callable=AsyncMock),
+            patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client,
+            patch("unifi_mcp_server.tools.firewall_zones.audit_action", new_callable=AsyncMock),
         ):
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
@@ -411,13 +413,13 @@ class TestAssignNetworkToZone:
 
     @pytest.mark.asyncio
     async def test_assign_network_to_zone_already_assigned(self, mock_settings):
-        from src.tools.firewall_zones import assign_network_to_zone
+        from unifi_mcp_server.tools.firewall_zones import assign_network_to_zone
 
         net_001 = "aaaaaaaa-bbbb-cccc-dddd-000000000001"
         net_002 = "aaaaaaaa-bbbb-cccc-dddd-000000000002"
         zone_data = {"networkIds": [net_001, net_002], "name": "LAN"}
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -438,12 +440,12 @@ class TestAssignNetworkToZone:
 
     @pytest.mark.asyncio
     async def test_assign_network_to_zone_dry_run(self, mock_settings):
-        from src.tools.firewall_zones import assign_network_to_zone
+        from unifi_mcp_server.tools.firewall_zones import assign_network_to_zone
 
         net_new = "aaaaaaaa-bbbb-cccc-dddd-000000000099"
         zone_data = {"networkIds": [], "name": "LAN"}
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -468,13 +470,13 @@ class TestAssignNetworkToZone:
 class TestUnassignNetworkFromZone:
     @pytest.mark.asyncio
     async def test_unassign_network_from_zone_success(self, mock_settings):
-        from src.tools.firewall_zones import unassign_network_from_zone
+        from unifi_mcp_server.tools.firewall_zones import unassign_network_from_zone
 
         zone_data = {"data": {"networkIds": ["net-001", "net-002"]}}
 
         with (
-            patch("src.tools.firewall_zones.UniFiClient") as mock_client,
-            patch("src.tools.firewall_zones.audit_action", new_callable=AsyncMock),
+            patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client,
+            patch("unifi_mcp_server.tools.firewall_zones.audit_action", new_callable=AsyncMock),
         ):
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
@@ -500,11 +502,11 @@ class TestUnassignNetworkFromZone:
 
     @pytest.mark.asyncio
     async def test_unassign_network_not_in_zone_error(self, mock_settings):
-        from src.tools.firewall_zones import unassign_network_from_zone
+        from unifi_mcp_server.tools.firewall_zones import unassign_network_from_zone
 
         zone_data = {"data": {"networkIds": ["net-001"]}}
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -523,11 +525,11 @@ class TestUnassignNetworkFromZone:
 
     @pytest.mark.asyncio
     async def test_unassign_network_from_zone_dry_run(self, mock_settings):
-        from src.tools.firewall_zones import unassign_network_from_zone
+        from unifi_mcp_server.tools.firewall_zones import unassign_network_from_zone
 
         zone_data = {"data": {"networkIds": ["net-001", "net-002"]}}
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -552,13 +554,13 @@ class TestUnassignNetworkFromZone:
 class TestGetZoneNetworks:
     @pytest.mark.asyncio
     async def test_get_zone_networks_success(self, mock_settings):
-        from src.tools.firewall_zones import get_zone_networks
+        from unifi_mcp_server.tools.firewall_zones import get_zone_networks
 
         zone_data = {"data": {"networkIds": ["net-001", "net-002"]}}
         network1_data = {"data": {"name": "Network1"}}
         network2_data = {"data": {"name": "Network2"}}
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -588,11 +590,11 @@ class TestGetZoneNetworks:
 
     @pytest.mark.asyncio
     async def test_get_zone_networks_empty(self, mock_settings):
-        from src.tools.firewall_zones import get_zone_networks
+        from unifi_mcp_server.tools.firewall_zones import get_zone_networks
 
         zone_data = {"data": {"networkIds": []}}
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False
@@ -606,11 +608,11 @@ class TestGetZoneNetworks:
 
     @pytest.mark.asyncio
     async def test_get_zone_networks_fetch_error_handled(self, mock_settings):
-        from src.tools.firewall_zones import get_zone_networks
+        from unifi_mcp_server.tools.firewall_zones import get_zone_networks
 
         zone_data = {"data": {"networkIds": ["net-001"]}}
 
-        with patch("src.tools.firewall_zones.UniFiClient") as mock_client:
+        with patch("unifi_mcp_server.tools.firewall_zones.UniFiClient") as mock_client:
             mock_instance = AsyncMock()
             mock_client.return_value.__aenter__.return_value = mock_instance
             mock_instance.is_authenticated = False

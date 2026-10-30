@@ -12,8 +12,8 @@ from sqlalchemy import inspect as sa_inspect  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.exc import IntegrityError  # noqa: E402
 
-from src.fleet.db.models import Base  # noqa: E402
-from src.fleet.db.schema import (  # noqa: E402
+from unifi_mcp_server.fleet.db.models import Base  # noqa: E402
+from unifi_mcp_server.fleet.db.schema import (  # noqa: E402
     VERSION_TABLE,
     FleetSchemaError,
     current_revision,
@@ -32,7 +32,7 @@ async def _tables(engine: Any) -> set[str]:
 
 
 async def test_fresh_database_fails_the_startup_check(engine):
-    with pytest.raises(FleetSchemaError, match="python -m src.fleet.cli migrate"):
+    with pytest.raises(FleetSchemaError, match="python -m unifi_mcp_server.fleet.cli migrate"):
         await ensure_current(engine)
 
 

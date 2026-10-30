@@ -4,15 +4,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import protect_sirens
-from src.tools.protect_sirens import (
+from unifi_mcp_server.tools import protect_sirens
+from unifi_mcp_server.tools.protect_sirens import (
     get_protect_siren,
     list_protect_sirens,
     play_protect_siren,
     stop_protect_siren,
     update_protect_siren,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 run_test_sound = protect_sirens.test_protect_siren_sound
 
@@ -54,7 +54,7 @@ async def test_list_protect_sirens_success(mock_settings, mock_client):
             ],
         }
     )
-    with patch("src.tools.protect_sirens.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient", return_value=mock_client):
         result = await list_protect_sirens(mock_settings, limit=10, offset=0)
     mock_client.get.assert_awaited_once_with(
         "/integration/v1/sirens", params={"limit": 10, "offset": 0}
@@ -66,7 +66,7 @@ async def test_list_protect_sirens_success(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_get_protect_siren_success(mock_settings, mock_client):
     mock_client.get = AsyncMock(return_value={"id": "siren-1", "name": "Yard Siren"})
-    with patch("src.tools.protect_sirens.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient", return_value=mock_client):
         result = await get_protect_siren("siren-1", mock_settings)
     mock_client.get.assert_awaited_once_with("/integration/v1/sirens/siren-1")
     assert result["id"] == "siren-1"
@@ -85,7 +85,7 @@ WRITES = [
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("name", "kwargs"), WRITES, ids=[n for n, _ in WRITES])
 async def test_write_refused_without_confirm(mock_settings, mock_client, name, kwargs):
-    with patch("src.tools.protect_sirens.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await getattr(protect_sirens, name)(settings=mock_settings, **kwargs)
         client_cls.assert_not_called()
@@ -94,7 +94,7 @@ async def test_write_refused_without_confirm(mock_settings, mock_client, name, k
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("name", "kwargs"), WRITES, ids=[f"{n}-strfalse" for n, _ in WRITES])
 async def test_write_refused_with_string_false_confirm(mock_settings, mock_client, name, kwargs):
-    with patch("src.tools.protect_sirens.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await getattr(protect_sirens, name)(settings=mock_settings, confirm="false", **kwargs)
         client_cls.assert_not_called()
@@ -106,7 +106,7 @@ async def test_write_refused_with_string_false_confirm(mock_settings, mock_clien
 @pytest.mark.asyncio
 async def test_update_protect_siren_success(mock_settings, mock_client):
     mock_client.patch = AsyncMock(return_value={"id": "siren-1", "name": "New Name", "volume": 70})
-    with patch("src.tools.protect_sirens.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient", return_value=mock_client):
         result = await update_protect_siren(
             "siren-1", mock_settings, name="New Name", volume=70, confirm=True
         )
@@ -118,7 +118,7 @@ async def test_update_protect_siren_success(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_update_protect_siren_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_sirens.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient", return_value=mock_client):
         result = await update_protect_siren(
             "siren-1", mock_settings, volume=70, confirm=True, dry_run=True
         )
@@ -142,7 +142,7 @@ async def test_update_protect_siren_validates_volume(mock_settings, mock_client)
 @pytest.mark.asyncio
 async def test_play_protect_siren_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_sirens.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient", return_value=mock_client):
         result = await play_protect_siren("siren-1", mock_settings, duration=30, confirm=True)
     mock_client.post.assert_awaited_once_with(
         "/integration/v1/sirens/siren-1/play", json_data={"duration": 30}
@@ -159,7 +159,7 @@ async def test_play_protect_siren_rejects_bad_duration(mock_settings, mock_clien
 @pytest.mark.asyncio
 async def test_stop_protect_siren_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_sirens.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient", return_value=mock_client):
         result = await stop_protect_siren("siren-1", mock_settings, confirm=True)
     mock_client.post.assert_awaited_once_with("/integration/v1/sirens/siren-1/stop")
     assert result["success"] is True
@@ -168,7 +168,7 @@ async def test_stop_protect_siren_success(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_test_sound_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_sirens.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_sirens.ProtectClient", return_value=mock_client):
         result = await run_test_sound("siren-1", mock_settings, volume=40, confirm=True)
     mock_client.post.assert_awaited_once_with(
         "/integration/v1/sirens/siren-1/test-sound", json_data={"volume": 40}

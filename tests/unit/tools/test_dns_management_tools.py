@@ -12,9 +12,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import APIType, Settings
-from src.tools import dns_management as dm
-from src.utils.exceptions import APIError
+from unifi_mcp_server.config import APIType, Settings
+from unifi_mcp_server.tools import dns_management as dm
+from unifi_mcp_server.utils.exceptions import APIError
 
 WAN_ID = "5f1e2d3c4b5a697886950401"
 LAN_ID = "5f1e2d3c4b5a697886950402"
@@ -52,7 +52,7 @@ def _mock_client(get_response: Any = None, put_response: Any = None) -> AsyncMoc
 
 
 def _patch_client(client: AsyncMock):
-    return patch("src.tools.dns_management.UniFiClient", return_value=client)
+    return patch("unifi_mcp_server.tools.dns_management.UniFiClient", return_value=client)
 
 
 def _wan(**overrides: Any) -> dict[str, Any]:
@@ -199,7 +199,10 @@ class TestUpdateWanDns:
     @pytest.mark.asyncio
     async def test_applies_and_audits(self, local_settings: MagicMock) -> None:
         client = _mock_client(put_response={"data": [_wan(wan_dns1="9.9.9.9")]})
-        with _patch_client(client), patch("src.tools.dns_management.log_audit") as audit:
+        with (
+            _patch_client(client),
+            patch("unifi_mcp_server.tools.dns_management.log_audit") as audit,
+        ):
             result = await dm.update_wan_dns(
                 WAN_ID, "default", local_settings, dns1="9.9.9.9", confirm=True
             )
@@ -216,7 +219,7 @@ class TestUpdateWanDns:
     @pytest.mark.asyncio
     async def test_empty_response(self, local_settings: MagicMock) -> None:
         client = _mock_client(put_response={})
-        with _patch_client(client), patch("src.tools.dns_management.log_audit"):
+        with _patch_client(client), patch("unifi_mcp_server.tools.dns_management.log_audit"):
             result = await dm.update_wan_dns(
                 WAN_ID, "default", local_settings, dns_preference="auto", confirm=True
             )
@@ -229,7 +232,7 @@ class TestUpdateWanDns:
         client.put.side_effect = APIError("boom")
         with (
             _patch_client(client),
-            patch("src.tools.dns_management.log_audit") as audit,
+            patch("unifi_mcp_server.tools.dns_management.log_audit") as audit,
             pytest.raises(APIError),
         ):
             await dm.update_wan_dns(WAN_ID, "default", local_settings, dns1="9.9.9.9", confirm=True)
@@ -347,7 +350,10 @@ class TestUpdateDnsFilter:
         updated = _ips()
         updated["dns_filtering"] = False
         client = _mock_client({"data": [_ips()]}, put_response={"data": [updated]})
-        with _patch_client(client), patch("src.tools.dns_management.log_audit") as audit:
+        with (
+            _patch_client(client),
+            patch("unifi_mcp_server.tools.dns_management.log_audit") as audit,
+        ):
             result = await dm.update_dns_filter(
                 "default", local_settings, dns_filtering=False, confirm=True
             )
@@ -366,7 +372,7 @@ class TestUpdateDnsFilter:
         client.put.side_effect = APIError("boom")
         with (
             _patch_client(client),
-            patch("src.tools.dns_management.log_audit") as audit,
+            patch("unifi_mcp_server.tools.dns_management.log_audit") as audit,
             pytest.raises(APIError),
         ):
             await dm.update_dns_filter("default", local_settings, dns_filtering=True, confirm=True)
@@ -376,7 +382,7 @@ class TestUpdateDnsFilter:
     @pytest.mark.asyncio
     async def test_empty_put_response(self, local_settings: MagicMock) -> None:
         client = _mock_client({"data": [_ips()]}, put_response=None)
-        with _patch_client(client), patch("src.tools.dns_management.log_audit"):
+        with _patch_client(client), patch("unifi_mcp_server.tools.dns_management.log_audit"):
             result = await dm.update_dns_filter(
                 "default", local_settings, dns_filtering=True, confirm=True
             )

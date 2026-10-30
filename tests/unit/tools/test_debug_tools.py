@@ -5,10 +5,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tool_registry import register_module_tools, tool_tier
-from src.tools import debug as debug_tools
-from src.tools.debug import debug_api_request
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.tool_registry import register_module_tools, tool_tier
+from unifi_mcp_server.tools import debug as debug_tools
+from unifi_mcp_server.tools.debug import debug_api_request
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 class FakeMCP:
@@ -36,7 +36,7 @@ def mock_settings() -> MagicMock:
 
 @pytest.fixture
 def client() -> Any:
-    with patch("src.tools.debug.UniFiClient") as client_class:
+    with patch("unifi_mcp_server.tools.debug.UniFiClient") as client_class:
         client = AsyncMock()
         client.get = AsyncMock(return_value={"ok": 1})
         client.delete = AsyncMock(return_value={"deleted": 1})
@@ -135,7 +135,7 @@ async def test_empty_endpoint_is_refused(mock_settings: MagicMock, client: Any) 
 async def test_non_controller_endpoint_never_opens_a_client(
     mock_settings: MagicMock, endpoint: str, method: str
 ) -> None:
-    with patch("src.tools.debug.UniFiClient") as client_class:
+    with patch("unifi_mcp_server.tools.debug.UniFiClient") as client_class:
         with pytest.raises(ValidationError, match="controller-relative"):
             await debug_api_request(endpoint, mock_settings, method=method, confirm=True)
 

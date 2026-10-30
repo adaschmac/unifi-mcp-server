@@ -1,4 +1,4 @@
-"""Unit tests for src/a2a/agent_card.py."""
+"""Unit tests for src/unifi_mcp_server/a2a/agent_card.py."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-from src.a2a.agent_card import (
+from unifi_mcp_server.a2a.agent_card import (
     _authentication_mode,
     _example_call_payload,
     _example_value_for_schema,
@@ -23,9 +23,9 @@ from src.a2a.agent_card import (
     _tool_skill,
     build_agent_card,
 )
-from src.a2a.types import AuthenticationMode
-from src.config.config import APIType, Settings
-from src.tool_registry import TOOL_TIERS
+from unifi_mcp_server.a2a.types import AuthenticationMode
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.tool_registry import TOOL_TIERS
 
 from .conftest import FakeMCP, delete_site_device, list_site_clients, make_resource, make_tool
 
@@ -49,7 +49,7 @@ class TestIterRegisteredTools:
     """Tests for the tool and resource iterators."""
 
     def test_yields_the_tools_of_each_provider(self) -> None:
-        from src.a2a.capabilities import iter_registered_tools
+        from unifi_mcp_server.a2a.capabilities import iter_registered_tools
 
         tool = make_tool(list_site_clients)
         mcp = FakeMCP({"tool:list_site_clients@": tool})
@@ -57,12 +57,12 @@ class TestIterRegisteredTools:
         assert list(iter_registered_tools(mcp)) == [tool]
 
     def test_returns_nothing_when_mcp_has_no_providers(self) -> None:
-        from src.a2a.capabilities import iter_registered_tools
+        from unifi_mcp_server.a2a.capabilities import iter_registered_tools
 
         assert list(iter_registered_tools(object())) == []
 
     def test_skips_providers_whose_components_are_not_a_dict(self) -> None:
-        from src.a2a.capabilities import iter_registered_tools
+        from unifi_mcp_server.a2a.capabilities import iter_registered_tools
 
         class BadProvider:
             _components = ["not", "a", "dict"]
@@ -198,20 +198,20 @@ class TestToolTier:
     def test_a_destructive_tool_is_tiered_destructive(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from src.a2a.capabilities import tool_tier
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.a2a.capabilities import tool_tier
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         monkeypatch.setitem(TOOL_TIERS, "delete_site_device", "destructive")
         assert tool_tier("delete_site_device") == "destructive"
 
     def test_an_unknown_tool_is_treated_as_destructive(self) -> None:
-        from src.a2a.capabilities import tool_tier
+        from unifi_mcp_server.a2a.capabilities import tool_tier
 
         assert tool_tier("never_registered") == "destructive"
 
     def test_a_read_tool_is_tiered_read(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from src.a2a.capabilities import tool_tier
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.a2a.capabilities import tool_tier
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         monkeypatch.setitem(TOOL_TIERS, "list_site_clients", "read")
         assert tool_tier("list_site_clients") == "read"
@@ -241,13 +241,13 @@ class TestSafetyRequirementForTool:
     """Tests for _safety_requirement_for_tool."""
 
     def test_returns_none_for_a_safe_read_only_tool(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         monkeypatch.setitem(TOOL_TIERS, "list_site_clients", "read")
         assert _safety_requirement_for_tool(make_tool(list_site_clients)) is None
 
     def test_destructive_tool_requires_confirmation(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         monkeypatch.setitem(TOOL_TIERS, "delete_site_device", "destructive")
         monkeypatch.setitem(TOOL_TIERS, "list_site_clients", "read")
@@ -263,7 +263,7 @@ class TestSafetyRequirementForTool:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """A write mutates state, so the server requires confirm=True for it."""
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         def create_thing(site_id: str, name: str) -> dict[str, Any]:
             """Create a thing."""
@@ -279,7 +279,7 @@ class TestSafetyRequirementForTool:
     def test_sensitive_only_tool_is_recommended_not_required(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from src.tool_registry import TOOL_TIERS
+        from unifi_mcp_server.tool_registry import TOOL_TIERS
 
         def authenticate(token: str) -> dict[str, Any]:
             """Exchange a token."""
@@ -522,7 +522,7 @@ def _reference_card() -> Any:
     """Return the card the repository artifact was generated from.
 
     The import happens in a subprocess and the card is built there, because
-    importing the server in-process would reuse whatever ``src.main``
+    importing the server in-process would reuse whatever ``unifi_mcp_server.main``
     another test module already cached under a different environment, and
     the card is built from the tools that import registered. A subprocess
     gives a clean import and leaves the test session's module cache alone.
@@ -534,9 +534,9 @@ def _reference_card() -> Any:
     reference = _reference_env()
     script = (
         "import json\n"
-        "import src.main as main\n"
-        "from src.a2a.agent_card import build_agent_card\n"
-        "from src.config import Settings\n"
+        "import unifi_mcp_server.main as main\n"
+        "from unifi_mcp_server.a2a.agent_card import build_agent_card\n"
+        "from unifi_mcp_server.config import Settings\n"
         f"settings = Settings.model_validate({reference!r})\n"
         "card = build_agent_card(main.mcp, settings)\n"
         "card['skills'] = sorted(card['skills'], key=lambda s: s['name'])\n"

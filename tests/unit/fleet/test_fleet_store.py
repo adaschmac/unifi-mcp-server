@@ -12,13 +12,13 @@ pytest.importorskip("sqlalchemy")
 from cryptography.fernet import Fernet  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
-from src.config.config import APIType, Settings  # noqa: E402
-from src.fleet.credentials import CredentialCipher  # noqa: E402
-from src.fleet.db.schema import FleetSchemaError  # noqa: E402
-from src.fleet.db.store import FleetStore  # noqa: E402
-from src.fleet.postgres_registry import PostgresRegistry  # noqa: E402
-from src.fleet.router import FleetRouter  # noqa: E402
-from src.utils.exceptions import (  # noqa: E402
+from unifi_mcp_server.config.config import APIType, Settings  # noqa: E402
+from unifi_mcp_server.fleet.credentials import CredentialCipher  # noqa: E402
+from unifi_mcp_server.fleet.db.schema import FleetSchemaError  # noqa: E402
+from unifi_mcp_server.fleet.db.store import FleetStore  # noqa: E402
+from unifi_mcp_server.fleet.postgres_registry import PostgresRegistry  # noqa: E402
+from unifi_mcp_server.fleet.router import FleetRouter  # noqa: E402
+from unifi_mcp_server.utils.exceptions import (  # noqa: E402
     ConfigurationError,
     ResourceNotFoundError,
     ValidationError,
@@ -45,7 +45,7 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, database_url: str)
     monkeypatch.setenv("UNIFI_LOCAL_HOST", "192.168.2.1")
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(tmp_path / "audit.log"))
     monkeypatch.setenv("DATABASE_URL", database_url)
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 
@@ -75,7 +75,7 @@ class TestCredentialCipher:
 
     def test_passphrase_keys_differ_from_audit_keys(self, monkeypatch):
         # One passphrase used for both purposes must not give the same key.
-        from src.utils.audit_encryption import decrypt_field, resolve_audit_cipher
+        from unifi_mcp_server.utils.audit_encryption import decrypt_field, resolve_audit_cipher
 
         monkeypatch.setenv("UNIFI_FLEET_CREDENTIAL_KEY", "shared passphrase")
         token = CredentialCipher.from_env().encrypt(HQ_KEY)
@@ -317,7 +317,7 @@ class TestPostgresRegistry:
         registry = PostgresRegistry.from_settings(cloud)
         await registry.start()
         try:
-            with caplog.at_level("WARNING", logger="src.fleet.router"):
+            with caplog.at_level("WARNING", logger="unifi_mcp_server.fleet.router"):
                 await FleetRouter(cloud, registry).warn_insecure_controllers()
         finally:
             await registry.stop()

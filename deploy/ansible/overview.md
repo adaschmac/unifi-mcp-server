@@ -77,7 +77,7 @@ past the new count are removed.
   such as the `ghcr.io/enuno/unifi-mcp-server:<version>-fleet` image a
   release publishes (amd64 and arm64 hosts; build from source on 32-bit ARM).
 - **Migrations.** With Postgres, the first `mcp` host runs
-  `python -m src.fleet.cli migrate` as the schema owner when `status` reports
+  `python -m unifi_mcp_server.fleet.cli migrate` as the schema owner when `status` reports
   the schema behind.
 - **Least privilege.** With `unifi_mcp_least_privilege` (the default) and a
   Postgres the playbook runs, the server and workers connect as

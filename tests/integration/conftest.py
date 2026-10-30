@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-from src.config import Settings
 from tests.integration.test_harness import TestEnvironment
+from unifi_mcp_server.config import Settings
 
 
 def _load_environments() -> list[TestEnvironment]:

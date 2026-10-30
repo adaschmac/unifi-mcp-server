@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.events import list_alarms, list_events, list_neighboring_aps
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.tools.events import list_alarms, list_events, list_neighboring_aps
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ class TestListEvents:
     async def test_posts_window_and_returns_events(self, mock_settings):
         client = _client(post_return={"data": EVENTS})
 
-        with patch("src.tools.events.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.events.UniFiClient", return_value=client):
             result = await list_events("default", mock_settings, hours=48, limit=100)
 
         url = client.post.call_args[0][0]
@@ -67,7 +67,7 @@ class TestListEvents:
     async def test_event_type_filter_matches_key_substring(self, mock_settings):
         client = _client(post_return={"data": EVENTS})
 
-        with patch("src.tools.events.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.events.UniFiClient", return_value=client):
             result = await list_events("default", mock_settings, event_type="restart")
 
         assert len(result) == 1
@@ -87,7 +87,7 @@ class TestListAlarms:
         alarm = {"_id": "al-1", "key": "EVT_AP_Lost_Contact", "archived": False}
         client = _client(get_return={"data": [alarm]})
 
-        with patch("src.tools.events.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.events.UniFiClient", return_value=client):
             result = await list_alarms("default", mock_settings)
 
         assert client.get.call_args[0][0] == "/ea/sites/default/stat/alarm?archived=false"
@@ -97,7 +97,7 @@ class TestListAlarms:
     async def test_include_archived_drops_filter(self, mock_settings):
         client = _client(get_return={"data": []})
 
-        with patch("src.tools.events.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.events.UniFiClient", return_value=client):
             await list_alarms("default", mock_settings, include_archived=True)
 
         assert client.get.call_args[0][0] == "/ea/sites/default/stat/alarm"
@@ -113,7 +113,7 @@ class TestListNeighboringAps:
         ]
         client = _client(get_return={"data": neighbors})
 
-        with patch("src.tools.events.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.events.UniFiClient", return_value=client):
             result = await list_neighboring_aps("default", mock_settings, min_rssi=-85)
 
         assert client.get.call_args[0][0] == "/ea/sites/default/stat/rogueap"
@@ -129,7 +129,7 @@ class TestV2Fallbacks:
             side_effect=[ResourceNotFoundError("route", "stat/event"), {"data": EVENTS}]
         )
 
-        with patch("src.tools.events.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.events.UniFiClient", return_value=client):
             result = await list_events("default", mock_settings, hours=6, limit=50)
 
         assert client.post.call_count == 2
@@ -149,7 +149,7 @@ class TestV2Fallbacks:
         client.get = AsyncMock(side_effect=ResourceNotFoundError("route", "stat/alarm"))
         client.post = AsyncMock(return_value={"data": [alarm]})
 
-        with patch("src.tools.events.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.events.UniFiClient", return_value=client):
             result = await list_alarms("default", mock_settings)
 
         url = client.post.call_args[0][0]

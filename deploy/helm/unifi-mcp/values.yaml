@@ -60,7 +60,7 @@ fleet:
         memory: 192Mi
       limits:
         memory: 384Mi
-  # A pre-install/pre-upgrade Job runs `python -m src.fleet.cli migrate`
+  # A pre-install/pre-upgrade Job runs `python -m unifi_mcp_server.fleet.cli migrate`
   # as MIGRATION_DATABASE_URL.
   migrate: true
 

@@ -1,11 +1,11 @@
 ---
 name: unifi-protect-tools
-description: Use when adding, changing or testing a UniFi Protect MCP tool (any src/tools/protect_*.py module) - covers the Protect client and paths, v7 models, the confirm/dry_run write pattern, response shapes, test fixtures and known Protect API gaps.
+description: Use when adding, changing or testing a UniFi Protect MCP tool (any src/unifi_mcp_server/tools/protect_*.py module) - covers the Protect client and paths, v7 models, the confirm/dry_run write pattern, response shapes, test fixtures and known Protect API gaps.
 ---
 
 # UniFi Protect Tools
 
-Protect tools talk to the Protect integration API on the local console. Read this before you add or change a tool in any `src/tools/protect_*.py` module. For the general add-a-tool workflow, see `unifi-mcp-tool-builder`.
+Protect tools talk to the Protect integration API on the local console. Read this before you add or change a tool in any `src/unifi_mcp_server/tools/protect_*.py` module. For the general add-a-tool workflow, see `unifi-mcp-tool-builder`.
 
 ## Module map
 
@@ -13,34 +13,34 @@ Protect tools talk to the Protect integration API on the local console. Read thi
 
 | Module | Tools | Examples |
 |--------|-------|----------|
-| `src/tools/protect_alarm.py` | 8 | `list_protect_arm_profiles`, `set_current_protect_arm_profile`, `disable_protect_alarm` |
-| `src/tools/protect_alarm_hubs.py` | 4 | `list_protect_alarm_hubs`, `update_protect_alarm_hub` |
-| `src/tools/protect_bridges.py` | 3 | `get_protect_bridge`, `update_protect_bridge` |
-| `src/tools/protect_cameras.py` | 2 | `list_protect_cameras`, `get_protect_camera` |
-| `src/tools/protect_devices.py` | 13 | `list_protect_devices`, `update_protect_light`, `get_protect_chime` |
-| `src/tools/protect_events.py` | 6 | `list_protect_events`, `send_protect_alarm_webhook` |
-| `src/tools/protect_fobs.py` | 3 | `update_protect_fob` |
-| `src/tools/protect_link_stations.py` | 3 | `update_protect_link_station` |
-| `src/tools/protect_nvr.py` | 2 | `list_protect_nvrs`, `get_protect_nvr` |
-| `src/tools/protect_pos.py` | 1 | `ingest_pos_transaction` |
-| `src/tools/protect_relays.py` | 4 | `update_protect_relay`, `activate_protect_relay_output` |
-| `src/tools/protect_sirens.py` | 6 | `play_protect_siren`, `stop_protect_siren` |
-| `src/tools/protect_speakers.py` | 4 | `update_protect_speaker` |
-| `src/tools/protect_users.py` | 4 | `list_protect_users`, `list_protect_ulp_users` |
-| `src/tools/protect_views.py` | 8 | `get_protect_meta_info`, `create_protect_live_view` |
+| `src/unifi_mcp_server/tools/protect_alarm.py` | 8 | `list_protect_arm_profiles`, `set_current_protect_arm_profile`, `disable_protect_alarm` |
+| `src/unifi_mcp_server/tools/protect_alarm_hubs.py` | 4 | `list_protect_alarm_hubs`, `update_protect_alarm_hub` |
+| `src/unifi_mcp_server/tools/protect_bridges.py` | 3 | `get_protect_bridge`, `update_protect_bridge` |
+| `src/unifi_mcp_server/tools/protect_cameras.py` | 2 | `list_protect_cameras`, `get_protect_camera` |
+| `src/unifi_mcp_server/tools/protect_devices.py` | 13 | `list_protect_devices`, `update_protect_light`, `get_protect_chime` |
+| `src/unifi_mcp_server/tools/protect_events.py` | 6 | `list_protect_events`, `send_protect_alarm_webhook` |
+| `src/unifi_mcp_server/tools/protect_fobs.py` | 3 | `update_protect_fob` |
+| `src/unifi_mcp_server/tools/protect_link_stations.py` | 3 | `update_protect_link_station` |
+| `src/unifi_mcp_server/tools/protect_nvr.py` | 2 | `list_protect_nvrs`, `get_protect_nvr` |
+| `src/unifi_mcp_server/tools/protect_pos.py` | 1 | `ingest_pos_transaction` |
+| `src/unifi_mcp_server/tools/protect_relays.py` | 4 | `update_protect_relay`, `activate_protect_relay_output` |
+| `src/unifi_mcp_server/tools/protect_sirens.py` | 6 | `play_protect_siren`, `stop_protect_siren` |
+| `src/unifi_mcp_server/tools/protect_speakers.py` | 4 | `update_protect_speaker` |
+| `src/unifi_mcp_server/tools/protect_users.py` | 4 | `list_protect_users`, `list_protect_ulp_users` |
+| `src/unifi_mcp_server/tools/protect_views.py` | 8 | `get_protect_meta_info`, `create_protect_live_view` |
 
-MCP resources for Protect are in `src/resources/protect.py`. The raw `connector_protect_*` proxy tools are in `src/tools/connector.py` and belong to the cloud tool set.
+MCP resources for Protect are in `src/unifi_mcp_server/resources/protect.py`. The raw `connector_protect_*` proxy tools are in `src/unifi_mcp_server/tools/connector.py` and belong to the cloud tool set.
 
 ## Registration
 
-- Every public `async def` in the module is a tool (`register_module_tools()` in `src/tool_registry.py`). Name helpers with a leading `_`.
-- Protect modules are in `_LOCAL_TOOL_MODULES` only (`src/main.py`). They do not exist in cloud modes.
-- A new module goes into three places in `src/main.py`: `_LOCAL_TOOL_MODULES`, the `protect` profile and the `system` profile.
-- Protect reads are not cached. Protect modules are not in `CACHED_MODULES` (`src/cache.py`).
+- Every public `async def` in the module is a tool (`register_module_tools()` in `src/unifi_mcp_server/tool_registry.py`). Name helpers with a leading `_`.
+- Protect modules are in `_LOCAL_TOOL_MODULES` only (`src/unifi_mcp_server/main.py`). They do not exist in cloud modes.
+- A new module goes into three places in `src/unifi_mcp_server/main.py`: `_LOCAL_TOOL_MODULES`, the `protect` profile and the `system` profile.
+- Protect reads are not cached. Protect modules are not in `CACHED_MODULES` (`src/unifi_mcp_server/cache.py`).
 
 ## HTTP
 
-- Use `ProtectClient` from `src/api/protect_client.py`, not `UniFiClient`.
+- Use `ProtectClient` from `src/unifi_mcp_server/api/protect_client.py`, not `UniFiClient`.
 - Build every path with `settings.get_protect_integration_path("<endpoint>")`. In local mode that gives `/proxy/protect/integration/v1/<endpoint>`.
 - Call `await client.authenticate()` first; it checks access with a GET to `cameras`.
 - Send bodies with `json_data=`, not `json=`.
@@ -57,14 +57,14 @@ async with ProtectClient(settings) as client:
 
 ## Models
 
-- v7 models are in `src/models/protect_v7.py` and inherit `_ProtectV7Base`, which sets `populate_by_name=True` and `extra="allow"`. Unknown fields from newer firmware must not break parsing.
+- v7 models are in `src/unifi_mcp_server/models/protect_v7.py` and inherit `_ProtectV7Base`, which sets `populate_by_name=True` and `extra="allow"`. Unknown fields from newer firmware must not break parsing.
 - Fields are snake_case with a camelCase `alias=`. Dump with `model_dump(by_alias=True)`.
-- Older models (`src/models/protect_camera.py`, `src/models/protect_nvr.py` and others) do not allow extra fields. Do not copy them for new work.
-- Export new models from `src/models/__init__.py`.
+- Older models (`src/unifi_mcp_server/models/protect_camera.py`, `src/unifi_mcp_server/models/protect_nvr.py` and others) do not allow extra fields. Do not copy them for new work.
+- Export new models from `src/unifi_mcp_server/models/__init__.py`.
 
 ## Write tools
 
-Copy `update_protect_relay` in `src/tools/protect_relays.py`. The order is fixed:
+Copy `update_protect_relay` in `src/unifi_mcp_server/tools/protect_relays.py`. The order is fixed:
 
 1. `validate_confirmation(confirm, "<operation>", dry_run)`
 2. validate IDs and arguments, and raise `ValidationError` on bad input
@@ -72,7 +72,7 @@ Copy `update_protect_relay` in `src/tools/protect_relays.py`. The order is fixed
 4. `if coerce_bool(dry_run): return {"dry_run": True, "operation": "<tool name>", ..., "payload": payload}`
 5. only then open `ProtectClient`
 
-Do not write audit code; the registry wrapper audits every mutating call. A tool with a risky word in its name (`disable`, `reset` and others) must be in `DESTRUCTIVE_TOOLS` (`src/tool_registry.py`) or in `RISKY_NAME_EXEMPTIONS` (`tests/unit/fleet/test_tiers.py`).
+Do not write audit code; the registry wrapper audits every mutating call. A tool with a risky word in its name (`disable`, `reset` and others) must be in `DESTRUCTIVE_TOOLS` (`src/unifi_mcp_server/tool_registry.py`) or in `RISKY_NAME_EXEMPTIONS` (`tests/unit/fleet/test_tiers.py`).
 
 ## Response shapes
 
@@ -87,7 +87,7 @@ Do not write audit code; the registry wrapper audits every mutating call. A tool
 ## Tests
 
 - Files: `tests/unit/tools/test_protect_<module>.py`. Representative: `tests/unit/tools/test_protect_relays.py`.
-- Patch the client: `patch("src.tools.protect_relays.ProtectClient", return_value=mock_client)`, where `mock_client` is an `AsyncMock` with `__aenter__` returning itself and `__aexit__` returning `False`.
+- Patch the client: `patch("unifi_mcp_server.tools.protect_relays.ProtectClient", return_value=mock_client)`, where `mock_client` is an `AsyncMock` with `__aenter__` returning itself and `__aexit__` returning `False`.
 - Assert the exact path and body: `mock_client.patch.assert_awaited_once_with(path, json_data=...)`.
 - For every write, test refusal without `confirm` (and with `confirm="false"`), that the client is never created on refusal, and that a dry run makes no call.
 - `tests/unit/tools/test_protect_write_gates.py` checks every Protect write for `confirm` and `dry_run`.
@@ -102,4 +102,4 @@ Do not write audit code; the registry wrapper audits every mutating call. A tool
 
 ## Known defects (not fixed)
 
-- `list_protect_device_updates` is defined once, in `src/tools/protect_devices.py`. `src/tools/protect_events.py` imports it for its two compatibility wrappers; `register_module_tools` skips imported functions, so it registers once. `TestToolModuleSets` in `tests/unit/test_main_runtime.py` fails if a tool name is defined in two modules.
+- `list_protect_device_updates` is defined once, in `src/unifi_mcp_server/tools/protect_devices.py`. `src/unifi_mcp_server/tools/protect_events.py` imports it for its two compatibility wrappers; `register_module_tools` skips imported functions, so it registers once. `TestToolModuleSets` in `tests/unit/test_main_runtime.py` fails if a tool name is defined in two modules.

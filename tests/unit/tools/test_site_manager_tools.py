@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.tools.site_manager import (
+from unifi_mcp_server.tools.site_manager import (
     compare_site_performance,
     get_cross_site_statistics,
     get_internet_health,
@@ -76,7 +76,7 @@ async def test_list_all_sites_aggregated_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -97,7 +97,7 @@ async def test_list_all_sites_aggregated_empty(mock_settings):
     """Test retrieval when no sites exist."""
     mock_response = {"data": []}
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -131,7 +131,7 @@ async def test_list_all_sites_aggregated_alternate_response_format(mock_settings
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -164,7 +164,7 @@ async def test_get_internet_health_all_sites(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_internet_health = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -195,7 +195,7 @@ async def test_get_internet_health_specific_site(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_internet_health = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -224,7 +224,7 @@ async def test_get_internet_health_degraded(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_internet_health = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -265,7 +265,7 @@ async def test_get_site_health_summary_specific_site(mock_settings):
         "last_updated": "2026-01-05T00:00:00Z",
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_site_health = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -308,7 +308,7 @@ async def test_get_site_health_summary_all_sites(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_site_health = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -378,7 +378,7 @@ async def test_get_cross_site_statistics_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_sites_response)
         mock_client.get_site_health = AsyncMock(return_value=mock_health_response)
@@ -404,7 +404,7 @@ async def test_get_cross_site_statistics_empty(mock_settings):
     mock_sites_response = {"data": []}
     mock_health_response = {"data": []}
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_sites_response)
         mock_client.get_site_health = AsyncMock(return_value=mock_health_response)
@@ -460,7 +460,7 @@ async def test_list_vantage_points_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_vantage_points = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -482,7 +482,7 @@ async def test_list_vantage_points_empty(mock_settings):
     """Test retrieval when no Vantage Points exist."""
     mock_response = {"vantage_points": []}
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_vantage_points = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -517,7 +517,7 @@ async def test_list_vantage_points_with_inactive(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_vantage_points = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -552,7 +552,7 @@ async def test_list_vantage_points_list_format(mock_settings):
         }
     ]
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_vantage_points = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -589,7 +589,7 @@ async def test_get_site_inventory_specific_site(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -641,7 +641,7 @@ async def test_get_site_inventory_all_sites(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -687,7 +687,7 @@ async def test_get_site_inventory_empty_devices(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -766,7 +766,7 @@ async def test_compare_site_performance_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_site_health = AsyncMock(return_value=mock_health_response)
         mock_client.get_internet_health = AsyncMock(return_value=mock_internet_response)
@@ -790,7 +790,7 @@ async def test_compare_site_performance_empty(mock_settings):
     mock_health_response = {"data": []}
     mock_internet_response = {"data": []}
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_site_health = AsyncMock(return_value=mock_health_response)
         mock_client.get_internet_health = AsyncMock(return_value=mock_internet_response)
@@ -837,7 +837,7 @@ async def test_compare_site_performance_single_site(mock_settings):
         "data": [{"site_id": "site-1", "latency_ms": 15.0, "bandwidth_up_mbps": 100.0}]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_site_health = AsyncMock(return_value=mock_health_response)
         mock_client.get_internet_health = AsyncMock(return_value=mock_internet_response)
@@ -879,7 +879,7 @@ async def test_search_across_sites_device(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -913,7 +913,7 @@ async def test_search_across_sites_all(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -942,7 +942,7 @@ async def test_search_across_sites_no_results(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -986,7 +986,7 @@ async def test_search_across_sites_mac_address(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sites = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1009,7 +1009,7 @@ async def test_search_across_sites_mac_address(mock_settings):
 @pytest.mark.asyncio
 async def test_get_isp_metrics_success(mock_settings):
     """Test successful retrieval of ISP metrics for a site."""
-    from src.tools.site_manager import get_isp_metrics
+    from unifi_mcp_server.tools.site_manager import get_isp_metrics
 
     mock_response = {
         "data": {
@@ -1024,7 +1024,7 @@ async def test_get_isp_metrics_success(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_isp_metrics = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1042,7 +1042,7 @@ async def test_get_isp_metrics_success(mock_settings):
 @pytest.mark.asyncio
 async def test_query_isp_metrics_success(mock_settings):
     """Test successful querying of ISP metrics."""
-    from src.tools.site_manager import query_isp_metrics
+    from unifi_mcp_server.tools.site_manager import query_isp_metrics
 
     mock_response = {
         "data": [
@@ -1059,7 +1059,7 @@ async def test_query_isp_metrics_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.query_isp_metrics = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1078,7 +1078,7 @@ async def test_query_isp_metrics_success(mock_settings):
 @pytest.mark.asyncio
 async def test_query_isp_metrics_single_dict_return(mock_settings):
     """Test query_isp_metrics with single dict return from API."""
-    from src.tools.site_manager import query_isp_metrics
+    from unifi_mcp_server.tools.site_manager import query_isp_metrics
 
     # API returns single dict instead of list
     mock_response = {
@@ -1094,7 +1094,7 @@ async def test_query_isp_metrics_single_dict_return(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.query_isp_metrics = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1118,7 +1118,7 @@ async def test_query_isp_metrics_single_dict_return(mock_settings):
 @pytest.mark.asyncio
 async def test_list_sdwan_configs_success(mock_settings):
     """Test successful retrieval of SD-WAN configurations."""
-    from src.tools.site_manager import list_sdwan_configs
+    from unifi_mcp_server.tools.site_manager import list_sdwan_configs
 
     mock_response = {
         "data": [
@@ -1136,7 +1136,7 @@ async def test_list_sdwan_configs_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_sdwan_configs = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1154,7 +1154,7 @@ async def test_list_sdwan_configs_success(mock_settings):
 @pytest.mark.asyncio
 async def test_get_sdwan_config_success(mock_settings):
     """Test successful retrieval of SD-WAN config by ID."""
-    from src.tools.site_manager import get_sdwan_config
+    from unifi_mcp_server.tools.site_manager import get_sdwan_config
 
     mock_response = {
         "data": {
@@ -1170,7 +1170,7 @@ async def test_get_sdwan_config_success(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_sdwan_config = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1187,7 +1187,7 @@ async def test_get_sdwan_config_success(mock_settings):
 @pytest.mark.asyncio
 async def test_get_sdwan_config_status_success(mock_settings):
     """Test successful retrieval of SD-WAN config status."""
-    from src.tools.site_manager import get_sdwan_config_status
+    from unifi_mcp_server.tools.site_manager import get_sdwan_config_status
 
     mock_response = {
         "data": {
@@ -1200,7 +1200,7 @@ async def test_get_sdwan_config_status_success(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_sdwan_config_status = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1223,7 +1223,7 @@ async def test_get_sdwan_config_status_success(mock_settings):
 @pytest.mark.asyncio
 async def test_list_hosts_success(mock_settings):
     """Test successful retrieval of hosts list."""
-    from src.tools.site_manager import list_hosts
+    from unifi_mcp_server.tools.site_manager import list_hosts
 
     mock_response = {
         "data": [
@@ -1241,7 +1241,7 @@ async def test_list_hosts_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.list_hosts = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1259,7 +1259,7 @@ async def test_list_hosts_success(mock_settings):
 @pytest.mark.asyncio
 async def test_get_host_success(mock_settings):
     """Test successful retrieval of host details."""
-    from src.tools.site_manager import get_host
+    from unifi_mcp_server.tools.site_manager import get_host
 
     mock_response = {
         "data": {
@@ -1275,7 +1275,7 @@ async def test_get_host_success(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_host = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -1297,7 +1297,7 @@ async def test_get_host_success(mock_settings):
 @pytest.mark.asyncio
 async def test_get_version_control_success(mock_settings):
     """Test successful retrieval of version control info."""
-    from src.tools.site_manager import get_version_control
+    from unifi_mcp_server.tools.site_manager import get_version_control
 
     mock_response = {
         "data": {
@@ -1310,7 +1310,7 @@ async def test_get_version_control_success(mock_settings):
         }
     }
 
-    with patch("src.tools.site_manager.SiteManagerClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.site_manager.SiteManagerClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.get_version_control = AsyncMock(return_value=mock_response)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)

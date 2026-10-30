@@ -14,9 +14,9 @@ from unittest.mock import AsyncMock
 import httpx
 import pytest
 
-from src.api.pool import ClientPool, active_pool
-from src.config.config import Settings
-from src.worker import jobs
+from unifi_mcp_server.api.pool import ClientPool, active_pool
+from unifi_mcp_server.config.config import Settings
+from unifi_mcp_server.worker import jobs
 
 SITES = [
     {"id": "11111111-aaaa", "internalReference": "default", "name": "Default"},
@@ -138,9 +138,10 @@ class TestCheckHealth:
         self, settings: Settings, pool: ClientPool, snapshots: AsyncMock, monkeypatch: Any
     ) -> None:
         monkeypatch.setattr(
-            "src.api.client.UniFiClient.get", AsyncMock(side_effect=RuntimeError("no info"))
+            "unifi_mcp_server.api.client.UniFiClient.get",
+            AsyncMock(side_effect=RuntimeError("no info")),
         )
-        monkeypatch.setattr("src.api.client.UniFiClient.authenticate", AsyncMock())
+        monkeypatch.setattr("unifi_mcp_server.api.client.UniFiClient.authenticate", AsyncMock())
         assert await jobs.check_health("hq", settings, snapshots, failures={}, down_after=3) == "ok"
 
     async def test_failures_degrade_then_go_down(
@@ -170,8 +171,8 @@ class TestCheckHealth:
         settings = Settings()
         authenticate = AsyncMock()
         get = AsyncMock()
-        monkeypatch.setattr("src.api.client.UniFiClient.authenticate", authenticate)
-        monkeypatch.setattr("src.api.client.UniFiClient.get", get)
+        monkeypatch.setattr("unifi_mcp_server.api.client.UniFiClient.authenticate", authenticate)
+        monkeypatch.setattr("unifi_mcp_server.api.client.UniFiClient.get", get)
 
         assert await jobs.check_health("c", settings, snapshots, failures={}, down_after=3) == "ok"
         get.assert_not_awaited()
@@ -241,8 +242,10 @@ class TestSyncController:
     ) -> None:
         # UniFiClient.get() returns {} for an empty 2xx body: that must not
         # read as "the controller has no sites" and wipe the snapshot.
-        monkeypatch.setattr("src.api.client.UniFiClient.authenticate", AsyncMock())
-        monkeypatch.setattr("src.api.client.UniFiClient.get", AsyncMock(return_value=body))
+        monkeypatch.setattr("unifi_mcp_server.api.client.UniFiClient.authenticate", AsyncMock())
+        monkeypatch.setattr(
+            "unifi_mcp_server.api.client.UniFiClient.get", AsyncMock(return_value=body)
+        )
 
         with pytest.raises(ValueError, match="unexpected listing shape"):
             await jobs.sync_controller("hq", settings, snapshots)
@@ -262,7 +265,7 @@ class TestSyncController:
     ) -> None:
         monkeypatch.setenv("UNIFI_API_TYPE", api_type)
         settings = Settings()
-        monkeypatch.setattr("src.api.client.UniFiClient.authenticate", AsyncMock())
+        monkeypatch.setattr("unifi_mcp_server.api.client.UniFiClient.authenticate", AsyncMock())
         get = AsyncMock(
             return_value={
                 "data": [
@@ -272,7 +275,7 @@ class TestSyncController:
                 ]
             }
         )
-        monkeypatch.setattr("src.api.client.UniFiClient.get", get)
+        monkeypatch.setattr("unifi_mcp_server.api.client.UniFiClient.get", get)
 
         result = await jobs.sync_controller("c", settings, snapshots)
 
@@ -312,7 +315,7 @@ class TestHealthAnnouncements:
     ) -> None:
         import time
 
-        from src.api.pool import connection_key
+        from unifi_mcp_server.api.pool import connection_key
 
         bus = AsyncMock()
         before = time.monotonic()

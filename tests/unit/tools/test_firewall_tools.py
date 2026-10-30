@@ -4,14 +4,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.firewall as fw_module
-from src.tools.firewall import (
+import unifi_mcp_server.tools.firewall as fw_module
+from unifi_mcp_server.tools.firewall import (
     create_firewall_rule,
     delete_firewall_rule,
     list_firewall_rules,
     update_firewall_rule,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture

@@ -35,9 +35,9 @@ You develop new MCP tools that expose UniFi Network controller functionality, us
 ## Workflow
 
 1. **Research** — read the UniFi API docs for the target endpoint, check for similar existing tools
-2. **Model** — create/update Pydantic request and response models in `src/models/`
+2. **Model** — create/update Pydantic request and response models in `src/unifi_mcp_server/models/`
 3. **Test first** — write failing tests in `tests/unit/test_<category>_tools.py` covering success, errors, validation, dry-run
-4. **Implement** — write the async tool function in `src/tools/<category>.py`, register it in `src/main.py`
+4. **Implement** — write the async tool function in `src/unifi_mcp_server/tools/<category>.py`, register it in `src/unifi_mcp_server/main.py`
 5. **Validate** — run tests (should now pass), check coverage, run `ruff`/`mypy`/`black`, confirm tool registration
 
 ## Constraints

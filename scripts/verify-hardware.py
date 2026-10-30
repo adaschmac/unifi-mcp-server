@@ -31,6 +31,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 RESULTS: list[tuple[str, str, str]] = []  # (phase, name, status)
 
@@ -56,7 +57,7 @@ def load_dotenv(path: Path) -> None:
 
 async def phase_a(settings) -> None:
     """Run the read-only probes (Phase A)."""
-    from src.tools import (
+    from unifi_mcp_server.tools import (
         carrier,
         innerspace,
         mobility,
@@ -142,7 +143,7 @@ async def phase_a(settings) -> None:
 async def phase_b(settings) -> None:
     """Write-path probes. Operator-gated: run only with approval and rollback ready."""
     print("\n--- PHASE B: WRITE PROBES (operator-gated) ---")
-    from src.tools import carrier, protect_alarm, protect_sirens
+    from unifi_mcp_server.tools import carrier, protect_alarm, protect_sirens
 
     # B1. Protect: siren test-sound (physically audible — operator must expect it)
     try:
@@ -251,7 +252,7 @@ async def main() -> int:
 
     load_dotenv(REPO_ROOT / ".env")
 
-    from src.config import Settings
+    from unifi_mcp_server.config import Settings
 
     settings = Settings()
 

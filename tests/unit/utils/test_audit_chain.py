@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from src.utils.audit import GENESIS_HASH, INSTANCE_ID, AuditLogger, record_hash
-from src.utils.audit_verify import ChainKeyMissingError, main, verify_file
+from unifi_mcp_server.utils.audit import GENESIS_HASH, INSTANCE_ID, AuditLogger, record_hash
+from unifi_mcp_server.utils.audit_verify import ChainKeyMissingError, main, verify_file
 
 KEY = "chain-test-key"  # pragma: allowlist secret
 

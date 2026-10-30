@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import innerspace
+from unifi_mcp_server.tools import innerspace
 
 _CONSOLE = "11111111-2222-3333-4444-555555555555"
 _PLAN = "plan-1"
@@ -36,7 +36,7 @@ def _make_client(response):
 
 
 def _patch_client(cm):
-    return patch("src.tools.innerspace.SiteManagerClient", return_value=cm)
+    return patch("unifi_mcp_server.tools.innerspace.SiteManagerClient", return_value=cm)
 
 
 def _endpoint(path: str) -> str:

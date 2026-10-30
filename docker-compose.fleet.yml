@@ -28,7 +28,7 @@ services:
       context: .
       args:
         EXTRAS: fleet
-    command: ["python", "-m", "src.fleet.cli", "migrate"]
+    command: ["python", "-m", "unifi_mcp_server.fleet.cli", "migrate"]
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://unifi_mcp:${POSTGRES_PASSWORD}@postgres:5432/unifi_mcp}
       # The migration service may use a separate owner role; defaults to DATABASE_URL.
@@ -66,7 +66,7 @@ services:
       UNIFI_AUDIT_SIEM_BUFFER_DIR: ${UNIFI_AUDIT_SIEM_BUFFER_DIR:-}
       UNIFI_AUDIT_SIEM_BUFFER_MAX_MB: ${UNIFI_AUDIT_SIEM_BUFFER_MAX_MB:-100}
       UNIFI_AUDIT_SIEM_ANCHOR_SECONDS: ${UNIFI_AUDIT_SIEM_ANCHOR_SECONDS:-300}
-      # Read by `python -m src.fleet.cli audit-retention` (SECURITY.md).
+      # Read by `python -m unifi_mcp_server.fleet.cli audit-retention` (SECURITY.md).
       UNIFI_AUDIT_RETENTION_DAYS: ${UNIFI_AUDIT_RETENTION_DAYS:-}
       UNIFI_AUDIT_ARCHIVE_DIR: ${UNIFI_AUDIT_ARCHIVE_DIR:-}
       UNIFI_AUDIT_LOG_ROTATE_MB: ${UNIFI_AUDIT_LOG_ROTATE_MB:-}
@@ -80,7 +80,7 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  # Health checks and site/inventory snapshots (python -m src.worker). Without
+  # Health checks and site/inventory snapshots (python -m unifi_mcp_server.worker). Without
   # Redis run exactly one worker; with REDIS_URL set, scale it freely.
   worker:
     build:
@@ -88,7 +88,7 @@ services:
       args:
         EXTRAS: fleet
     restart: unless-stopped
-    command: ["python", "-m", "src.worker"]
+    command: ["python", "-m", "unifi_mcp_server.worker"]
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://unifi_mcp:${POSTGRES_PASSWORD}@postgres:5432/unifi_mcp}
       UNIFI_FLEET_CREDENTIAL_KEY: ${UNIFI_FLEET_CREDENTIAL_KEY:?UNIFI_FLEET_CREDENTIAL_KEY required}

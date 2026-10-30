@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.resources.clients import ClientsResource
-from src.resources.devices import DevicesResource
-from src.resources.networks import NetworksResource
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.resources.clients import ClientsResource
+from unifi_mcp_server.resources.devices import DevicesResource
+from unifi_mcp_server.resources.networks import NetworksResource
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ class TestClientsResource:
     @pytest.mark.asyncio
     async def test_list_all_clients_uses_alluser(self, mock_settings):
         client = create_mock_client({"data": [_client("aa:00", True), _client("aa:01", False)]})
-        with patch("src.resources.clients.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.clients.UniFiClient", return_value=client):
             result = await ClientsResource(mock_settings).list_clients("default")
 
         client.authenticate.assert_awaited_once()
@@ -62,7 +62,7 @@ class TestClientsResource:
     async def test_active_only_uses_sta_and_paginates(self, mock_settings):
         data = [_client(f"aa:{i:02d}", True) for i in range(5)]
         client = create_mock_client({"data": data})
-        with patch("src.resources.clients.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.clients.UniFiClient", return_value=client):
             result = await ClientsResource(mock_settings).list_clients(
                 "default", limit=2, offset=1, active_only=True
             )
@@ -83,7 +83,7 @@ class TestClientsResource:
     async def test_filter_by_connection(self, mock_settings, is_wired, expected):
         data = [_client("aa:00", True), _client("aa:01", False), _client("aa:02", True)]
         client = create_mock_client({"data": data})
-        with patch("src.resources.clients.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.clients.UniFiClient", return_value=client):
             result = await ClientsResource(mock_settings).filter_by_connection(
                 "default", is_wired=is_wired
             )
@@ -102,7 +102,7 @@ class TestDevicesResource:
     async def test_list_devices_paginates(self, mock_settings):
         data = [_device(f"dev-{i:02d}", "uap", "U6-Pro") for i in range(4)]
         client = create_mock_client({"data": data})
-        with patch("src.resources.devices.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.devices.UniFiClient", return_value=client):
             result = await DevicesResource(mock_settings).list_devices("default", limit=2, offset=2)
 
         client.authenticate.assert_awaited_once()
@@ -112,7 +112,7 @@ class TestDevicesResource:
     @pytest.mark.asyncio
     async def test_list_devices_empty(self, mock_settings):
         client = create_mock_client({})
-        with patch("src.resources.devices.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.devices.UniFiClient", return_value=client):
             assert await DevicesResource(mock_settings).list_devices("default") == []
 
     @pytest.mark.asyncio
@@ -123,7 +123,7 @@ class TestDevicesResource:
             _device("dev-03", "ugw", "UAP-in-name"),
         ]
         client = create_mock_client({"data": data})
-        with patch("src.resources.devices.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.devices.UniFiClient", return_value=client):
             result = await DevicesResource(mock_settings).filter_by_type("default", "UAP")
 
         assert [d.id for d in result] == ["dev-01", "dev-03"]
@@ -139,7 +139,7 @@ class TestNetworksResource:
     async def test_list_networks_paginates(self, mock_settings):
         data = [_network(f"n{i}") for i in range(3)]
         client = create_mock_client({"data": data})
-        with patch("src.resources.networks.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.networks.UniFiClient", return_value=client):
             result = await NetworksResource(mock_settings).list_networks("default", limit=2)
 
         client.authenticate.assert_awaited_once()
@@ -150,7 +150,7 @@ class TestNetworksResource:
     async def test_list_vlans_filters_untagged(self, mock_settings):
         data = [_network("n0"), _network("n1", vlan=10), _network("n2", vlan=20)]
         client = create_mock_client({"data": data})
-        with patch("src.resources.networks.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.resources.networks.UniFiClient", return_value=client):
             result = await NetworksResource(mock_settings).list_vlans("default", offset=1)
 
         assert [n.vlan_id for n in result] == [20]

@@ -9,13 +9,13 @@ from fastmcp import Client, FastMCP
 from fastmcp.exceptions import ToolError
 from fastmcp.server.auth import AccessToken
 
-from src.access import PermissionDeniedError
-from src.config.config import APIType, Settings
-from src.fleet import ControllerProfile
-from src.fleet.router import FleetRouter
-from src.fleet.tools import register_fleet_tools
-from src.tool_registry import _make_tool_wrapper
-from src.utils import tool_kind
+from unifi_mcp_server.access import PermissionDeniedError
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet import ControllerProfile
+from unifi_mcp_server.fleet.router import FleetRouter
+from unifi_mcp_server.fleet.tools import register_fleet_tools
+from unifi_mcp_server.tool_registry import _make_tool_wrapper
+from unifi_mcp_server.utils import tool_kind
 
 from .test_router import StaticRegistry
 
@@ -31,7 +31,7 @@ GRANTS = {
 
 @pytest.fixture(autouse=True)
 def _fresh_audit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     monkeypatch.delenv("UNIFI_AUDIT_CHAIN_KEY", raising=False)
     monkeypatch.delenv("UNIFI_AUDIT_LOG_KEY", raising=False)
 
@@ -71,7 +71,7 @@ def _as(monkeypatch: pytest.MonkeyPatch, role: str, **claims: Any) -> None:
         scopes=[],
         claims={"token_id": "tok-1", "name": "t", "role": role, **claims},
     )
-    monkeypatch.setattr("src.access.get_access_token", lambda: token)
+    monkeypatch.setattr("unifi_mcp_server.access.get_access_token", lambda: token)
 
 
 def _records(settings: Settings) -> list[dict[str, Any]]:

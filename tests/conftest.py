@@ -6,9 +6,11 @@ from pathlib import Path
 
 import pytest
 
-# Add project root to Python path for imports
+# Add the project root (for ``tests``) and ``src`` (for ``unifi_mcp_server``) to the path,
+# so the tests run from a checkout with or without an editable install.
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src"))
 
 
 @pytest.fixture(autouse=True, scope="function")

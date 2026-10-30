@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.prompts.registry import _registered_prompt_names
+from unifi_mcp_server.prompts.registry import _registered_prompt_names
 
 _BASE_ENV = {
     "UNIFI_API_KEY": "test-key",  # pragma: allowlist secret
@@ -25,12 +25,12 @@ _BASE_ENV = {
 
 
 def _build(**extra_env: str) -> Any:
-    """Import src.main under the given environment and return the server."""
+    """Import unifi_mcp_server.main under the given environment and return the server."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", {**_BASE_ENV, **extra_env}, clear=False):
-        return importlib.import_module("src.main").mcp
+        return importlib.import_module("unifi_mcp_server.main").mcp
 
 
 def _prompts(**extra_env: str) -> set[str]:
@@ -170,7 +170,7 @@ class TestIdempotence:
         return mcp
 
     def test_registering_twice_does_not_duplicate_a_prompt(self) -> None:
-        from src.prompts import register_prompts
+        from unifi_mcp_server.prompts import register_prompts
 
         mcp = self._fresh_server_with_tools(_ALL_REQUIRED_TOOLS)
         first = register_prompts(mcp)
@@ -182,7 +182,7 @@ class TestIdempotence:
         assert len(before) == len(set(before))
 
     def test_a_second_registration_adds_no_new_names(self) -> None:
-        from src.prompts import register_prompts
+        from unifi_mcp_server.prompts import register_prompts
 
         mcp = self._fresh_server_with_tools(_ALL_REQUIRED_TOOLS)
         first = register_prompts(mcp)
@@ -191,8 +191,8 @@ class TestIdempotence:
         assert second == []
 
     def test_the_imported_server_registers_each_prompt_once(self) -> None:
-        """src.main registers the prompts at import; re-registering is a no-op."""
-        from src.prompts import register_prompts
+        """unifi_mcp_server.main registers the prompts at import; re-registering is a no-op."""
+        from unifi_mcp_server.prompts import register_prompts
 
         mcp = _build(UNIFI_API_TYPE="local")
         before = _registered_prompt_names(mcp)
@@ -202,12 +202,12 @@ class TestIdempotence:
 
 
 def teardown_module(module: Any) -> None:  # noqa: D401
-    """Restore a pristine src.main for any later tests in the session."""
+    """Restore a pristine unifi_mcp_server.main for any later tests in the session."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", _BASE_ENV, clear=False):
-        importlib.import_module("src.main")
+        importlib.import_module("unifi_mcp_server.main")
 
 
 @pytest.mark.parametrize(

@@ -18,10 +18,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 # Forwarded by docker-compose.yml but intentionally not a Settings field:
-# read via os.getenv() elsewhere (UNIFI_PROFILE, in src/main.py), or
+# read via os.getenv() elsewhere (UNIFI_PROFILE, in src/unifi_mcp_server/main.py), or
 # documented for a not-yet-implemented feature (the rest). Not a target
 # for this test, which only guards against *typos* in forwarded names
 # that were meant to reach Settings.
@@ -149,7 +149,7 @@ def test_healthcheck_fails_when_nothing_listens(monkeypatch, liveness_port):
 
 
 def test_healthcheck_targets_the_real_route():
-    """The route is /healthz (src/main.py); /health is a 404."""
+    """The route is /healthz (src/unifi_mcp_server/main.py); /health is a 404."""
     script = _healthcheck_script()
     assert "/healthz" in script
     assert "/health'" not in script and '/health"' not in script

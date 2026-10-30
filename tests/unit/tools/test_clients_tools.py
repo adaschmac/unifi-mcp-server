@@ -1,16 +1,16 @@
-"""Unit tests for src/tools/clients.py."""
+"""Unit tests for src/unifi_mcp_server/tools/clients.py."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.clients import (
+from unifi_mcp_server.tools.clients import (
     get_client_details,
     get_client_statistics,
     list_active_clients,
     search_clients,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -91,7 +91,7 @@ class TestWiredClientCounters:
         mac = "00:00:5e:00:53:02"
         response = {"data": [make_wired_client(mac=mac)]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_client_statistics("site-1", mac, mock_settings)
@@ -105,7 +105,7 @@ class TestWiredClientCounters:
     async def test_list_active_clients_reads_wired_keys(self, mock_settings):
         response = {"data": [make_wired_client()]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_active_clients("site-1", mock_settings)
@@ -118,7 +118,7 @@ class TestWiredClientCounters:
         """A wireless client's plain keys keep winning."""
         response = {"data": [make_client()]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_active_clients("site-1", mock_settings)
@@ -143,14 +143,14 @@ class TestWiredClientCounters:
         }
         response = {"data": [record]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             stats = await get_client_statistics("site-1", mac, mock_settings)
             assert stats["tx_bytes"] == 0
             assert stats["rx_bytes"] == 0
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             listed = await list_active_clients("site-1", mock_settings)
@@ -165,7 +165,7 @@ class TestGetClientDetails:
         active_response = {"data": [make_client(mac=mac)]}
         alluser_response = {"data": []}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await get_client_details("site-1", mac, mock_settings)
@@ -178,7 +178,7 @@ class TestGetClientDetails:
         active_response = {"data": []}
         alluser_response = {"data": [make_client(mac=mac)]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await get_client_details("site-1", mac, mock_settings)
@@ -190,7 +190,7 @@ class TestGetClientDetails:
         mac = "00:11:22:33:44:55"
         active_response = [make_client(mac=mac)]
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response])
 
             result = await get_client_details("site-1", mac, mock_settings)
@@ -202,7 +202,7 @@ class TestGetClientDetails:
         active_response = {"data": [make_client(mac="00:00:00:00:00:00")]}
         alluser_response = {"data": []}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             with pytest.raises(ResourceNotFoundError):
@@ -223,7 +223,7 @@ class TestGetClientDetails:
         mac = "00:11:22:33:44:55"
         active_response = {"data": [make_client(mac=mac)]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response])
 
             result = await get_client_details("site-1", "00-11-22-33-44-55", mock_settings)
@@ -237,7 +237,7 @@ class TestGetClientStatistics:
         mac = "00:11:22:33:44:55"
         response = {"data": [make_client(mac=mac)]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_client_statistics("site-1", mac, mock_settings)
@@ -255,7 +255,7 @@ class TestGetClientStatistics:
         mac = "aa:bb:cc:dd:ee:ff"
         response = [make_client(mac=mac)]
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_client_statistics("site-1", mac, mock_settings)
@@ -266,7 +266,7 @@ class TestGetClientStatistics:
     async def test_get_client_statistics_not_found(self, mock_settings):
         response = {"data": [make_client(mac="00:00:00:00:00:00")]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             with pytest.raises(ResourceNotFoundError):
@@ -278,7 +278,7 @@ class TestGetClientStatistics:
         minimal_client = {"mac": mac}
         response = {"data": [minimal_client]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_client_statistics("site-1", mac, mock_settings)
@@ -300,7 +300,7 @@ class TestListActiveClients:
             ]
         }
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_active_clients("site-1", mock_settings)
@@ -311,7 +311,7 @@ class TestListActiveClients:
     async def test_list_active_clients_list_response(self, mock_settings):
         response = [make_client(mac="00:11:22:33:44:55")]
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_active_clients("site-1", mock_settings)
@@ -322,7 +322,7 @@ class TestListActiveClients:
     async def test_list_active_clients_with_limit(self, mock_settings):
         response = {"data": [make_client(mac=f"00:00:00:00:00:{i:02x}") for i in range(10)]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_active_clients("site-1", mock_settings, limit=5)
@@ -333,7 +333,7 @@ class TestListActiveClients:
     async def test_list_active_clients_with_offset(self, mock_settings):
         response = {"data": [make_client(mac=f"00:00:00:00:00:{i:02x}") for i in range(10)]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_active_clients("site-1", mock_settings, offset=5, limit=3)
@@ -345,7 +345,7 @@ class TestListActiveClients:
     async def test_list_active_clients_empty(self, mock_settings):
         response = {"data": []}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_active_clients("site-1", mock_settings)
@@ -369,7 +369,7 @@ class TestSearchClients:
             ]
         }
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "00:11", mock_settings)
@@ -389,7 +389,7 @@ class TestSearchClients:
         # Historical clients may not have current IPs
         alluser_response = {"data": []}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "192.168.2", mock_settings)
@@ -406,7 +406,7 @@ class TestSearchClients:
             ]
         }
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "office", mock_settings)
@@ -419,7 +419,7 @@ class TestSearchClients:
         active_response = {"data": []}
         alluser_response = {"data": [make_client(name="John's iPhone")]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "john", mock_settings)
@@ -431,7 +431,7 @@ class TestSearchClients:
         active_response = {"data": []}
         alluser_response = {"data": [make_client(hostname="Office-PC")]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "OFFICE", mock_settings)
@@ -448,7 +448,7 @@ class TestSearchClients:
             ]
         }
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "client", mock_settings, limit=3, offset=2)
@@ -460,7 +460,7 @@ class TestSearchClients:
         active_response = {"data": []}
         alluser_response = {"data": [make_client(hostname="office-pc")]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "nonexistent", mock_settings)
@@ -472,7 +472,7 @@ class TestSearchClients:
         active_response = [make_client(hostname="test-client")]
         alluser_response = []
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "test", mock_settings)
@@ -492,7 +492,7 @@ class TestSearchClients:
             "data": [{"mac": "aa:bb:cc:dd:ee:ff", "hostname": "old-client", "ip": None}]
         }
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             # Should not crash when searching by IP
@@ -514,7 +514,7 @@ class TestSearchClients:
             "data": [make_client(mac=mac, ip="192.168.2.100", hostname="current-hostname")]
         }
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", "192.168.2.100", mock_settings)
@@ -531,7 +531,7 @@ class TestSearchClients:
         active_response = {"data": []}
         alluser_response = {"data": [make_client(mac=mac, ip=None, hostname="offline-device")]}
 
-        with patch("src.tools.clients.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.clients.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([active_response, alluser_response])
 
             result = await search_clients("site-1", mac, mock_settings)
@@ -543,7 +543,7 @@ class TestSearchClients:
 class TestClientRfHealth:
     @pytest.mark.asyncio
     async def test_computes_retry_pct_and_sorts_worst_first(self, mock_settings):
-        from src.tools.clients import list_client_rf_health
+        from unifi_mcp_server.tools.clients import list_client_rf_health
 
         sta = [
             {
@@ -576,7 +576,7 @@ class TestClientRfHealth:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.clients.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.clients.UniFiClient", return_value=client):
             result = await list_client_rf_health("default", mock_settings)
 
         assert [r["name"] for r in result] == ["struggler", "quiet"]
@@ -585,7 +585,7 @@ class TestClientRfHealth:
 
     @pytest.mark.asyncio
     async def test_min_retry_pct_floor(self, mock_settings):
-        from src.tools.clients import list_client_rf_health
+        from unifi_mcp_server.tools.clients import list_client_rf_health
 
         sta = [
             {"mac": "00:00:5e:00:53:01", "radio": "na", "tx_packets": 990, "tx_retries": 10},
@@ -597,7 +597,7 @@ class TestClientRfHealth:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.clients.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.clients.UniFiClient", return_value=client):
             result = await list_client_rf_health("default", mock_settings, min_retry_pct=5)
 
         assert len(result) == 1
@@ -605,7 +605,7 @@ class TestClientRfHealth:
 
     @pytest.mark.asyncio
     async def test_zero_packets_yields_null_pct(self, mock_settings):
-        from src.tools.clients import list_client_rf_health
+        from unifi_mcp_server.tools.clients import list_client_rf_health
 
         sta = [{"mac": "00:00:5e:00:53:01", "radio": "na", "tx_packets": 0, "tx_retries": 0}]
         client = MagicMock()
@@ -614,7 +614,7 @@ class TestClientRfHealth:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.clients.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.clients.UniFiClient", return_value=client):
             result = await list_client_rf_health("default", mock_settings)
 
         assert result[0]["tx_retry_pct"] is None
@@ -623,8 +623,8 @@ class TestClientRfHealth:
 @pytest.mark.asyncio
 async def test_rf_health_rejects_a_non_numeric_floor(mock_settings):
     """Fail on the argument, not later inside a comprehension."""
-    from src.tools.clients import list_client_rf_health
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.tools.clients import list_client_rf_health
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     with pytest.raises(ValidationError, match="must be a number"):
         await list_client_rf_health("default", mock_settings, min_retry_pct="high")
@@ -633,8 +633,8 @@ async def test_rf_health_rejects_a_non_numeric_floor(mock_settings):
 @pytest.mark.asyncio
 async def test_rf_health_rejects_an_out_of_range_floor(mock_settings):
     """A percentage outside 0..100 can only be a caller mistake."""
-    from src.tools.clients import list_client_rf_health
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.tools.clients import list_client_rf_health
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     for bad in (-1, 101):
         with pytest.raises(ValidationError, match="between 0 and 100"):
@@ -644,7 +644,7 @@ async def test_rf_health_rejects_an_out_of_range_floor(mock_settings):
 @pytest.mark.asyncio
 async def test_rf_health_skips_clients_without_a_mac(mock_settings):
     """A row keyed by None cannot be correlated with anything."""
-    from src.tools.clients import list_client_rf_health
+    from unifi_mcp_server.tools.clients import list_client_rf_health
 
     payload = [
         {"mac": "00:00:5e:00:53:01", "radio": "na", "tx_packets": 90, "tx_retries": 10},
@@ -656,7 +656,7 @@ async def test_rf_health_skips_clients_without_a_mac(mock_settings):
     client.__aenter__ = AsyncMock(return_value=client)
     client.__aexit__ = AsyncMock(return_value=False)
 
-    with patch("src.tools.clients.UniFiClient", return_value=client):
+    with patch("unifi_mcp_server.tools.clients.UniFiClient", return_value=client):
         rows = await list_client_rf_health("default", mock_settings)
 
     assert [r["mac"] for r in rows] == ["00:00:5e:00:53:01"]

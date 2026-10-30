@@ -21,9 +21,13 @@ fakeredis = pytest.importorskip("fakeredis")
 # sys.modules["redis"], and pytest imports every test module before running any.
 import redis.asyncio as aioredis  # noqa: E402
 
-from src.api.client import RateLimiter  # noqa: E402
-from src.api.rate_limit import RedisRateLimiter, bucket_key, make_rate_limiter  # noqa: E402
-from src.config.config import Settings  # noqa: E402
+from unifi_mcp_server.api.client import RateLimiter  # noqa: E402
+from unifi_mcp_server.api.rate_limit import (  # noqa: E402
+    RedisRateLimiter,
+    bucket_key,
+    make_rate_limiter,
+)
+from unifi_mcp_server.config.config import Settings  # noqa: E402
 
 LIMIT = 4
 PERIOD = 1
@@ -63,7 +67,7 @@ def _make(settings: Settings) -> Any:
 @pytest.fixture(autouse=True)
 def _fresh_fallbacks(monkeypatch: pytest.MonkeyPatch) -> None:
     # Fallback buckets are per process; each test is a fresh process.
-    monkeypatch.setattr("src.api.rate_limit._fallbacks", {})
+    monkeypatch.setattr("unifi_mcp_server.api.rate_limit._fallbacks", {})
 
 
 @pytest.fixture(autouse=True)
@@ -185,7 +189,7 @@ class TestRedisUnavailable:
         monkeypatch.setenv("REDIS_URL", "redis://127.0.0.1:1/0")  # nothing listens
         replicas = []
         for _ in range(2):  # two processes, each with its own fallback bucket
-            monkeypatch.setattr("src.api.rate_limit._fallbacks", {})
+            monkeypatch.setattr("unifi_mcp_server.api.rate_limit._fallbacks", {})
             replicas.append(_make(Settings()))
 
         stamps = await _burst(replicas, 2 * LIMIT)
@@ -193,7 +197,7 @@ class TestRedisUnavailable:
         assert len([t for t in stamps if t < PERIOD * 0.5]) == LIMIT  # 2 x LIMIT/2 at once
 
     def test_fallback_budget(self, monkeypatch):
-        from src.api.rate_limit import fallback_budget
+        from unifi_mcp_server.api.rate_limit import fallback_budget
 
         assert fallback_budget(_settings(monkeypatch, None)) == LIMIT
         assert fallback_budget(_settings(monkeypatch, None, UNIFI_FLEET_EXPECTED_REPLICAS="3")) == 1
@@ -218,7 +222,7 @@ class TestRedisUnavailable:
         self, monkeypatch, redis_port
     ):
         settings = _settings(monkeypatch, redis_port, UNIFI_FLEET_EXPECTED_REPLICAS="4")
-        monkeypatch.setattr("src.cache.REDIS_AVAILABLE", False)
+        monkeypatch.setattr("unifi_mcp_server.cache.REDIS_AVAILABLE", False)
 
         limiter = _make(settings)
 
@@ -232,8 +236,8 @@ class TestRedisUnavailable:
 
 class TestClientWiring:
     async def test_pooled_clients_share_the_redis_limiter(self, monkeypatch, redis_port):
-        from src.api.client import UniFiClient
-        from src.api.pool import ClientPool, active_pool
+        from unifi_mcp_server.api.client import UniFiClient
+        from unifi_mcp_server.api.pool import ClientPool, active_pool
 
         settings = _settings(monkeypatch, redis_port)
         pool = ClientPool()
@@ -252,7 +256,7 @@ class TestClientWiring:
 
     async def test_unpooled_clients_use_the_shared_window_too(self, monkeypatch, redis_port):
         # MCP resources and the debug tool build clients outside the pool.
-        from src.api.client import UniFiClient
+        from unifi_mcp_server.api.client import UniFiClient
 
         settings = _settings(monkeypatch, redis_port)
         client = UniFiClient(settings)
@@ -262,7 +266,7 @@ class TestClientWiring:
         await client.close()
 
     async def test_unpooled_clients_without_redis_keep_a_local_bucket(self, monkeypatch):
-        from src.api.client import UniFiClient
+        from unifi_mcp_server.api.client import UniFiClient
 
         client = UniFiClient(_settings(monkeypatch, None))
 

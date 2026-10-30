@@ -56,7 +56,7 @@ audit: ## Check installed dependencies for known vulnerabilities
 
 .PHONY: docs-coverage
 docs-coverage: ## Check docstring coverage of tools and API client (CI "Documentation Coverage")
-	$(RUN) interrogate src/tools/ src/api/ --fail-under 80
+	$(RUN) interrogate src/unifi_mcp_server/tools/ src/unifi_mcp_server/api/ --fail-under 80
 
 .PHONY: pre-commit
 pre-commit: ## Run all pre-commit hooks on every file, skipping the ones CI skips

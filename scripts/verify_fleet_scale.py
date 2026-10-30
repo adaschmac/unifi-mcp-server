@@ -10,8 +10,8 @@ Starts, on this machine and without Docker:
 - Redis (a fakeredis TCP server),
 - one HTTPS mock that answers as ``--controllers`` UniFi gateways, told apart
   by API key; one in 20 is unreachable (answers 503),
-- three MCP server replicas (``python -m src``, Streamable HTTP) and two
-  workers (``python -m src.worker``),
+- three MCP server replicas (``python -m unifi_mcp_server``, Streamable HTTP) and two
+  workers (``python -m unifi_mcp_server.worker``),
 
 then checks, through MCP clients and the shared stores:
 
@@ -52,6 +52,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))
 
 TOKEN = "verify-fleet-scale-token"  # noqa: S105 - local test harness only
 RATE_LIMIT = 5  # requests per second per controller
@@ -222,6 +223,11 @@ class Stack:
             for k, v in os.environ.items()
             if not k.startswith(("UNIFI_", "REDIS_", "DATABASE_", "MCP_"))
         }
+        # ``python -m unifi_mcp_server`` must resolve from a checkout without
+        # an editable install, as ``python -m src`` did from the repo root.
+        base["PYTHONPATH"] = os.pathsep.join(
+            p for p in (str(ROOT / "src"), base.get("PYTHONPATH", "")) if p
+        )
         base.update(self.common)
         base.update(extra)
         return base
@@ -309,7 +315,7 @@ async def lease_holders(redis_url: str) -> dict[str, str]:
     """Controller name -> worker id of every worker lease in Redis."""
     import redis.asyncio as aioredis
 
-    from src.worker.shards import KEY_PREFIX
+    from unifi_mcp_server.worker.shards import KEY_PREFIX
 
     client = aioredis.from_url(redis_url)
     try:
@@ -378,7 +384,7 @@ async def run_checks(args: argparse.Namespace) -> int:
         }
         try:
             subprocess.run(  # noqa: S603 - fixed interpreter and argv
-                [sys.executable, "-m", "src.fleet.cli", "migrate"],
+                [sys.executable, "-m", "unifi_mcp_server.fleet.cli", "migrate"],
                 cwd=ROOT,
                 env=stack.env(),
                 check=True,
@@ -391,13 +397,13 @@ async def run_checks(args: argparse.Namespace) -> int:
                 stack.server_ports.append(port)
                 stack.spawn(
                     f"replica-{index}",
-                    ["-m", "src"],
+                    ["-m", "unifi_mcp_server"],
                     MCP_SERVER_TRANSPORT="streamable_http",
                     MCP_SERVER_HOST="127.0.0.1",
                     MCP_SERVER_PORT=str(port),
                 )
             for index in range(2):
-                stack.spawn(f"worker-{index}", ["-m", "src.worker"])
+                stack.spawn(f"worker-{index}", ["-m", "unifi_mcp_server.worker"])
             for port in stack.server_ports:
 
                 async def ready(p: int = port) -> bool:
@@ -433,10 +439,10 @@ async def _lists(port: int, size: int) -> bool:
 async def register_fleet(stack: Stack, size: int, port: int) -> None:
     """Register ``size`` controllers, all answered by the mock on ``port``."""
     os.environ["UNIFI_FLEET_CREDENTIAL_KEY"] = stack.common["UNIFI_FLEET_CREDENTIAL_KEY"]
-    from src.config.config import APIType
-    from src.fleet.credentials import CredentialCipher
-    from src.fleet.db.schema import make_engine
-    from src.fleet.db.store import FleetStore
+    from unifi_mcp_server.config.config import APIType
+    from unifi_mcp_server.fleet.credentials import CredentialCipher
+    from unifi_mcp_server.fleet.db.schema import make_engine
+    from unifi_mcp_server.fleet.db.store import FleetStore
 
     engine = make_engine(stack.common["DATABASE_URL"])
     store = FleetStore(engine, CredentialCipher.from_env())
@@ -457,8 +463,8 @@ async def register_fleet(stack: Stack, size: int, port: int) -> None:
 
 
 async def _statuses(stack: Stack) -> list[Any]:
-    from src.fleet.db.schema import make_engine
-    from src.fleet.db.snapshots import SnapshotStore
+    from unifi_mcp_server.fleet.db.schema import make_engine
+    from unifi_mcp_server.fleet.db.snapshots import SnapshotStore
 
     engine = make_engine(stack.common["DATABASE_URL"])
     try:
@@ -513,7 +519,7 @@ async def check_health(report: Report, stack: Stack, size: int, unreachable: set
 async def check_failover(report: Report, stack: Stack, redis_url: str, size: int) -> None:
     """Check 3: a killed worker's controllers move and keep being checked."""
     victim = stack.processes["worker-0"]
-    # Worker ids are "<hostname>-<pid>-<random>" (src.worker.__main__.worker_id).
+    # Worker ids are "<hostname>-<pid>-<random>" (unifi_mcp_server.worker.__main__.worker_id).
     victim_prefix = f"{socket.gethostname()}-{victim.pid}-"
     share = [c for c, h in (await lease_holders(redis_url)).items() if h.startswith(victim_prefix)]
     victim.kill()

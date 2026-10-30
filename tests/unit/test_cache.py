@@ -14,7 +14,7 @@ sys.modules["redis"] = mock_redis
 sys.modules["redis.asyncio"] = mock_redis.asyncio
 sys.modules["redis.exceptions"] = mock_redis.exceptions
 
-from src.cache import CacheClient, CacheConfig, invalidate_cache  # noqa: E402
+from unifi_mcp_server.cache import CacheClient, CacheConfig, invalidate_cache  # noqa: E402
 
 
 @pytest.fixture
@@ -32,11 +32,11 @@ def mock_settings():
 @pytest.fixture(autouse=True)
 def _reset_pools():
     """Each test starts without shared connection pools."""
-    import src.cache
+    import unifi_mcp_server.cache
 
-    src.cache._pools.clear()
+    unifi_mcp_server.cache._pools.clear()
     yield
-    src.cache._pools.clear()
+    unifi_mcp_server.cache._pools.clear()
 
 
 class TestCacheConfig:
@@ -62,7 +62,7 @@ class TestCacheConfig:
 
 class TestCacheClientInit:
     def test_init_with_redis_available(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", True):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
             client = CacheClient(mock_settings)
 
             assert client.enabled is True
@@ -70,13 +70,13 @@ class TestCacheClientInit:
             assert client._redis is None
 
     def test_init_with_redis_unavailable(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             client = CacheClient(mock_settings)
 
             assert client.enabled is False
 
     def test_init_disabled_explicitly(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", True):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
             client = CacheClient(mock_settings, enabled=False)
 
             assert client.enabled is False
@@ -88,8 +88,8 @@ class TestCacheClientConnect:
         mock_redis_instance = AsyncMock()
         mock_redis_instance.ping = AsyncMock()
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 result = await client.connect()
 
@@ -102,8 +102,8 @@ class TestCacheClientConnect:
         mock_redis_instance = AsyncMock()
         mock_redis_instance.ping = AsyncMock(side_effect=Exception("Connection refused"))
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 result = await client.connect()
 
@@ -113,7 +113,7 @@ class TestCacheClientConnect:
 
     @pytest.mark.asyncio
     async def test_connect_when_disabled(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             client = CacheClient(mock_settings)
             result = await client.connect()
 
@@ -124,8 +124,8 @@ class TestCacheClientConnect:
         mock_redis_instance = AsyncMock()
         mock_redis_instance.ping = AsyncMock()
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.connect()
@@ -146,9 +146,9 @@ class TestCacheClientConnectionSettings:
         mock_settings.redis_password = "s3cret"  # pragma: allowlist secret
 
         with (
-            patch("src.cache.REDIS_AVAILABLE", True),
-            patch("src.cache.redis.ConnectionPool") as pool_cls,
-            patch("src.cache.redis.Redis", return_value=AsyncMock()) as redis_cls,
+            patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True),
+            patch("unifi_mcp_server.cache.redis.ConnectionPool") as pool_cls,
+            patch("unifi_mcp_server.cache.redis.Redis", return_value=AsyncMock()) as redis_cls,
         ):
             assert await CacheClient(mock_settings).connect() is True
 
@@ -162,9 +162,9 @@ class TestCacheClientConnectionSettings:
         mock_settings.redis_url = "redis://:pw@cache:6379/1"
 
         with (
-            patch("src.cache.REDIS_AVAILABLE", True),
-            patch("src.cache.redis.ConnectionPool") as pool_cls,
-            patch("src.cache.redis.Redis", return_value=AsyncMock()),
+            patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True),
+            patch("unifi_mcp_server.cache.redis.ConnectionPool") as pool_cls,
+            patch("unifi_mcp_server.cache.redis.Redis", return_value=AsyncMock()),
         ):
             await CacheClient(mock_settings).connect()
 
@@ -175,9 +175,9 @@ class TestCacheClientConnectionSettings:
     @pytest.mark.asyncio
     async def test_clients_share_one_pool(self, mock_settings):
         with (
-            patch("src.cache.REDIS_AVAILABLE", True),
-            patch("src.cache.redis.ConnectionPool") as pool_cls,
-            patch("src.cache.redis.Redis", return_value=AsyncMock()),
+            patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True),
+            patch("unifi_mcp_server.cache.redis.ConnectionPool") as pool_cls,
+            patch("unifi_mcp_server.cache.redis.Redis", return_value=AsyncMock()),
         ):
             first, second = CacheClient(mock_settings), CacheClient(mock_settings)
             await first.connect()
@@ -190,9 +190,9 @@ class TestCacheClientConnectionSettings:
     async def test_disconnect_keeps_shared_pool_open(self, mock_settings):
         redis_instance = AsyncMock()
         with (
-            patch("src.cache.REDIS_AVAILABLE", True),
-            patch("src.cache.redis.ConnectionPool") as pool_cls,
-            patch("src.cache.redis.Redis", return_value=redis_instance),
+            patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True),
+            patch("unifi_mcp_server.cache.redis.ConnectionPool") as pool_cls,
+            patch("unifi_mcp_server.cache.redis.Redis", return_value=redis_instance),
         ):
             client = CacheClient(mock_settings)
             await client.connect()
@@ -209,8 +209,8 @@ class TestCacheClientGetSet:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.get = AsyncMock(return_value='{"key": "value"}')
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.get("test:key")
@@ -224,8 +224,8 @@ class TestCacheClientGetSet:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.get = AsyncMock(return_value=None)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.get("nonexistent:key")
@@ -234,7 +234,7 @@ class TestCacheClientGetSet:
 
     @pytest.mark.asyncio
     async def test_get_when_disabled(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             client = CacheClient(mock_settings)
             result = await client.get("test:key")
 
@@ -246,8 +246,8 @@ class TestCacheClientGetSet:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.set = AsyncMock()
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.set("test:key", {"data": "value"})
@@ -261,8 +261,8 @@ class TestCacheClientGetSet:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.setex = AsyncMock()
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.set("test:key", {"data": "value"}, ttl=60)
@@ -274,7 +274,7 @@ class TestCacheClientGetSet:
 
     @pytest.mark.asyncio
     async def test_set_when_disabled(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             client = CacheClient(mock_settings)
             result = await client.set("test:key", {"data": "value"})
 
@@ -288,8 +288,8 @@ class TestCacheClientDelete:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.delete = AsyncMock(return_value=1)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.delete("test:key")
@@ -303,8 +303,8 @@ class TestCacheClientDelete:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.delete = AsyncMock(return_value=0)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.delete("nonexistent:key")
@@ -313,7 +313,7 @@ class TestCacheClientDelete:
 
     @pytest.mark.asyncio
     async def test_delete_when_disabled(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             client = CacheClient(mock_settings)
             result = await client.delete("test:key")
 
@@ -333,8 +333,8 @@ class TestCacheClientDeletePattern:
         mock_redis_instance.scan_iter = mock_scan_iter
         mock_redis_instance.delete = AsyncMock(return_value=3)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.delete_pattern("sites:*")
@@ -352,8 +352,8 @@ class TestCacheClientDeletePattern:
 
         mock_redis_instance.scan_iter = mock_scan_iter
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.delete_pattern("nonexistent:*")
@@ -368,8 +368,8 @@ class TestCacheClientClear:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.flushdb = AsyncMock()
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.clear()
@@ -379,7 +379,7 @@ class TestCacheClientClear:
 
     @pytest.mark.asyncio
     async def test_clear_when_disabled(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             client = CacheClient(mock_settings)
             result = await client.clear()
 
@@ -393,8 +393,8 @@ class TestCacheClientExists:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.exists = AsyncMock(return_value=1)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.exists("test:key")
@@ -407,8 +407,8 @@ class TestCacheClientExists:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.exists = AsyncMock(return_value=0)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 result = await client.exists("nonexistent:key")
@@ -418,28 +418,28 @@ class TestCacheClientExists:
 
 class TestCacheClientBuildKey:
     def test_build_key_simple(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", True):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
             client = CacheClient(mock_settings)
             key = client.build_key("sites")
 
             assert key == "sites"
 
     def test_build_key_with_site_id(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", True):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
             client = CacheClient(mock_settings)
             key = client.build_key("devices", site_id="default")
 
             assert key == "devices:default"
 
     def test_build_key_with_resource_id(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", True):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
             client = CacheClient(mock_settings)
             key = client.build_key("devices", site_id="default", resource_id="device-123")
 
             assert key == "devices:default:device-123"
 
     def test_build_key_with_additional_params(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", True):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
             client = CacheClient(mock_settings)
             key = client.build_key("clients", site_id="default", type="wireless")
 
@@ -453,8 +453,8 @@ class TestCacheClientDisconnect:
         mock_redis_instance.ping = AsyncMock()
         mock_redis_instance.aclose = AsyncMock()
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 client = CacheClient(mock_settings)
                 await client.connect()
                 await client.disconnect()
@@ -465,7 +465,7 @@ class TestCacheClientDisconnect:
 
     @pytest.mark.asyncio
     async def test_disconnect_when_not_connected(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", True):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
             client = CacheClient(mock_settings)
             await client.disconnect()
 
@@ -478,8 +478,8 @@ class TestInvalidateCache:
         mock_redis_instance.flushdb = AsyncMock()
         mock_redis_instance.close = AsyncMock()
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 result = await invalidate_cache(mock_settings)
 
                 assert result == -1
@@ -498,8 +498,8 @@ class TestInvalidateCache:
         mock_redis_instance.scan_iter = mock_scan_iter
         mock_redis_instance.delete = AsyncMock(return_value=2)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 result = await invalidate_cache(mock_settings, resource_type="devices")
 
                 assert result == 2
@@ -517,15 +517,15 @@ class TestInvalidateCache:
         mock_redis_instance.scan_iter = mock_scan_iter
         mock_redis_instance.delete = AsyncMock(return_value=2)
 
-        with patch("src.cache.REDIS_AVAILABLE", True):
-            with patch("src.cache.redis.Redis", return_value=mock_redis_instance):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True):
+            with patch("unifi_mcp_server.cache.redis.Redis", return_value=mock_redis_instance):
                 result = await invalidate_cache(mock_settings, site_id="site1")
 
                 assert result == 2
 
     @pytest.mark.asyncio
     async def test_invalidate_when_redis_unavailable(self, mock_settings):
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             result = await invalidate_cache(mock_settings)
 
             assert result == 0

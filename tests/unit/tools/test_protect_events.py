@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
-protect_events = pytest.importorskip("src.tools.protect_events")
+protect_events = pytest.importorskip("unifi_mcp_server.tools.protect_events")
 
 
 def _tool(*names: str):
@@ -49,7 +49,7 @@ async def test_list_protect_device_updates_success(mock_settings, mock_client):
     )
 
     # protect_events re-exports the single definition in protect_devices.
-    with patch("src.tools.protect_devices.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_devices.ProtectClient", return_value=mock_client):
         result = await list_protect_device_updates(mock_settings)
 
     mock_client.authenticate.assert_awaited_once()
@@ -100,7 +100,7 @@ async def test_send_protect_alarm_webhook_empty_id_raises(mock_settings):
 
 def test_list_protect_device_updates_is_defined_once():
     """protect_events re-exports protect_devices' tool rather than redefining it."""
-    from src.tools import protect_devices
+    from unifi_mcp_server.tools import protect_devices
 
     assert protect_events.list_protect_device_updates is protect_devices.list_protect_device_updates
     assert protect_events.list_protect_device_updates.__module__ == protect_devices.__name__

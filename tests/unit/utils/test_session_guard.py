@@ -12,7 +12,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 from starlette.testclient import TestClient
 
-from src.utils.session_guard import SessionlessRequestGuard, _is_initialize_request
+from unifi_mcp_server.utils.session_guard import SessionlessRequestGuard, _is_initialize_request
 
 INIT = {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}
 TOOLS_LIST = {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}

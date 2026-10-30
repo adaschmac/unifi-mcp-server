@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.connector import (
+from unifi_mcp_server.tools.connector import (
     connector_network_delete,
     connector_network_get,
     connector_network_patch,
@@ -16,7 +16,7 @@ from src.tools.connector import (
     connector_protect_post,
     connector_protect_put,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ class TestConnectorNetworkGet:
     async def test_success_builds_correct_endpoint(self, mock_settings):
         """GET must proxy to connector/consoles/{console_id}/proxy/network/{path}."""
         response = {"data": [{"_id": "wlan1"}]}
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client(response)
             result = await connector_network_get(
                 console_id="console-abc",
@@ -76,7 +76,7 @@ class TestConnectorNetworkGet:
     @pytest.mark.asyncio
     async def test_strips_leading_slash_from_path(self, mock_settings):
         """Leading slash in path must be stripped before building endpoint."""
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({})
             await connector_network_get(
                 console_id="console-abc",
@@ -91,7 +91,7 @@ class TestConnectorNetworkGet:
     @pytest.mark.asyncio
     async def test_passes_params(self, mock_settings):
         """Query params must be forwarded to the underlying GET call."""
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({})
             await connector_network_get(
                 console_id="c1",
@@ -135,7 +135,7 @@ class TestConnectorNetworkPost:
     @pytest.mark.asyncio
     async def test_success(self, mock_settings):
         response = {"data": {"_id": "new-wlan"}}
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client(response)
             result = await connector_network_post(
                 console_id="c1",
@@ -163,7 +163,7 @@ class TestConnectorNetworkPost:
 
     @pytest.mark.asyncio
     async def test_dry_run_skips_api_call(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({})
             result = await connector_network_post(
                 console_id="c1",
@@ -181,7 +181,7 @@ class TestConnectorNetworkPost:
 class TestConnectorNetworkPut:
     @pytest.mark.asyncio
     async def test_success(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({"data": {}})
             await connector_network_put(
                 console_id="c1",
@@ -207,7 +207,7 @@ class TestConnectorNetworkPut:
 class TestConnectorNetworkPatch:
     @pytest.mark.asyncio
     async def test_success(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({"data": {}})
             await connector_network_patch(
                 console_id="c1",
@@ -233,7 +233,7 @@ class TestConnectorNetworkPatch:
 class TestConnectorNetworkDelete:
     @pytest.mark.asyncio
     async def test_success(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({})
             result = await connector_network_delete(
                 console_id="c1",
@@ -258,7 +258,7 @@ class TestConnectorNetworkDelete:
 
     @pytest.mark.asyncio
     async def test_dry_run(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({})
             result = await connector_network_delete(
                 console_id="c1",
@@ -281,7 +281,7 @@ class TestConnectorProtectGet:
     async def test_success_builds_protect_endpoint(self, mock_settings):
         """GET must proxy to connector/consoles/{console_id}/proxy/protect/{path}."""
         response = {"data": [{"id": "cam-1"}]}
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client(response)
             result = await connector_protect_get(
                 console_id="console-xyz",
@@ -310,7 +310,7 @@ class TestConnectorProtectGet:
 class TestConnectorProtectPost:
     @pytest.mark.asyncio
     async def test_success(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({"data": {}})
             await connector_protect_post(
                 console_id="c1",
@@ -365,7 +365,7 @@ class TestConnectorProtectPatch:
 class TestConnectorProtectDelete:
     @pytest.mark.asyncio
     async def test_success(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({})
             await connector_protect_delete(
                 console_id="c1",
@@ -428,7 +428,7 @@ class TestConnectorWriteTools:
     async def test_executes_against_app_proxy(
         self, mock_settings, tool, app, method, dry_key, sends_body
     ):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({"ok": True})
             result = await tool(settings=mock_settings, **_write_kwargs(sends_body, confirm=True))
 
@@ -444,7 +444,7 @@ class TestConnectorWriteTools:
     async def test_dry_run_previews_without_confirm(
         self, mock_settings, tool, app, method, dry_key, sends_body
     ):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             result = await tool(settings=mock_settings, **_write_kwargs(sends_body, dry_run=True))
 
         mock_cls.assert_not_called()
@@ -500,7 +500,7 @@ class TestConnectorPathAllowlist:
     async def test_bad_path_rejected_before_any_request(
         self, mock_settings, tool, app, method, path
     ):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             with pytest.raises(ValidationError, match="path"):
                 await tool(settings=mock_settings, **_all_kwargs(method, path=path))
         mock_cls.assert_not_called()
@@ -510,7 +510,7 @@ class TestConnectorPathAllowlist:
     async def test_bad_console_id_rejected_before_any_request(
         self, mock_settings, tool, app, method, console_id
     ):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             with pytest.raises(ValidationError, match="console_id"):
                 await tool(settings=mock_settings, **_all_kwargs(method, console_id=console_id))
         mock_cls.assert_not_called()
@@ -519,7 +519,7 @@ class TestConnectorPathAllowlist:
     async def test_real_console_id_and_path_accepted(self, mock_settings, tool, app, method):
         console_id = "70A7419783ED0000000006B2B3270000000006E60D1C0000000062148EC3:1093004219"
         path = "/proxy/network/integration/v1/sites/88f7af54-98f8-306a-a1c7-c9349722b1f6/"
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({"ok": True})
             await tool(
                 settings=mock_settings, **_all_kwargs(method, console_id=console_id, path=path)
@@ -535,7 +535,7 @@ class TestConnectorPathAllowlist:
     async def test_surrounding_whitespace_stripped_in_endpoint(
         self, mock_settings, tool, app, method, console_id
     ):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client({"ok": True})
             await tool(settings=mock_settings, **_all_kwargs(method, console_id=console_id))
         call = getattr(mock_cls.return_value, method)
@@ -549,7 +549,7 @@ class TestConnectorPathAllowlist:
 async def test_dry_run_preview_uses_stripped_console_id(
     mock_settings, tool, app, method, dry_key, sends_body
 ):
-    with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+    with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
         result = await tool(
             settings=mock_settings,
             **_write_kwargs(sends_body, console_id="c1\n", dry_run=True),
@@ -573,7 +573,7 @@ class TestArrayReplies:
 
     @pytest.fixture
     def site_manager_settings(self, monkeypatch: pytest.MonkeyPatch):
-        from src.config.config import Settings
+        from unifi_mcp_server.config.config import Settings
 
         monkeypatch.setenv("UNIFI_API_KEY", "test-key")  # pragma: allowlist secret
         monkeypatch.setenv("UNIFI_SITE_MANAGER_ENABLED", "true")
@@ -584,14 +584,14 @@ class TestArrayReplies:
     async def test_get_reply_shapes(self, site_manager_settings, reply):
         from fastmcp import Client, FastMCP
 
-        from src.tool_registry import register_module_tools
-        from src.tools import connector
+        from unifi_mcp_server.tool_registry import register_module_tools
+        from unifi_mcp_server.tools import connector
 
         mcp = FastMCP("test")
         register_module_tools(
             mcp, connector, site_manager_settings, include=["connector_network_get"]
         )
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client()
             mock_cls.return_value.get = AsyncMock(return_value=reply)
             async with Client(mcp) as client:
@@ -605,7 +605,7 @@ class TestArrayReplies:
 
     @pytest.mark.asyncio
     async def test_mutating_tools_accept_array_replies(self, mock_settings):
-        with patch("src.tools.connector.SiteManagerClient") as mock_cls:
+        with patch("unifi_mcp_server.tools.connector.SiteManagerClient") as mock_cls:
             mock_cls.return_value = make_mock_client()
             mock_cls.return_value.post = AsyncMock(return_value=[{"_id": "r1"}])
             result = await connector_network_post(

@@ -12,14 +12,14 @@ pytest.importorskip("sqlalchemy")
 from fastmcp import Client, FastMCP  # noqa: E402
 from fastmcp.exceptions import ToolError  # noqa: E402
 
-from src.config.config import Settings  # noqa: E402
-from src.fleet import cli  # noqa: E402
-from src.fleet.admin_tools import register_admin_tools  # noqa: E402
-from src.fleet.postgres_registry import PostgresRegistry  # noqa: E402
-from src.fleet.router import FleetRouter  # noqa: E402
-from src.fleet.tools import register_fleet_tools  # noqa: E402
-from src.tool_registry import TOOL_TIERS, _make_tool_wrapper  # noqa: E402
-from src.utils import tool_kind  # noqa: E402
+from unifi_mcp_server.config.config import Settings  # noqa: E402
+from unifi_mcp_server.fleet import cli  # noqa: E402
+from unifi_mcp_server.fleet.admin_tools import register_admin_tools  # noqa: E402
+from unifi_mcp_server.fleet.postgres_registry import PostgresRegistry  # noqa: E402
+from unifi_mcp_server.fleet.router import FleetRouter  # noqa: E402
+from unifi_mcp_server.fleet.tools import register_fleet_tools  # noqa: E402
+from unifi_mcp_server.tool_registry import TOOL_TIERS, _make_tool_wrapper  # noqa: E402
+from unifi_mcp_server.utils import tool_kind  # noqa: E402
 
 NEW_KEY = "branch-key-0123456789abcdef"  # pragma: allowlist secret
 
@@ -33,7 +33,7 @@ def settings(
     monkeypatch.setenv("UNIFI_LOCAL_HOST", "192.168.2.1")
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(tmp_path / "audit.log"))
     monkeypatch.setenv("DATABASE_URL", database_url)
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 

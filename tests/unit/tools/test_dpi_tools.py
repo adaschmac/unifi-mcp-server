@@ -4,10 +4,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.dpi as dpi_module
-import src.tools.dpi_tools as dpi_tools_module
-from src.tools.dpi import get_client_dpi, get_dpi_statistics, list_top_applications
-from src.tools.dpi_tools import list_countries, list_dpi_applications, list_dpi_categories
+import unifi_mcp_server.tools.dpi as dpi_module
+import unifi_mcp_server.tools.dpi_tools as dpi_tools_module
+from unifi_mcp_server.tools.dpi import get_client_dpi, get_dpi_statistics, list_top_applications
+from unifi_mcp_server.tools.dpi_tools import (
+    list_countries,
+    list_dpi_applications,
+    list_dpi_categories,
+)
 
 
 @pytest.fixture
@@ -596,7 +600,7 @@ async def test_list_countries_empty(mock_settings):
 class TestUpdateDpiSettings:
     @pytest.mark.asyncio
     async def test_rmw_preserves_section_and_verifies(self, mock_settings):
-        from src.tools.dpi import update_dpi_settings
+        from unifi_mcp_server.tools.dpi import update_dpi_settings
 
         section = {"_id": "dpi-1", "enabled": False, "fingerprintingEnabled": False, "site_id": "s"}
         stored = {**section, "enabled": True, "fingerprintingEnabled": False}
@@ -607,7 +611,7 @@ class TestUpdateDpiSettings:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.dpi.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.dpi.UniFiClient", return_value=client):
             result = await update_dpi_settings("default", mock_settings, enabled=True, confirm=True)
 
         url = client.post.call_args[0][0]
@@ -628,7 +632,7 @@ class TestUpdateDpiSettings:
         exists -- posting `.../setting/dpi/None` would 404 and the change
         would be silently lost.
         """
-        from src.tools.dpi import update_dpi_settings
+        from unifi_mcp_server.tools.dpi import update_dpi_settings
 
         stored = {"_id": "dpi-new", "enabled": True, "fingerprintingEnabled": True}
         client = MagicMock()
@@ -638,7 +642,7 @@ class TestUpdateDpiSettings:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.dpi.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.dpi.UniFiClient", return_value=client):
             result = await update_dpi_settings("default", mock_settings, enabled=True, confirm=True)
 
         url = client.post.call_args[0][0]
@@ -658,7 +662,7 @@ class TestUpdateDpiSettings:
         controller that omits ``enabled`` entirely reported success while
         the stored state was actually unknown. Absent is not false.
         """
-        from src.tools.dpi import update_dpi_settings
+        from unifi_mcp_server.tools.dpi import update_dpi_settings
 
         section = {"_id": "dpi-1", "enabled": True}
         echoed_without_key = {"_id": "dpi-1"}
@@ -669,7 +673,7 @@ class TestUpdateDpiSettings:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.dpi.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.dpi.UniFiClient", return_value=client):
             result = await update_dpi_settings(
                 "default", mock_settings, enabled=False, confirm=True
             )
@@ -680,7 +684,7 @@ class TestUpdateDpiSettings:
 
     @pytest.mark.asyncio
     async def test_unstored_state_reports_unconfirmed(self, mock_settings):
-        from src.tools.dpi import update_dpi_settings
+        from unifi_mcp_server.tools.dpi import update_dpi_settings
 
         section = {"_id": "dpi-1", "enabled": False}
         client = MagicMock()
@@ -690,7 +694,7 @@ class TestUpdateDpiSettings:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.dpi.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.dpi.UniFiClient", return_value=client):
             result = await update_dpi_settings("default", mock_settings, enabled=True, confirm=True)
 
         assert result["success"] is False
@@ -698,8 +702,8 @@ class TestUpdateDpiSettings:
 
     @pytest.mark.asyncio
     async def test_dry_run_and_confirm_gate(self, mock_settings):
-        from src.tools.dpi import update_dpi_settings
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.dpi import update_dpi_settings
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         section = {"_id": "dpi-1", "enabled": False}
         client = MagicMock()
@@ -709,7 +713,7 @@ class TestUpdateDpiSettings:
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("src.tools.dpi.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.dpi.UniFiClient", return_value=client):
             result = await update_dpi_settings(
                 "default", mock_settings, enabled=True, confirm=True, dry_run=True
             )

@@ -35,7 +35,7 @@ Create `.gemini/settings.json` in project root:
   "mcpServers": {
     "unifi": {
       "command": "uv",
-      "args": ["--directory", ".", "run", "python", "src/main.py"],
+      "args": ["--directory", ".", "run", "python", "src/unifi_mcp_server/main.py"],
       "env": {
         "UNIFI_API_KEY": "${UNIFI_API_KEY}",
         "UNIFI_API_TYPE": "cloud"
@@ -218,7 +218,7 @@ async def test_create_firewall_rule():
     mock_api.create_rule.return_value = {"_id": "rule123", "name": "test"}
 
     # Act
-    with patch("src.api.client.UniFiAPI", return_value=mock_api):
+    with patch("unifi_mcp_server.api.client.UniFiAPI", return_value=mock_api):
         result = await create_firewall_rule(
             site_id="default",
             name="test",
@@ -253,7 +253,7 @@ pytest --pdb tests/unit/test_firewall_tools.py
 
 ```python
 # Always use the configured API client
-from src.api.client import UniFiAPI
+from unifi_mcp_server.api.client import UniFiAPI
 
 async with UniFiAPI(config) as api:
     # List operations
@@ -343,7 +343,7 @@ class FirewallZone(BaseModel):
 
 ```python
 import logging
-from src.utils.logging import get_logger
+from unifi_mcp_server.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -363,7 +363,7 @@ logger.debug("Request payload", extra={"data": sanitize(payload)})
 #### Exception Handling
 
 ```python
-from src.utils.exceptions import (
+from unifi_mcp_server.utils.exceptions import (
     UniFiAPIError,
     ValidationError,
     AuthenticationError,
@@ -398,7 +398,7 @@ except UniFiAPIError as e:
 gemini "Explain the UniFi API endpoint for creating VLANs. Include request format, parameters, and response structure."
 
 # 2. Generate the tool implementation
-gemini "Create an MCP tool called 'create_vlan' that creates a VLAN in UniFi. Follow the patterns in src/tools/network_config.py. Include confirm and dry_run parameters."
+gemini "Create an MCP tool called 'create_vlan' that creates a VLAN in UniFi. Follow the patterns in src/unifi_mcp_server/tools/network_config.py. Include confirm and dry_run parameters."
 
 # 3. Generate Pydantic models
 gemini "Create Pydantic models for VLAN configuration with validation. Include fields for VLAN ID (1-4094), name, subnet, DHCP settings."
@@ -417,17 +417,17 @@ gemini "Update API.md to document the new create_vlan tool. Include examples and
 gemini "Analyze this error traceback and suggest fixes: [paste traceback]"
 
 # Optimize performance
-gemini "Review src/tools/dpi.py for performance issues. The list_top_applications tool is slow with large datasets. Suggest optimizations."
+gemini "Review src/unifi_mcp_server/tools/dpi.py for performance issues. The list_top_applications tool is slow with large datasets. Suggest optimizations."
 
 # Refactor for clarity
-gemini "Refactor src/tools/firewall_zones.py to improve readability. Reduce complexity in the assign_network_to_zone function."
+gemini "Refactor src/unifi_mcp_server/tools/firewall_zones.py to improve readability. Reduce complexity in the assign_network_to_zone function."
 ```
 
 ### Code Review Assistance
 
 ```bash
 # Before committing
-gemini "Review my changes in src/tools/wifi.py. Check for: type safety, error handling, async patterns, test coverage, documentation."
+gemini "Review my changes in src/unifi_mcp_server/tools/wifi.py. Check for: type safety, error handling, async patterns, test coverage, documentation."
 
 # Security audit
 gemini "Security audit this code for potential vulnerabilities: [paste code]. Focus on input validation, authentication, and data sanitization."
@@ -445,7 +445,7 @@ gemini /init  # Generate initial GEMINI.md context
 
 # Daily development
 gemini "Review open issues on GitHub and suggest which to tackle first"
-gemini "Explain the Zone-Based Firewall implementation in src/models/zbf.py"
+gemini "Explain the Zone-Based Firewall implementation in src/unifi_mcp_server/models/zbf.py"
 gemini "Help me implement the missing endpoint for zone policy matrix"
 
 # Before PR
@@ -457,7 +457,7 @@ gemini "Generate release notes for changes in the current branch"
 
 ```bash
 # Generate test cases
-gemini "Generate test cases for edge cases in src/tools/client_management.py"
+gemini "Generate test cases for edge cases in src/unifi_mcp_server/tools/client_management.py"
 
 # Improve coverage
 gemini "Which modules have coverage below 50%? Suggest unit tests to improve coverage."
@@ -470,10 +470,10 @@ gemini "Run mypy on src/ and fix type errors"
 
 ```bash
 # Generate docstrings
-gemini "Add comprehensive docstrings to all functions in src/tools/port_forwarding.py following Google style"
+gemini "Add comprehensive docstrings to all functions in src/unifi_mcp_server/tools/port_forwarding.py following Google style"
 
 # Update API docs
-gemini "Update API.md with the latest tool signatures from src/main.py"
+gemini "Update API.md with the latest tool signatures from src/unifi_mcp_server/main.py"
 
 # Create examples
 gemini "Create 5 practical examples of using the DPI statistics tools"
@@ -665,7 +665,7 @@ python --version  # Must be 3.11+
 uv pip list | grep fastmcp
 
 # Test configuration
-python -c "from src.config import load_config; print(load_config())"
+python -c "from unifi_mcp_server.config import load_config; print(load_config())"
 ```
 
 #### UniFi API Connection Fails

@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import APIType
-from src.tools import dhcp_reservations as dhcp
-from src.utils.exceptions import ResourceNotFoundError
+from unifi_mcp_server.config import APIType
+from unifi_mcp_server.tools import dhcp_reservations as dhcp
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture
@@ -89,7 +89,7 @@ class TestListDhcpReservations:
         self, local_settings: MagicMock, sample_users: list[dict[str, Any]]
     ) -> None:
         client = _mock_client({"data": sample_users})
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.list_dhcp_reservations("default", local_settings)
 
@@ -102,7 +102,7 @@ class TestListDhcpReservations:
         self, local_settings: MagicMock, sample_users: list[dict[str, Any]]
     ) -> None:
         client = _mock_client({"data": sample_users})
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.list_dhcp_reservations(
                 "default", local_settings, network_id="net-cameras"
@@ -118,7 +118,7 @@ class TestGetDhcpReservation:
         self, local_settings: MagicMock, sample_users: list[dict[str, Any]]
     ) -> None:
         client = _mock_client({"data": sample_users})
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.get_dhcp_reservation("aa:bb:cc:dd:ee:01", "default", local_settings)
 
@@ -130,7 +130,7 @@ class TestGetDhcpReservation:
         self, local_settings: MagicMock, sample_users: list[dict[str, Any]]
     ) -> None:
         client = _mock_client({"data": sample_users})
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             with pytest.raises(ResourceNotFoundError):
                 await dhcp.get_dhcp_reservation("ff:ff:ff:ff:ff:ff", "default", local_settings)
@@ -141,7 +141,7 @@ class TestGetDhcpReservation:
     ) -> None:
         """user-2 exists but has use_fixedip=False — should not match."""
         client = _mock_client({"data": sample_users})
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             with pytest.raises(ResourceNotFoundError):
                 await dhcp.get_dhcp_reservation("aa:bb:cc:dd:ee:02", "default", local_settings)
@@ -161,7 +161,7 @@ class TestCreateDhcpReservation:
         client = _mock_client()
         client.post.return_value = {"data": [created]}
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.create_dhcp_reservation(
                 mac="11:22:33:44:55:66",
@@ -182,7 +182,7 @@ class TestCreateDhcpReservation:
 
     @pytest.mark.asyncio
     async def test_create_dry_run(self, local_settings: MagicMock) -> None:
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = _mock_client()
             result = await dhcp.create_dhcp_reservation(
                 mac="11:22:33:44:55:66",
@@ -209,7 +209,7 @@ class TestCreateDhcpReservation:
         client = _mock_client({"data": sample_users})
         client.put.return_value = {"data": [merged]}
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             # Different case than the stored record: matching must be
             # case-insensitive, or a MAC typed in uppercase re-POSTs and
@@ -254,7 +254,7 @@ class TestCreateDhcpReservation:
             "data": [{"_id": "new-2", "mac": "11:22:33:44:55:77", "fixed_ip": "192.168.10.201"}]
         }
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.create_dhcp_reservation(
                 mac="11:22:33:44:55:77",
@@ -277,7 +277,7 @@ class TestUpdateDhcpReservation:
         client = _mock_client({"data": sample_users})
         client.put.return_value = {"data": [updated]}
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.update_dhcp_reservation(
                 mac="aa:bb:cc:dd:ee:01",
@@ -301,7 +301,7 @@ class TestUpdateDhcpReservation:
         client = _mock_client({"data": sample_users})
         client.put.return_value = {"data": [{**sample_users[0], "name": "Renamed"}]}
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             await dhcp.update_dhcp_reservation(
                 mac="aa:bb:cc:dd:ee:01",
@@ -326,7 +326,7 @@ class TestUpdateDhcpReservation:
             "data": [{"_id": "user-1", "mac": "aa:bb:cc:dd:ee:01", "name": "Renamed"}]
         }
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.update_dhcp_reservation(
                 mac="aa:bb:cc:dd:ee:01",
@@ -343,7 +343,7 @@ class TestUpdateDhcpReservation:
         self, local_settings: MagicMock, sample_users: list[dict[str, Any]]
     ) -> None:
         client = _mock_client({"data": sample_users})
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             with pytest.raises(ResourceNotFoundError):
                 await dhcp.update_dhcp_reservation(
@@ -363,7 +363,7 @@ class TestRemoveDhcpReservation:
         client = _mock_client({"data": sample_users})
         client.put.return_value = {"data": [{**sample_users[0], "use_fixedip": False}]}
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.remove_dhcp_reservation(
                 mac="aa:bb:cc:dd:ee:01",
@@ -381,7 +381,7 @@ class TestRemoveDhcpReservation:
         client = _mock_client()
         client.post.return_value = {"data": []}
 
-        with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await dhcp.remove_dhcp_reservation(
                 mac="aa:bb:cc:dd:ee:01",
@@ -424,11 +424,11 @@ class TestRemoveDhcpReservation:
 @pytest.mark.asyncio
 async def test_merge_without_id_raises(local_settings: MagicMock) -> None:
     """A malformed existing record cannot be merged into."""
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.utils.exceptions import APIError
 
     client = _mock_client({"data": [{"mac": "aa:bb:cc:dd:ee:02", "name": "no id"}]})
 
-    with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+    with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
         MockClient.return_value = client
         with pytest.raises(APIError, match="carries no _id"):
             await dhcp.create_dhcp_reservation(
@@ -444,12 +444,12 @@ async def test_merge_without_id_raises(local_settings: MagicMock) -> None:
 @pytest.mark.asyncio
 async def test_unechoed_write_names_the_method(local_settings: MagicMock) -> None:
     """An accepted-but-unechoed write reports which verb was used."""
-    from src.utils.exceptions import APIError
+    from unifi_mcp_server.utils.exceptions import APIError
 
     client = _mock_client({"data": []})
     client.post.return_value = {"data": []}
 
-    with patch("src.tools.dhcp_reservations.UniFiClient") as MockClient:
+    with patch("unifi_mcp_server.tools.dhcp_reservations.UniFiClient") as MockClient:
         MockClient.return_value = client
         with pytest.raises(APIError, match="POST returned no data"):
             await dhcp.create_dhcp_reservation(

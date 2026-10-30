@@ -1,6 +1,6 @@
 ---
 description: Environment variables and configuration setup
-globs: [".env*", "src/config/**/*.py"]
+globs: [".env*", "src/unifi_mcp_server/config/**/*.py"]
 alwaysApply: false
 ---
 
@@ -23,7 +23,7 @@ WEBHOOK_SECRET=your-secret  # Enable webhook HMAC verification
 
 ## Configuration Loading Order
 
-The server merges settings from **environment variables**, an optional `.env` file, and `src/config/config.py` (listed in order of precedence).
+The server merges settings from **environment variables**, an optional `.env` file, and `src/unifi_mcp_server/config/config.py` (listed in order of precedence).
 
 ## API Configuration
 
@@ -60,7 +60,7 @@ cp .env.example .env
 Load settings in Python using Pydantic:
 
 ```python
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 settings = Settings()  # Automatically loads from environment
 ```

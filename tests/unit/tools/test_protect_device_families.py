@@ -1,6 +1,6 @@
 """Unit tests for the Protect device, light, sensor and chime tools.
 
-Every family in ``src/tools/protect_devices.py`` follows the same list / get /
+Every family in ``src/unifi_mcp_server/tools/protect_devices.py`` follows the same list / get /
 update shape, so the tests are parametrised over the four families.
 """
 
@@ -11,8 +11,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import protect_devices as pd
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.tools import protect_devices as pd
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 FAMILIES = [
     # (endpoint, list tool, get tool, update tool, id kwarg label)
@@ -84,7 +84,7 @@ def mock_client() -> AsyncMock:
 
 
 def _patch(client: AsyncMock):
-    return patch("src.tools.protect_devices.ProtectClient", return_value=client)
+    return patch("unifi_mcp_server.tools.protect_devices.ProtectClient", return_value=client)
 
 
 class TestHelpers:

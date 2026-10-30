@@ -9,7 +9,7 @@ registered, so most of that gateway's tools did not exist. ``UNIFI_MIXED_MODE``
 registers the union instead.
 
 Each case imports the server in a subprocess: importing in-process would reuse
-whatever ``src.main`` another test module already cached under a different
+whatever ``unifi_mcp_server.main`` another test module already cached under a different
 environment, and the registered surface is exactly what these tests compare.
 """
 
@@ -35,7 +35,7 @@ _BASE_ENV = {
 #: Reads the registered tool names and the module count out of a fresh import.
 _PROBE = (
     "import json\n"
-    "import src.main as M\n"
+    "import unifi_mcp_server.main as M\n"
     "names = sorted(\n"
     "    k[5:].split('@', 1)[0]\n"
     "    for k in M.mcp._local_provider._components\n"

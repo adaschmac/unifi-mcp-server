@@ -1,10 +1,10 @@
-"""Unit tests for src/tools/devices.py."""
+"""Unit tests for src/unifi_mcp_server/tools/devices.py."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.devices import (
+from unifi_mcp_server.tools.devices import (
     adopt_device,
     execute_port_action,
     get_device_details,
@@ -13,7 +13,7 @@ from src.tools.devices import (
     list_pending_devices,
     search_devices,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -116,7 +116,7 @@ class TestGetDeviceDetails:
     async def test_get_device_details_success(self, mock_settings):
         mock_response = {"data": [make_integration_device(DEVICE_UUID_1, "AP-Living")]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_device_details("site-1", DEVICE_UUID_1, mock_settings)
@@ -128,7 +128,7 @@ class TestGetDeviceDetails:
     async def test_get_device_details_list_response(self, mock_settings):
         mock_response = [make_integration_device(DEVICE_UUID_2, "Switch-Main")]
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_device_details("site-1", DEVICE_UUID_2, mock_settings)
@@ -147,7 +147,7 @@ class TestGetDeviceDetails:
         """
         device = make_integration_device(DEVICE_UUID_1, "2p ap 2")
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(device)
 
             result = await get_device_details("site-1", DEVICE_UUID_1, mock_settings)
@@ -165,7 +165,7 @@ class TestGetDeviceDetails:
         """Absent keys are omitted, not returned as null — same rule as #103."""
         sparse = {"id": DEVICE_UUID_1, "name": "Sparse AP"}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(sparse)
 
             result = await get_device_details("site-1", DEVICE_UUID_1, mock_settings)
@@ -177,7 +177,7 @@ class TestGetDeviceDetails:
         """A legacy ``_id`` record still resolves, per the documented fallback."""
         legacy = {"_id": DEVICE_ID_1, "name": "Legacy AP", "mac": "00:11:22:33:44:55"}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client({"data": [legacy]})
 
             result = await get_device_details("site-1", DEVICE_ID_1, mock_settings)
@@ -189,7 +189,7 @@ class TestGetDeviceDetails:
     async def test_get_device_details_not_found(self, mock_settings):
         mock_response = {"data": [make_integration_device(DEVICE_UUID_1)]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             with pytest.raises(ResourceNotFoundError):
@@ -212,7 +212,7 @@ class TestGetDeviceStatistics:
         device = make_device(DEVICE_ID_1)
         mock_response = {"data": [device]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_device_statistics("site-1", DEVICE_ID_1, mock_settings)
@@ -230,7 +230,7 @@ class TestGetDeviceStatistics:
         device = make_device(DEVICE_ID_2)
         mock_response = [device]
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_device_statistics("site-1", DEVICE_ID_2, mock_settings)
@@ -241,7 +241,7 @@ class TestGetDeviceStatistics:
     async def test_get_device_statistics_not_found(self, mock_settings):
         mock_response = {"data": [make_device(DEVICE_ID_1)]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             with pytest.raises(ResourceNotFoundError):
@@ -252,7 +252,7 @@ class TestGetDeviceStatistics:
         device = {"_id": DEVICE_ID_1, "name": "Minimal", "type": "uap", "mac": "aa:bb:cc:dd:ee:ff"}
         mock_response = {"data": [device]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await get_device_statistics("site-1", DEVICE_ID_1, mock_settings)
@@ -274,7 +274,7 @@ class TestListDevicesByType:
             ]
         }
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_devices_by_type("site-1", "uap", mock_settings)
@@ -285,7 +285,7 @@ class TestListDevicesByType:
     async def test_list_devices_by_type_case_insensitive(self, mock_settings):
         mock_response = {"data": [make_listed_device("ap-1")]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_devices_by_type("site-1", "UAP", mock_settings)
@@ -298,7 +298,7 @@ class TestListDevicesByType:
             "data": [make_listed_device("sw-1", model="USW-Pro-24", capability="switching")]
         }
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_devices_by_type("site-1", "pro", mock_settings)
@@ -309,7 +309,7 @@ class TestListDevicesByType:
     async def test_list_devices_by_type_with_pagination(self, mock_settings):
         mock_response = {"data": [make_listed_device(f"ap-{i}") for i in range(10)]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_devices_by_type("site-1", "uap", mock_settings, limit=3, offset=2)
@@ -320,7 +320,7 @@ class TestListDevicesByType:
     async def test_list_devices_by_type_empty(self, mock_settings):
         mock_response = {"data": [make_listed_device("sw-1", capability="switching")]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_devices_by_type("site-1", "uap", mock_settings)
@@ -340,7 +340,7 @@ class TestListDevicesByType:
             "features": {"switching": {}},
         }
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client = create_mock_client({"data": [access_point, switch]})
             mock_client.resolve_site_id = AsyncMock(return_value="resolved-site")
             mock_client_class.return_value = mock_client
@@ -360,7 +360,7 @@ class TestListDevicesByType:
         access_point = {**make_integration_device(DEVICE_UUID_1, "AP"), "features": ["accessPoint"]}
         switch = {**make_integration_device(DEVICE_UUID_2, "Switch"), "features": ["switching"]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client({"data": [access_point, switch]})
 
             result = await list_devices_by_type("site-1", "usw", mock_settings)
@@ -379,7 +379,7 @@ class TestListDevicesByType:
             {"data": [access_point(i) for i in range(100, 120)]},
         ]
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client = create_mock_client(None)
             mock_client.get = AsyncMock(side_effect=pages)
             mock_client_class.return_value = mock_client
@@ -403,7 +403,7 @@ class TestSearchDevices:
             ]
         }
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await search_devices("site-1", "office", mock_settings)
@@ -417,7 +417,7 @@ class TestSearchDevices:
         device["macAddress"] = "aa:bb:cc:dd:ee:ff"
         mock_response = {"data": [device]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await search_devices("site-1", "aa:bb", mock_settings)
@@ -430,7 +430,7 @@ class TestSearchDevices:
         device["ipAddress"] = "192.168.10.50"
         mock_response = {"data": [device]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await search_devices("site-1", "192.168.10", mock_settings)
@@ -446,7 +446,7 @@ class TestSearchDevices:
             ]
         }
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await search_devices("site-1", "u7", mock_settings)
@@ -458,7 +458,7 @@ class TestSearchDevices:
     async def test_search_devices_with_pagination(self, mock_settings):
         mock_response = {"data": [make_listed_device(f"ap-{i}", f"AP-{i}") for i in range(10)]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await search_devices("site-1", "ap", mock_settings, limit=5)
@@ -469,7 +469,7 @@ class TestSearchDevices:
     async def test_search_devices_no_match(self, mock_settings):
         mock_response = {"data": [make_listed_device("ap-1", "Office AP")]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await search_devices("site-1", "nonexistent", mock_settings)
@@ -480,7 +480,7 @@ class TestSearchDevices:
     async def test_search_devices_list_response(self, mock_settings):
         mock_response = [make_listed_device("ap-1", "Test AP")]
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await search_devices("site-1", "test", mock_settings)
@@ -510,7 +510,7 @@ class TestSearchDevices:
         }
         devices = [make_integration_device(DEVICE_UUID_1, "AP-Living"), switch]
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client = create_mock_client({"data": devices})
             mock_client.resolve_site_id = AsyncMock(return_value="resolved-site")
             mock_client_class.return_value = mock_client
@@ -528,7 +528,7 @@ class TestSearchDevices:
         """A device that reports null for its name or model must not break the search."""
         device = {"id": DEVICE_UUID_1, "name": None, "model": None, "macAddress": None}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client({"data": [device]})
 
             result = await search_devices("site-1", "ap", mock_settings)
@@ -554,7 +554,7 @@ class TestListPendingDevices:
             ]
         }
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client = create_mock_client(mock_response)
             mock_client_class.return_value = mock_client
 
@@ -584,7 +584,7 @@ class TestListPendingDevices:
         }
         mock_response = {"data": [pending, {**make_device("adopted-1"), "adopted": True}]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_pending_devices("site-1", mock_settings)
@@ -599,7 +599,7 @@ class TestListPendingDevices:
         """A site with every device adopted has nothing pending."""
         mock_response = {"data": [{**make_device(), "adopted": True}]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_pending_devices("site-1", mock_settings)
@@ -610,7 +610,7 @@ class TestListPendingDevices:
     async def test_list_pending_devices_empty(self, mock_settings):
         mock_response = {"data": []}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(mock_response)
 
             result = await list_pending_devices("site-1", mock_settings)
@@ -627,7 +627,7 @@ class TestListPendingDevices:
             ]
         }
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client = create_mock_client(mock_response)
             mock_client_class.return_value = mock_client
 
@@ -642,8 +642,10 @@ class TestAdoptDevice:
     async def test_adopt_device_success(self, mock_settings):
         mock_response = {"data": {"macAddress": "00:11:22:33:44:55", "state": "ADOPTING"}}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
-            with patch("src.tools.devices.audit_action", new_callable=AsyncMock) as mock_audit:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
+            with patch(
+                "unifi_mcp_server.tools.devices.audit_action", new_callable=AsyncMock
+            ) as mock_audit:
                 mock_client = create_mock_client(mock_response)
                 mock_client_class.return_value = mock_client
 
@@ -662,7 +664,7 @@ class TestAdoptDevice:
 
     @pytest.mark.asyncio
     async def test_adopt_device_dry_run(self, mock_settings):
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client = create_mock_client({})
             mock_client_class.return_value = mock_client
 
@@ -687,8 +689,8 @@ class TestAdoptDevice:
     async def test_adopt_device_ignore_device_limit(self, mock_settings):
         mock_response = {"data": {"macAddress": "00:11:22:33:44:55"}}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
-            with patch("src.tools.devices.audit_action", new_callable=AsyncMock):
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
+            with patch("unifi_mcp_server.tools.devices.audit_action", new_callable=AsyncMock):
                 mock_client = create_mock_client(mock_response)
                 mock_client_class.return_value = mock_client
 
@@ -714,8 +716,10 @@ class TestExecutePortAction:
     async def test_execute_port_action_success(self, mock_settings):
         mock_response = {"data": {"status": "ok"}}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
-            with patch("src.tools.devices.audit_action", new_callable=AsyncMock) as mock_audit:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
+            with patch(
+                "unifi_mcp_server.tools.devices.audit_action", new_callable=AsyncMock
+            ) as mock_audit:
                 mock_client = create_mock_client(mock_response)
                 mock_client_class.return_value = mock_client
 
@@ -736,7 +740,7 @@ class TestExecutePortAction:
 
     @pytest.mark.asyncio
     async def test_execute_port_action_dry_run(self, mock_settings):
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client = create_mock_client({})
             mock_client_class.return_value = mock_client
 
@@ -766,8 +770,8 @@ class TestExecutePortAction:
         """params is deprecated and never sent (no spec carrier)."""
         mock_response = {"data": {"status": "ok"}}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
-            with patch("src.tools.devices.audit_action", new_callable=AsyncMock):
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
+            with patch("unifi_mcp_server.tools.devices.audit_action", new_callable=AsyncMock):
                 mock_client = create_mock_client(mock_response)
                 mock_client_class.return_value = mock_client
 
@@ -798,7 +802,7 @@ class TestGetDeviceDetailsIdentifierResolution:
     async def test_mac_input_resolves_via_mac_address(self, mock_settings):
         device = make_integration_device(DEVICE_UUID_1, "AP-Living")
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             client = create_mock_client({"data": [device]})
             mock_client_class.return_value = client
 
@@ -811,7 +815,7 @@ class TestGetDeviceDetailsIdentifierResolution:
 
     @pytest.mark.asyncio
     async def test_objectid_input_resolves_via_legacy_mapping(self, mock_settings):
-        from src.utils import APIError
+        from unifi_mcp_server.utils import APIError
 
         legacy_id = "689d9f9ef4061b1ea839a6ec"
         device = make_integration_device(DEVICE_UUID_1, "Gateway")
@@ -826,7 +830,7 @@ class TestGetDeviceDetailsIdentifierResolution:
                 raise APIError("not found", status_code=400)
             return {"data": [device]}
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             client = create_mock_client({})
             client.get = AsyncMock(side_effect=fake_get)
             mock_client_class.return_value = client
@@ -838,18 +842,18 @@ class TestGetDeviceDetailsIdentifierResolution:
 
     @pytest.mark.asyncio
     async def test_invalid_identifier_raises(self, mock_settings):
-        from src.utils import ValidationError
+        from unifi_mcp_server.utils import ValidationError
 
         with pytest.raises(ValidationError):
             await get_device_details("site-1", "not-a-real-id", mock_settings)
 
     @pytest.mark.asyncio
     async def test_unknown_mac_raises_not_found(self, mock_settings):
-        from src.utils import ResourceNotFoundError
+        from unifi_mcp_server.utils import ResourceNotFoundError
 
         device = make_integration_device(DEVICE_UUID_1, "AP-Living")
 
-        with patch("src.tools.devices.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.devices.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client({"data": [device]})
 
             with pytest.raises(ResourceNotFoundError):

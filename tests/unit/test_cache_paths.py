@@ -1,7 +1,7 @@
-"""Error paths, the ``@cached`` decorator and ``warm_cache`` in src/cache.py.
+"""Error paths, the ``@cached`` decorator and ``warm_cache`` in src/unifi_mcp_server/cache.py.
 
-Redis is replaced with an ``AsyncMock`` patched in as ``src.cache.redis.Redis``.
-Errors are raised as ``src.cache.RedisError`` so the tests hold whether the real
+Redis is replaced with an ``AsyncMock`` patched in as ``unifi_mcp_server.cache.redis.Redis``.
+Errors are raised as ``unifi_mcp_server.cache.RedisError`` so the tests hold whether the real
 redis package or ``tests/unit/test_cache.py``'s stand-in was imported first.
 """
 
@@ -12,8 +12,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.cache as cache_module
-from src.config import Settings
+import unifi_mcp_server.cache as cache_module
+from unifi_mcp_server.config import Settings
 
 
 @pytest.fixture
@@ -31,7 +31,10 @@ def settings() -> MagicMock:
 @pytest.fixture(autouse=True)
 def _redis_available():
     cache_module._pools.clear()
-    with patch("src.cache.REDIS_AVAILABLE", True), patch("src.cache._shared_pool"):
+    with (
+        patch("unifi_mcp_server.cache.REDIS_AVAILABLE", True),
+        patch("unifi_mcp_server.cache._shared_pool"),
+    ):
         yield
     cache_module._pools.clear()
 
@@ -39,7 +42,7 @@ def _redis_available():
 @pytest.fixture
 def redis_instance() -> AsyncMock:
     instance = AsyncMock()
-    with patch("src.cache.redis.Redis", return_value=instance):
+    with patch("unifi_mcp_server.cache.redis.Redis", return_value=instance):
         yield instance
 
 
@@ -226,7 +229,7 @@ class TestWarmCache:
 
     @pytest.mark.asyncio
     async def test_skipped_without_redis(self, settings) -> None:
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             assert await cache_module.warm_cache(settings) == {}
 
     @pytest.mark.asyncio
@@ -238,7 +241,7 @@ class TestWarmCache:
                 "/ea/sites/s2/devices": RuntimeError("controller error"),
             }
         )
-        with patch("src.api.UniFiClient", return_value=unifi):
+        with patch("unifi_mcp_server.api.UniFiClient", return_value=unifi):
             result = await cache_module.warm_cache(settings)
 
         assert result == {"sites": 2, "devices": 2, "networks": 0}
@@ -248,7 +251,7 @@ class TestWarmCache:
     async def test_controller_failure_is_contained(self, settings, redis_instance) -> None:
         unifi = self._unifi({})
         unifi.authenticate.side_effect = RuntimeError("auth failed")
-        with patch("src.api.UniFiClient", return_value=unifi):
+        with patch("unifi_mcp_server.api.UniFiClient", return_value=unifi):
             result = await cache_module.warm_cache(settings)
 
         assert result == {"sites": 0, "devices": 0, "networks": 0}
@@ -260,7 +263,7 @@ class TestReadCacheEdges:
         settings = MagicMock()
         settings.cache_enabled = True
         settings.redis_url = "redis://cache:6379/0"
-        with patch("src.cache.REDIS_AVAILABLE", False):
+        with patch("unifi_mcp_server.cache.REDIS_AVAILABLE", False):
             assert cache_module.ReadCache.from_settings(settings) is None
 
     @pytest.mark.asyncio

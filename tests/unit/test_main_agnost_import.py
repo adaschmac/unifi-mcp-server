@@ -18,14 +18,14 @@ _BASE_ENV = {
 
 
 def _reload_main(env_overrides: dict | None = None) -> ModuleType:
-    """Import (or reimport) src.main with a clean module cache."""
+    """Import (or reimport) unifi_mcp_server.main with a clean module cache."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
 
     env = {**_BASE_ENV, **(env_overrides or {})}
     with patch.dict("os.environ", env, clear=False):
-        return importlib.import_module("src.main")
+        return importlib.import_module("unifi_mcp_server.main")
 
 
 class TestAgnostImportHandling:

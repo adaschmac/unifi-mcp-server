@@ -95,13 +95,13 @@ Establish baseline metrics:
 
 ```bash
 # Test coverage
-pytest tests/unit/test_[module].py --cov=src/tools/[module] --cov-report=term
+pytest tests/unit/test_[module].py --cov=src/unifi_mcp_server/tools/[module] --cov-report=term
 
 # Complexity (if available)
-radon cc src/tools/[module].py -a
+radon cc src/unifi_mcp_server/tools/[module].py -a
 
 # Line count
-wc -l src/tools/[module].py
+wc -l src/unifi_mcp_server/tools/[module].py
 ```
 
 **Document Baseline:**
@@ -356,16 +356,16 @@ Measure improvements:
 
 ```bash
 # Coverage improved?
-pytest tests/unit/test_[module].py --cov=src/tools/[module] --cov-report=term
+pytest tests/unit/test_[module].py --cov=src/unifi_mcp_server/tools/[module] --cov-report=term
 
 # Complexity reduced?
-radon cc src/tools/[module].py -a
+radon cc src/unifi_mcp_server/tools/[module].py -a
 
 # All quality checks pass?
-black src/tools/[module].py
-isort src/tools/[module].py
-ruff check src/tools/[module].py
-mypy src/tools/[module].py
+black src/unifi_mcp_server/tools/[module].py
+isort src/unifi_mcp_server/tools/[module].py
+ruff check src/unifi_mcp_server/tools/[module].py
+mypy src/unifi_mcp_server/tools/[module].py
 ```
 
 ## Phase 4: Common Refactoring Scenarios
@@ -592,7 +592,7 @@ async def get_site_overview(site_id: str):
 
 Load for context:
 
-- `src/tools/[module].py` - Code to refactor
+- `src/unifi_mcp_server/tools/[module].py` - Code to refactor
 - `tests/unit/test_[module].py` - Existing tests
 - `AGENTS.md` - Code quality standards
 - `pyproject.toml` - Tool configurations (black, ruff, mypy)

@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import carrier
+from unifi_mcp_server.tools import carrier
 
 _PLAN = "plan-1"
 _SUBSCRIBER = "sub-1"
@@ -36,7 +36,7 @@ def _make_client(response):
 
 
 def _patch_client(cm):
-    return patch("src.tools.carrier.SiteManagerClient", return_value=cm)
+    return patch("unifi_mcp_server.tools.carrier.SiteManagerClient", return_value=cm)
 
 
 # ── service plans ────────────────────────────────────────────────────

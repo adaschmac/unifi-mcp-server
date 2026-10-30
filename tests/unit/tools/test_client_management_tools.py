@@ -4,15 +4,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.client_management as cm_module
-from src.tools.client_management import (
+import unifi_mcp_server.tools.client_management as cm_module
+from unifi_mcp_server.tools.client_management import (
     authorize_guest,
     block_client,
     limit_bandwidth,
     reconnect_client,
     unblock_client,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture

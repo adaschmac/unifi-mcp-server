@@ -7,7 +7,7 @@ exec docker run --rm --network {{ unifi_mcp_network }} \
   --env-file {{ unifi_mcp_root }}/maintenance.env \
   -v {{ unifi_mcp_root }}/archive:/app/archive \
   {{ unifi_mcp_image_ref }} \
-  python -m src.fleet.cli audit-retention --confirm
+  python -m unifi_mcp_server.fleet.cli audit-retention --confirm
 {% else %}
 # One audit log per replica, each its own hash chain. Every replica
 # directory is visited, including those of replicas since scaled away.
@@ -17,7 +17,7 @@ for dir in {{ unifi_mcp_root }}/logs/[0-9]*; do
   docker run --rm --env-file {{ unifi_mcp_root }}/maintenance.env \
     -v "$dir":/app/logs \
     {{ unifi_mcp_image_ref }} \
-    python -m src.utils.audit_retention /app/logs/audit.log --confirm || status=1
+    python -m unifi_mcp_server.utils.audit_retention /app/logs/audit.log --confirm || status=1
 done
 exit "$status"
 {% endif %}

@@ -4,19 +4,19 @@ Note: Tests for QoS Profile (5 tools), ProAV Profile (3 tools), and Smart
 Queue (3 tools) were removed along with the tools themselves. Those tools
 used non-existent API endpoints (rest/qosprofile, rest/wanconf). The
 create/update/delete traffic route tools were removed for the same reason
-(issue #171). See src/tools/qos.py docstring for details.
+(issue #171). See src/unifi_mcp_server/tools/qos.py docstring for details.
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.utils import APIError
+from unifi_mcp_server.utils import APIError
 
 
 @pytest.fixture
 def mock_settings():
-    from src.config import APIType
+    from unifi_mcp_server.config import APIType
 
     settings = MagicMock(spec="Settings")
     settings.log_level = "INFO"
@@ -67,7 +67,7 @@ def sample_traffic_routes():
 
 def _route_client(response):
     """Patch UniFiClient so GET returns ``response``; return (patcher, instance)."""
-    patcher = patch("src.tools.qos.UniFiClient")
+    patcher = patch("unifi_mcp_server.tools.qos.UniFiClient")
     mock_client = patcher.start()
     instance = AsyncMock()
     mock_client.return_value.__aenter__.return_value = instance
@@ -80,7 +80,7 @@ def _route_client(response):
 class TestListTrafficRoutes:
     @pytest.mark.asyncio
     async def test_reads_v2_trafficroutes_endpoint(self, mock_settings, sample_traffic_routes):
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         patcher, instance = _route_client(sample_traffic_routes)
         try:
@@ -99,7 +99,7 @@ class TestListTrafficRoutes:
 
     @pytest.mark.asyncio
     async def test_site_uuid_resolved_to_internal_name(self, mock_settings, sample_traffic_routes):
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         patcher, instance = _route_client(sample_traffic_routes)
         instance._site_uuid_to_name = {"88f7af54-98f8-306a-a1c7-c9349722b1f6": "default"}
@@ -112,7 +112,7 @@ class TestListTrafficRoutes:
 
     @pytest.mark.asyncio
     async def test_unknown_fields_are_preserved(self, mock_settings, sample_traffic_routes):
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         route = dict(sample_traffic_routes[0], future_field="kept")
         patcher, _ = _route_client([route])
@@ -125,7 +125,7 @@ class TestListTrafficRoutes:
 
     @pytest.mark.asyncio
     async def test_accepts_data_envelope(self, mock_settings, sample_traffic_routes):
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         patcher, _ = _route_client({"data": sample_traffic_routes})
         try:
@@ -137,7 +137,7 @@ class TestListTrafficRoutes:
 
     @pytest.mark.asyncio
     async def test_empty_list_means_no_routes(self, mock_settings):
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         patcher, _ = _route_client([])
         try:
@@ -149,7 +149,7 @@ class TestListTrafficRoutes:
 
     @pytest.mark.asyncio
     async def test_pagination(self, mock_settings, sample_traffic_routes):
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         routes = [dict(sample_traffic_routes[0], _id=f"route-{i}") for i in range(6)]
         patcher, _ = _route_client(routes)
@@ -168,7 +168,7 @@ class TestListTrafficRoutes:
     )
     async def test_unexpected_shape_raises_instead_of_empty(self, mock_settings, response):
         """A payload that is not a route list must not be reported as 'no routes' (#171)."""
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         patcher, _ = _route_client(response)
         try:
@@ -179,8 +179,8 @@ class TestListTrafficRoutes:
 
     @pytest.mark.asyncio
     async def test_requires_local_api(self, mock_settings):
-        from src.config import APIType
-        from src.tools.qos import list_traffic_routes
+        from unifi_mcp_server.config import APIType
+        from unifi_mcp_server.tools.qos import list_traffic_routes
 
         mock_settings.api_type = APIType.CLOUD_V1
         with pytest.raises(NotImplementedError, match="UNIFI_API_TYPE='local'"):
@@ -188,15 +188,15 @@ class TestListTrafficRoutes:
 
     @pytest.mark.asyncio
     async def test_invalid_pagination_rejected(self, mock_settings):
-        from src.tools.qos import list_traffic_routes
-        from src.utils import ValidationError
+        from unifi_mcp_server.tools.qos import list_traffic_routes
+        from unifi_mcp_server.utils import ValidationError
 
         with pytest.raises(ValidationError):
             await list_traffic_routes("default", mock_settings, limit=0)
 
     def test_write_tools_removed(self):
         """create/update/delete targeted a resource that does not exist (#171)."""
-        import src.tools.qos as qos
+        import unifi_mcp_server.tools.qos as qos
 
         for name in ("create_traffic_route", "update_traffic_route", "delete_traffic_route"):
             assert not hasattr(qos, name)
@@ -234,13 +234,13 @@ class TestSmartQueues:
 
     @pytest.mark.asyncio
     async def test_status_reads_primary_wan(self, mock_settings):
-        from src.tools.qos import get_smart_queue_status
+        from unifi_mcp_server.tools.qos import get_smart_queue_status
 
         # The controller stores kbps; the tool reports Mbps.
         wan = {**WAN_NET, "wan_smartq_enabled": True, "wan_smartq_down_rate": 500_000}
         client = _sq_client([LAN_NET, wan])
 
-        with patch("src.tools.qos.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.qos.UniFiClient", return_value=client):
             result = await get_smart_queue_status("default", mock_settings)
 
         assert result["wan_network_id"] == "wan-net-1"
@@ -250,7 +250,7 @@ class TestSmartQueues:
 
     @pytest.mark.asyncio
     async def test_enable_writes_partial_payload(self, mock_settings):
-        from src.tools.qos import configure_smart_queue
+        from unifi_mcp_server.tools.qos import configure_smart_queue
 
         stored = {
             **WAN_NET,
@@ -260,7 +260,7 @@ class TestSmartQueues:
         }
         client = _sq_client([WAN_NET], put_return={"data": [stored]})
 
-        with patch("src.tools.qos.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.qos.UniFiClient", return_value=client):
             result = await configure_smart_queue(
                 "default",
                 mock_settings,
@@ -285,7 +285,7 @@ class TestSmartQueues:
 
     @pytest.mark.asyncio
     async def test_unechoed_write_rereads_the_stored_state(self, mock_settings):
-        from src.tools.qos import configure_smart_queue
+        from unifi_mcp_server.tools.qos import configure_smart_queue
 
         stored = {
             **WAN_NET,
@@ -295,7 +295,7 @@ class TestSmartQueues:
         }
         client = _sq_client([WAN_NET], put_return={"data": []}, refetch=[stored])
 
-        with patch("src.tools.qos.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.qos.UniFiClient", return_value=client):
             result = await configure_smart_queue(
                 "default",
                 mock_settings,
@@ -309,20 +309,20 @@ class TestSmartQueues:
 
     @pytest.mark.asyncio
     async def test_enable_requires_both_rates(self, mock_settings):
-        from src.tools.qos import configure_smart_queue
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.qos import configure_smart_queue
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         with pytest.raises(ValidationError, match="upload_mbps"):
             await configure_smart_queue("default", mock_settings, download_mbps=840, confirm=True)
 
     @pytest.mark.asyncio
     async def test_disable_needs_no_rates(self, mock_settings):
-        from src.tools.qos import configure_smart_queue
+        from unifi_mcp_server.tools.qos import configure_smart_queue
 
         stored = {**WAN_NET, "wan_smartq_enabled": False}
         client = _sq_client([WAN_NET], put_return={"data": [stored]})
 
-        with patch("src.tools.qos.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.qos.UniFiClient", return_value=client):
             result = await configure_smart_queue(
                 "default", mock_settings, enabled=False, confirm=True
             )
@@ -332,12 +332,12 @@ class TestSmartQueues:
 
     @pytest.mark.asyncio
     async def test_explicit_wan_id_must_match(self, mock_settings):
-        from src.tools.qos import configure_smart_queue
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.tools.qos import configure_smart_queue
+        from unifi_mcp_server.utils.exceptions import APIError
 
         client = _sq_client([WAN_NET])
 
-        with patch("src.tools.qos.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.qos.UniFiClient", return_value=client):
             with pytest.raises(APIError, match="wan-net-9"):
                 await configure_smart_queue(
                     "default",
@@ -350,11 +350,11 @@ class TestSmartQueues:
 
     @pytest.mark.asyncio
     async def test_dry_run_previews_without_writing(self, mock_settings):
-        from src.tools.qos import configure_smart_queue
+        from unifi_mcp_server.tools.qos import configure_smart_queue
 
         client = _sq_client([WAN_NET])
 
-        with patch("src.tools.qos.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.qos.UniFiClient", return_value=client):
             result = await configure_smart_queue(
                 "default",
                 mock_settings,
@@ -370,8 +370,8 @@ class TestSmartQueues:
 
     @pytest.mark.asyncio
     async def test_confirmation_required(self, mock_settings):
-        from src.tools.qos import configure_smart_queue
-        from src.utils.exceptions import ValidationError
+        from unifi_mcp_server.tools.qos import configure_smart_queue
+        from unifi_mcp_server.utils.exceptions import ValidationError
 
         with pytest.raises(ValidationError, match="confirm"):
             await configure_smart_queue(
@@ -382,12 +382,12 @@ class TestSmartQueues:
     async def test_string_false_dry_run_still_writes(self, mock_settings):
         """JSON-RPC serializes booleans as strings; "false" must not
         be treated as truthy and silently skip the PUT."""
-        from src.tools.qos import configure_smart_queue
+        from unifi_mcp_server.tools.qos import configure_smart_queue
 
         stored = {**WAN_NET, "wan_smartq_enabled": True}
         client = _sq_client([WAN_NET], put_return={"data": [stored]})
 
-        with patch("src.tools.qos.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.qos.UniFiClient", return_value=client):
             result = await configure_smart_queue(
                 site_id="default",
                 enabled=True,

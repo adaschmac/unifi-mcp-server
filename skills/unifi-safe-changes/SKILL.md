@@ -19,7 +19,7 @@ They are independent. A change passes all four or it does not happen.
 
 | Gate | Where | Enforced by |
 |---|---|---|
-| Role | The caller's token role must grant the tool's tier | `src/access.py`, checked in the tool wrapper |
+| Role | The caller's token role must grant the tool's tier | `src/unifi_mcp_server/access.py`, checked in the tool wrapper |
 | `confirm=True` | The caller must pass it explicitly | The tool wrapper, for every tool that takes a `confirm` parameter |
 | `dry_run=True` | The caller can ask for a preview | The tool wrapper, for every tool that takes a `dry_run` parameter |
 | Server mode | `UNIFI_READ_ONLY` and `UNIFI_DRY_RUN` narrow what runs | The tool registry, at registration |
@@ -46,7 +46,7 @@ await client.call_tool(
 
 A tool without a `confirm` parameter is a read tool. The server's own
 registry decides which is which (`@read_tool` / `@write_tool` in
-`src/utils/tool_kind.py`); the tier is what your role is checked against.
+`src/unifi_mcp_server/utils/tool_kind.py`); the tier is what your role is checked against.
 
 ## `dry_run` is a real preview
 

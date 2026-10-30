@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 
-from src.tools import firewall
-from src.utils import ResourceNotFoundError, ValidationError
 from tests.integration.test_harness import TestEnvironment, TestSuite
+from unifi_mcp_server.tools import firewall
+from unifi_mcp_server.utils import ResourceNotFoundError, ValidationError
 
 # Test resource prefix
 TEST_PREFIX = "TEST_INTEGRATION_"

@@ -3,9 +3,14 @@
 import pytest
 from pydantic import ValidationError as PydanticValidationError
 
-from src.config.config import APIType, Settings
-from src.fleet import DEFAULT_CONTROLLER_NAME, ControllerProfile, ControllerRegistry, EnvRegistry
-from src.utils.exceptions import ResourceNotFoundError
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet import (
+    DEFAULT_CONTROLLER_NAME,
+    ControllerProfile,
+    ControllerRegistry,
+    EnvRegistry,
+)
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture

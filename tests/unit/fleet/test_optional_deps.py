@@ -29,8 +29,8 @@ def test_server_imports_without_fleet_dependencies(tmp_path: Path):
         f"        if name.split('.')[0] in {FLEET_MODULES!r}:\n"
         "            raise ModuleNotFoundError(name)\n"
         "sys.meta_path.insert(0, Block())\n"
-        "import src.main, src.fleet, src.cache\n"
-        "assert not src.cache.REDIS_AVAILABLE\n"
+        "import unifi_mcp_server.main, unifi_mcp_server.fleet, unifi_mcp_server.cache\n"
+        "assert not unifi_mcp_server.cache.REDIS_AVAILABLE\n"
     )
     env = {
         key: value

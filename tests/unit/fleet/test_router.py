@@ -7,10 +7,10 @@ from typing import Any
 
 import pytest
 
-from src.config.config import APIType, Settings
-from src.fleet import ControllerProfile, EnvRegistry
-from src.fleet.router import SESSION_KEY, FleetRouter, current_controller
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet import ControllerProfile, EnvRegistry
+from unifi_mcp_server.fleet.router import SESSION_KEY, FleetRouter, current_controller
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 class StaticRegistry:
@@ -60,7 +60,7 @@ def _fake_get_context() -> FakeContext:
 
 @pytest.fixture(autouse=True)
 def _patch_context(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("src.fleet.router.get_context", _fake_get_context)
+    monkeypatch.setattr("unifi_mcp_server.fleet.router.get_context", _fake_get_context)
 
 
 @pytest.fixture
@@ -219,7 +219,7 @@ class TestTLSWarnings:
     async def test_insecure_profile_warns_with_its_name(self, base, caplog):
         router = FleetRouter(base, StaticRegistry(self._insecure(), default="lab"))
 
-        with caplog.at_level("WARNING", logger="src.fleet.router"):
+        with caplog.at_level("WARNING", logger="unifi_mcp_server.fleet.router"):
             await router.warn_insecure_controllers()
 
         assert "verification is OFF for controller 'lab' (https://10.9.9.1:443)" in caplog.text
@@ -231,7 +231,7 @@ class TestTLSWarnings:
         assert cloud.tls_warnings() == []  # main's startup check sees nothing
         router = FleetRouter(cloud, StaticRegistry(self._insecure(), default="lab"))
 
-        with caplog.at_level("WARNING", logger="src.fleet.router"):
+        with caplog.at_level("WARNING", logger="unifi_mcp_server.fleet.router"):
             await router.resolve("lab", mutating=False)
 
         assert "controller 'lab'" in caplog.text
@@ -240,7 +240,7 @@ class TestTLSWarnings:
         registry = StaticRegistry(self._insecure(), default="lab")
         router = FleetRouter(base, registry)
 
-        with caplog.at_level("WARNING", logger="src.fleet.router"):
+        with caplog.at_level("WARNING", logger="unifi_mcp_server.fleet.router"):
             await router.warn_insecure_controllers()
             await router.resolve("lab", mutating=False)
             await router.resolve("lab", mutating=False)
@@ -257,7 +257,7 @@ class TestTLSWarnings:
     async def test_verifying_profiles_stay_quiet(self, base, two_controllers, caplog):
         router = FleetRouter(base, two_controllers)
 
-        with caplog.at_level("WARNING", logger="src.fleet.router"):
+        with caplog.at_level("WARNING", logger="unifi_mcp_server.fleet.router"):
             await router.warn_insecure_controllers()
 
         assert "verification is OFF" not in caplog.text

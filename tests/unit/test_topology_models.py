@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from src.models.topology import NetworkDiagram, TopologyConnection, TopologyNode
+from unifi_mcp_server.models.topology import NetworkDiagram, TopologyConnection, TopologyNode
 
 
 class TestTopologyNode:

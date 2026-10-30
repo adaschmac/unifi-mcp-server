@@ -1,6 +1,6 @@
 ---
 description: MCP tool implementation pattern and structure
-globs: ["src/tools/**/*.py"]
+globs: ["src/unifi_mcp_server/tools/**/*.py"]
 alwaysApply: true
 ---
 

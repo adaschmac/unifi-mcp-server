@@ -4,8 +4,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.channel_planning import list_ap_neighbors_v2, list_site_internal_ap_neighbors_v2
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.tools.channel_planning import (
+    list_ap_neighbors_v2,
+    list_site_internal_ap_neighbors_v2,
+)
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -41,8 +44,8 @@ class TestListApNeighborsV2:
         client = _client(get_return={"data": rows})
 
         with (
-            patch("src.tools.channel_planning.UniFiClient", return_value=client),
-            patch("src.tools.channel_planning.time.time", return_value=1_000_000.0),
+            patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client),
+            patch("unifi_mcp_server.tools.channel_planning.time.time", return_value=1_000_000.0),
         ):
             result = await list_ap_neighbors_v2(
                 "default",
@@ -96,7 +99,7 @@ class TestListApNeighborsV2:
         ]
         client = _client(get_return={"data": rows})
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_ap_neighbors_v2(
                 "default",
                 "00:00:5e:00:53:41",
@@ -113,7 +116,7 @@ class TestListApNeighborsV2:
         ]
         client = _client(get_return={"data": rows})
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_ap_neighbors_v2(
                 "default",
                 "00:00:5e:00:53:41",
@@ -127,7 +130,7 @@ class TestListApNeighborsV2:
     async def test_extract_rows_handles_non_list_response(self, mock_settings):
         client = _client(get_return={"unexpected": "shape"})
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_ap_neighbors_v2("default", "00:00:5e:00:53:41", mock_settings)
 
         assert result == []
@@ -159,7 +162,7 @@ class TestListSiteInternalApNeighborsV2:
         client = _client(get_return={"data": []})
         client.get = AsyncMock(side_effect=[devices, n1, n2])
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_site_internal_ap_neighbors_v2(
                 "default",
                 mock_settings,
@@ -190,7 +193,7 @@ class TestListSiteInternalApNeighborsV2:
         client = _client(get_return={"data": []})
         client.get = AsyncMock(side_effect=[devices, n1, ValidationError("boom")])
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_site_internal_ap_neighbors_v2("default", mock_settings)
 
         assert result["internal_neighbor_edge_count"] == 1
@@ -200,7 +203,7 @@ class TestListSiteInternalApNeighborsV2:
     async def test_empty_device_list_yields_empty_graph(self, mock_settings):
         client = _client(get_return={"data": []})
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_site_internal_ap_neighbors_v2("default", mock_settings)
 
         assert result["managed_ap_count"] == 0
@@ -221,7 +224,7 @@ class TestListSiteInternalApNeighborsV2:
             side_effect=[devices, ValidationError("boom-1"), ValidationError("boom-2")]
         )
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_site_internal_ap_neighbors_v2("default", mock_settings)
 
         assert result["internal_neighbor_edge_count"] == 0
@@ -231,7 +234,7 @@ class TestListSiteInternalApNeighborsV2:
     async def test_non_list_device_response_yields_no_managed_aps(self, mock_settings):
         client = _client(get_return={"unexpected": "shape"})
 
-        with patch("src.tools.channel_planning.UniFiClient", return_value=client):
+        with patch("unifi_mcp_server.tools.channel_planning.UniFiClient", return_value=client):
             result = await list_site_internal_ap_neighbors_v2("default", mock_settings)
 
         assert result["managed_ap_count"] == 0

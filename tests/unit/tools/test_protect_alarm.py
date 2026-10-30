@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import protect_alarm
-from src.tools.protect_alarm import (
+from unifi_mcp_server.tools import protect_alarm
+from unifi_mcp_server.tools.protect_alarm import (
     create_protect_arm_profile,
     delete_protect_arm_profile,
     disable_protect_alarm,
@@ -15,7 +15,7 @@ from src.tools.protect_alarm import (
     set_current_protect_arm_profile,
     update_protect_arm_profile,
 )
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -75,7 +75,7 @@ async def test_list_protect_arm_profiles_success(mock_settings, mock_client):
             ],
         }
     )
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await list_protect_arm_profiles(mock_settings, limit=10, offset=0)
     mock_client.get.assert_awaited_once_with(
         "/integration/v1/arm-profiles", params={"limit": 10, "offset": 0}
@@ -87,7 +87,7 @@ async def test_list_protect_arm_profiles_success(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_get_protect_arm_profile_success(mock_settings, mock_client):
     mock_client.get = AsyncMock(return_value={"id": "profile-1", "name": "Night"})
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await get_protect_arm_profile("profile-1", mock_settings)
     mock_client.get.assert_awaited_once_with("/integration/v1/arm-profiles/profile-1")
     assert result["id"] == "profile-1"
@@ -108,7 +108,7 @@ WRITES = [
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("name", "kwargs"), WRITES, ids=[n for n, _ in WRITES])
 async def test_write_refused_without_confirm(mock_settings, mock_client, name, kwargs):
-    with patch("src.tools.protect_alarm.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await getattr(protect_alarm, name)(settings=mock_settings, **kwargs)
         client_cls.assert_not_called()
@@ -117,7 +117,7 @@ async def test_write_refused_without_confirm(mock_settings, mock_client, name, k
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("name", "kwargs"), WRITES, ids=[f"{n}-strfalse" for n, _ in WRITES])
 async def test_write_refused_with_string_false_confirm(mock_settings, mock_client, name, kwargs):
-    with patch("src.tools.protect_alarm.ProtectClient") as client_cls:
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient") as client_cls:
         with pytest.raises(ValidationError):
             await getattr(protect_alarm, name)(settings=mock_settings, confirm="false", **kwargs)
         client_cls.assert_not_called()
@@ -131,7 +131,7 @@ async def test_create_protect_arm_profile_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(
         return_value={"id": "profile-1", "name": "Night", "activationDelay": 60000}
     )
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await create_protect_arm_profile(mock_settings, confirm=True, **CREATE_KWARGS)
     mock_client.post.assert_awaited_once_with(
         "/integration/v1/arm-profiles", json_data=CREATE_PAYLOAD
@@ -141,7 +141,7 @@ async def test_create_protect_arm_profile_success(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_create_protect_arm_profile_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await create_protect_arm_profile(
             mock_settings, confirm=True, dry_run=True, **CREATE_KWARGS
         )
@@ -167,7 +167,7 @@ async def test_create_protect_arm_profile_validates_activation_delay(mock_settin
 async def test_create_protect_arm_profile_allowed_activation_delays(
     mock_settings, mock_client, delay
 ):
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await create_protect_arm_profile(
             mock_settings,
             confirm=True,
@@ -184,7 +184,7 @@ async def test_create_protect_arm_profile_allowed_activation_delays(
 @pytest.mark.asyncio
 async def test_update_protect_arm_profile_success(mock_settings, mock_client):
     mock_client.patch = AsyncMock(return_value={"id": "profile-1", "name": "New Name"})
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await update_protect_arm_profile(
             "profile-1", mock_settings, name="New Name", confirm=True
         )
@@ -196,7 +196,7 @@ async def test_update_protect_arm_profile_success(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_update_protect_arm_profile_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await update_protect_arm_profile(
             "profile-1", mock_settings, record_everything=False, confirm=True, dry_run=True
         )
@@ -209,7 +209,7 @@ async def test_update_protect_arm_profile_dry_run(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_update_protect_arm_profile_sends_camel_case(mock_settings, mock_client):
     mock_client.patch = AsyncMock(return_value={"id": "profile-1"})
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         await update_protect_arm_profile(
             "profile-1",
             mock_settings,
@@ -246,7 +246,7 @@ async def test_update_protect_arm_profile_validates_activation_delay(mock_settin
 @pytest.mark.asyncio
 async def test_delete_protect_arm_profile_success(mock_settings, mock_client):
     mock_client.delete = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await delete_protect_arm_profile("profile-1", mock_settings, confirm=True)
     mock_client.delete.assert_awaited_once_with("/integration/v1/arm-profiles/profile-1")
     assert result == {"success": True, "arm_profile_id": "profile-1"}
@@ -254,7 +254,7 @@ async def test_delete_protect_arm_profile_success(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_delete_protect_arm_profile_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await delete_protect_arm_profile(
             "profile-1", mock_settings, confirm=True, dry_run=True
         )
@@ -269,7 +269,7 @@ async def test_delete_protect_arm_profile_dry_run(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_set_current_protect_arm_profile_success(mock_settings, mock_client):
     mock_client.patch = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await set_current_protect_arm_profile(mock_settings, "profile-1", confirm=True)
     mock_client.patch.assert_awaited_once_with(
         "/integration/v1/arm-profiles/settings", json_data={"armProfileId": "profile-1"}
@@ -280,7 +280,7 @@ async def test_set_current_protect_arm_profile_success(mock_settings, mock_clien
 
 @pytest.mark.asyncio
 async def test_set_current_protect_arm_profile_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await set_current_protect_arm_profile(
             mock_settings, "profile-1", confirm=True, dry_run=True
         )
@@ -295,7 +295,7 @@ async def test_set_current_protect_arm_profile_dry_run(mock_settings, mock_clien
 @pytest.mark.asyncio
 async def test_enable_protect_alarm_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await enable_protect_alarm(mock_settings, confirm=True)
     mock_client.post.assert_awaited_once_with("/integration/v1/arm-profiles/enable")
     assert result["success"] is True
@@ -303,7 +303,7 @@ async def test_enable_protect_alarm_success(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_enable_protect_alarm_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await enable_protect_alarm(mock_settings, confirm=True, dry_run=True)
     assert result["dry_run"] is True
     assert result["operation"] == "enable_protect_alarm"
@@ -313,7 +313,7 @@ async def test_enable_protect_alarm_dry_run(mock_settings, mock_client):
 @pytest.mark.asyncio
 async def test_disable_protect_alarm_success(mock_settings, mock_client):
     mock_client.post = AsyncMock(return_value={"success": True})
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await disable_protect_alarm(mock_settings, confirm=True)
     mock_client.post.assert_awaited_once_with("/integration/v1/arm-profiles/disable")
     assert result["success"] is True
@@ -321,7 +321,7 @@ async def test_disable_protect_alarm_success(mock_settings, mock_client):
 
 @pytest.mark.asyncio
 async def test_disable_protect_alarm_dry_run(mock_settings, mock_client):
-    with patch("src.tools.protect_alarm.ProtectClient", return_value=mock_client):
+    with patch("unifi_mcp_server.tools.protect_alarm.ProtectClient", return_value=mock_client):
         result = await disable_protect_alarm(mock_settings, confirm=True, dry_run=True)
     assert result["dry_run"] is True
     assert result["operation"] == "disable_protect_alarm"

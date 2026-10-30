@@ -1,10 +1,10 @@
-"""Unit tests for src/resources/sites.py."""
+"""Unit tests for src/unifi_mcp_server/resources/sites.py."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.resources.sites import SitesResource
+from unifi_mcp_server.resources.sites import SitesResource
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ class TestSitesResource:
     async def test_list_sites_success(self, mock_settings):
         response = {"data": [make_site("site-1"), make_site("site-2")]}
 
-        with patch("src.resources.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.resources.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(response)
 
             resource = SitesResource(mock_settings)
@@ -49,7 +49,7 @@ class TestSitesResource:
     async def test_list_sites_with_pagination(self, mock_settings):
         response = {"data": [make_site(f"site-{i}") for i in range(10)]}
 
-        with patch("src.resources.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.resources.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(response)
 
             resource = SitesResource(mock_settings)
@@ -61,7 +61,7 @@ class TestSitesResource:
     async def test_get_site_by_id(self, mock_settings):
         response = {"data": [make_site("site-123", "Main Site")]}
 
-        with patch("src.resources.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.resources.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(response)
 
             resource = SitesResource(mock_settings)
@@ -75,7 +75,7 @@ class TestSitesResource:
     async def test_get_site_by_name(self, mock_settings):
         response = {"data": [make_site("site-abc", "Office")]}
 
-        with patch("src.resources.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.resources.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(response)
 
             resource = SitesResource(mock_settings)
@@ -88,7 +88,7 @@ class TestSitesResource:
     async def test_get_site_not_found(self, mock_settings):
         response = {"data": [make_site("other-site")]}
 
-        with patch("src.resources.sites.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.resources.sites.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(response)
 
             resource = SitesResource(mock_settings)

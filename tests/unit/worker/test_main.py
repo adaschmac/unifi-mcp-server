@@ -1,4 +1,4 @@
-"""``python -m src.worker``: configuration checks, shard choice, startup and shutdown."""
+"""``python -m unifi_mcp_server.worker``: configuration checks, shard choice, startup and shutdown."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.config.config import Settings
-from src.utils.exceptions import ConfigurationError
-from src.worker import __main__ as worker_main
-from src.worker.shards import RedisShards, SoloShards
+from unifi_mcp_server.config.config import Settings
+from unifi_mcp_server.utils.exceptions import ConfigurationError
+from unifi_mcp_server.worker import __main__ as worker_main
+from unifi_mcp_server.worker.shards import RedisShards, SoloShards
 
 
 @pytest.fixture
@@ -42,7 +42,7 @@ class TestMakeShards:
         self, env: None, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setenv("REDIS_HOST", "redis")
-        monkeypatch.setattr("src.cache.REDIS_AVAILABLE", False)
+        monkeypatch.setattr("unifi_mcp_server.cache.REDIS_AVAILABLE", False)
         assert isinstance(worker_main.make_shards(Settings(), "w"), SoloShards)
 
 
@@ -70,14 +70,15 @@ async def test_run_starts_without_seeding_and_stops_the_registry(
     registry.stop = AsyncMock()
     registry.list_controllers = AsyncMock(return_value=[])
     monkeypatch.setattr(
-        "src.fleet.postgres_registry.PostgresRegistry.from_settings", lambda s: registry
+        "unifi_mcp_server.fleet.postgres_registry.PostgresRegistry.from_settings",
+        lambda s: registry,
     )
     seen: dict[str, Any] = {}
 
     async def fake_run(self: Any, stop: asyncio.Event) -> None:
         seen["worker"] = self
 
-    monkeypatch.setattr("src.worker.runner.Worker.run", fake_run)
+    monkeypatch.setattr("unifi_mcp_server.worker.runner.Worker.run", fake_run)
     stop = asyncio.Event()
 
     assert await worker_main.run(Settings(), stop) == 0

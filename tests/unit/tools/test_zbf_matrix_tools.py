@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.tools.zbf_matrix import (
+from unifi_mcp_server.tools.zbf_matrix import (
     block_application_by_zone,
     delete_zbf_policy,
     get_zbf_matrix,

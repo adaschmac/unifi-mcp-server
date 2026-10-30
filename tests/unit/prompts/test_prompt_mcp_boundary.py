@@ -27,7 +27,7 @@ os.environ.setdefault("AGNOST_ENABLED", "false")
 @pytest.fixture(scope="module")
 def server() -> Any:
     """Return the configured FastMCP server instance."""
-    import src.main as main
+    import unifi_mcp_server.main as main
 
     return main.mcp
 
@@ -261,7 +261,7 @@ class TestNoSideEffects:
 
     async def test_retrieving_prompt_executes_no_tool(self, server: Any, monkeypatch) -> None:
         """No registered tool may run while a prompt is rendered."""
-        import src.main as main
+        import unifi_mcp_server.main as main
 
         executed: list[str] = []
 

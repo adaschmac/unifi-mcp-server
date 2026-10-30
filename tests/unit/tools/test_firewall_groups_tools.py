@@ -15,9 +15,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import APIType, Settings
-from src.tools import firewall_groups as fg
-from src.utils.exceptions import ResourceNotFoundError
+from unifi_mcp_server.config import APIType, Settings
+from unifi_mcp_server.tools import firewall_groups as fg
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture
@@ -118,7 +118,7 @@ class TestListFirewallGroups:
         self, local_settings: MagicMock, sample_groups: list[dict[str, Any]]
     ) -> None:
         client = _mock_client(get_response={"meta": {"rc": "ok"}, "data": sample_groups})
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.list_firewall_groups("default", local_settings)
 
@@ -136,7 +136,7 @@ class TestListFirewallGroups:
         self, local_settings: MagicMock, sample_groups: list[dict[str, Any]]
     ) -> None:
         client = _mock_client(get_response={"data": sample_groups})
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.list_firewall_groups(
                 "default", local_settings, group_type="port-group"
@@ -154,7 +154,7 @@ class TestListFirewallGroups:
         self, local_settings: MagicMock, sample_groups: list[dict[str, Any]]
     ) -> None:
         client = _mock_client(get_response=sample_groups)
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.list_firewall_groups("default", local_settings)
         assert len(result) == 3
@@ -166,7 +166,7 @@ class TestGetFirewallGroup:
         self, local_settings: MagicMock, sample_groups: list[dict[str, Any]]
     ) -> None:
         client = _mock_client(get_response={"data": [sample_groups[0]]})
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.get_firewall_group("group-port-1", "default", local_settings)
         assert result["id"] == "group-port-1"
@@ -175,7 +175,7 @@ class TestGetFirewallGroup:
     @pytest.mark.asyncio
     async def test_empty_data_raises(self, local_settings: MagicMock) -> None:
         client = _mock_client(get_response={"meta": {"rc": "ok"}, "data": []})
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             with pytest.raises(ResourceNotFoundError):
                 await fg.get_firewall_group("missing", "default", local_settings)
@@ -194,7 +194,7 @@ class TestCreateFirewallGroup:
         client = _mock_client()
         client.post.return_value = {"data": [sample_groups[0]]}
 
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.create_port_group(
                 name="HomeKit-HAP",
@@ -217,7 +217,7 @@ class TestCreateFirewallGroup:
         client = _mock_client()
         client.post.return_value = {"data": [sample_groups[1]]}
 
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.create_address_group(
                 name="Trusted Subnets",
@@ -235,7 +235,7 @@ class TestCreateFirewallGroup:
     @pytest.mark.asyncio
     async def test_create_dry_run_does_not_post(self, local_settings: MagicMock) -> None:
         client = _mock_client()
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.create_port_group(
                 name="dry",
@@ -314,7 +314,7 @@ class TestUpdateFirewallGroup:
             "data": [{**existing, "group_members": ["8080", "9000-9010", "5555"]}]
         }
 
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.update_firewall_group(
                 group_id="group-port-1",
@@ -340,7 +340,7 @@ class TestUpdateFirewallGroup:
         self, local_settings: MagicMock, sample_groups: list[dict[str, Any]]
     ) -> None:
         client = _mock_client(get_response={"data": [sample_groups[0]]})
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.update_firewall_group(
                 group_id="group-port-1",
@@ -364,7 +364,7 @@ class TestDeleteFirewallGroup:
     @pytest.mark.asyncio
     async def test_delete_success(self, local_settings: MagicMock) -> None:
         client = _mock_client()
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.delete_firewall_group(
                 group_id="group-port-1",
@@ -379,7 +379,7 @@ class TestDeleteFirewallGroup:
     @pytest.mark.asyncio
     async def test_delete_dry_run(self, local_settings: MagicMock) -> None:
         client = _mock_client()
-        with patch("src.tools.firewall_groups.UniFiClient") as MockClient:
+        with patch("unifi_mcp_server.tools.firewall_groups.UniFiClient") as MockClient:
             MockClient.return_value = client
             result = await fg.delete_firewall_group(
                 group_id="group-port-1",

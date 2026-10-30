@@ -18,7 +18,7 @@ import httpx
 import pytest
 from starlette.applications import Starlette
 
-from src.webhooks.receiver import WebhookReceiver
+from unifi_mcp_server.webhooks.receiver import WebhookReceiver
 
 SECRET = "test-webhook-secret"  # pragma: allowlist secret
 PATH = "/webhooks/unifi"
@@ -135,7 +135,7 @@ class TestAuthentication:
         settings = _settings(secret=None)
         logger = MagicMock()
         with pytest.MonkeyPatch.context() as m:
-            m.setattr("src.webhooks.receiver.get_logger", lambda *a, **k: logger)
+            m.setattr("unifi_mcp_server.webhooks.receiver.get_logger", lambda *a, **k: logger)
             WebhookReceiver(settings)
         assert "WEBHOOK_SECRET" in logger.warning.call_args.args[0]
 

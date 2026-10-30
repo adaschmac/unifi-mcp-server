@@ -72,9 +72,9 @@ Naming: modules and functions use snake_case, classes use PascalCase, and test f
 
 ## Writing a Tool
 
-Tools are plain async functions. `register_module_tools()` in `src/tool_registry.py` registers every public `async def` in a module that `src/main.py` lists. Each one carries `@read_tool` or `@write_tool` from `src/utils/tool_kind.py`, which declares whether it can change controller state; registration fails on a tool with neither. A leading `_` keeps a helper out of the tool list.
+Tools are plain async functions. `register_module_tools()` in `src/unifi_mcp_server/tool_registry.py` registers every public `async def` in a module that `src/unifi_mcp_server/main.py` lists. Each one carries `@read_tool` or `@write_tool` from `src/unifi_mcp_server/utils/tool_kind.py`, which declares whether it can change controller state; registration fails on a tool with neither. A leading `_` keeps a helper out of the tool list.
 
-A write tool, shortened from `src/tools/protect_relays.py`:
+A write tool, shortened from `src/unifi_mcp_server/tools/protect_relays.py`:
 
 ```python
 @write_tool
@@ -125,7 +125,7 @@ The rules this example follows:
 - **Return the dry run before you open a client.** No request may reach the controller on a dry run.
 - **Optional update fields default to `None`.** Send only the fields the caller set. Some UniFi endpoints need the whole object (read, merge, write); the network and security skills list which ones.
 - **Do not audit in the tool.** The registry wrapper audits every mutating call. It also removes write tools under `UNIFI_READ_ONLY` and forces `dry_run` under `UNIFI_DRY_RUN`.
-- **Register the module.** Add it to `_LOCAL_TOOL_MODULES` or `_CLOUD_TOOL_MODULES` in `src/main.py`, and to the `UNIFI_PROFILE` sets that should include it.
+- **Register the module.** Add it to `_LOCAL_TOOL_MODULES` or `_CLOUD_TOOL_MODULES` in `src/unifi_mcp_server/main.py`, and to the `UNIFI_PROFILE` sets that should include it.
 - **Update the tier snapshot.** Run `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py`. A destructive tool needs a `delete_`, `remove_` or `bulk_delete_` prefix, or an entry in `DESTRUCTIVE_TOOLS`. A write tool whose name has a risky word ("disable", "block", "reset" and others) must be in `DESTRUCTIVE_TOOLS` or in `RISKY_NAME_EXEMPTIONS` with a reason.
 
 ## Testing Requirements
@@ -145,7 +145,7 @@ def local_settings(monkeypatch):
 
 
 async def test_list_acl_rules_local_mode(local_settings):
-    with patch("src.tools.acls.UniFiClient") as client_class:
+    with patch("unifi_mcp_server.tools.acls.UniFiClient") as client_class:
         client = AsyncMock()
         client.resolve_site_id = AsyncMock(return_value=SITE_UUID)
         client.get = AsyncMock(return_value={"data": [rule]})
@@ -176,10 +176,10 @@ pytest -m integration                          # needs a real controller
 
 ## Security Guardrails
 
-- **Credentials.** Read keys only through `Settings` (`src/config/config.py`), which loads the environment and `.env`. `.env` is git-ignored; `.env.example` holds placeholders only. The detect-secrets pre-commit hook and the CI "Secret Scanning" job check every commit.
+- **Credentials.** Read keys only through `Settings` (`src/unifi_mcp_server/config/config.py`), which loads the environment and `.env`. `.env` is git-ignored; `.env.example` holds placeholders only. The detect-secrets pre-commit hook and the CI "Secret Scanning" job check every commit.
 - **Logs and errors.** Never put an API key or token in a log line or an error message. Pass log text through `sanitize_log_message()`.
-- **Inputs.** Validate with the helpers in `src/utils/validators.py` (`validate_site_id`, `validate_limit_offset` and others) or with Pydantic models.
-- **Network transports.** The server refuses to start an HTTP transport without authentication. Callers authenticate with `MCP_AUTH_TOKEN` or with server-issued tokens (`src/fleet/tokens.py`), and `src/access.py` limits each role to its risk tiers.
+- **Inputs.** Validate with the helpers in `src/unifi_mcp_server/utils/validators.py` (`validate_site_id`, `validate_limit_offset` and others) or with Pydantic models.
+- **Network transports.** The server refuses to start an HTTP transport without authentication. Callers authenticate with `MCP_AUTH_TOKEN` or with server-issued tokens (`src/unifi_mcp_server/fleet/tokens.py`), and `src/unifi_mcp_server/access.py` limits each role to its risk tiers.
 - **Audit.** Every mutating call writes a hash-chained audit record. `UNIFI_AUDIT_FAIL_CLOSED` (on by default) refuses the call when the record cannot be written.
 
 ## UniFi API Guidelines
@@ -211,11 +211,11 @@ Many tools write legacy calls as `/ea/sites/{site_id}/...`. `UniFiClient` transl
 
 ### Rate limits
 
-`UNIFI_RATE_LIMIT_REQUESTS` (default 100) per `UNIFI_RATE_LIMIT_PERIOD` seconds (default 60) per controller. The limiter is in `src/api/rate_limit.py`; with Redis it is shared across replicas. Do not add another limiter in a tool.
+`UNIFI_RATE_LIMIT_REQUESTS` (default 100) per `UNIFI_RATE_LIMIT_PERIOD` seconds (default 60) per controller. The limiter is in `src/unifi_mcp_server/api/rate_limit.py`; with Redis it is shared across replicas. Do not add another limiter in a tool.
 
 ### Errors
 
-Use the exceptions in `src/utils/exceptions.py`. `UniFiClient` maps HTTP 404 to `ResourceNotFoundError`, 401 and 403 to `AuthenticationError`, and other errors to `APIError`. Tools raise `ValidationError` for bad input.
+Use the exceptions in `src/unifi_mcp_server/utils/exceptions.py`. `UniFiClient` maps HTTP 404 to `ResourceNotFoundError`, 401 and 403 to `AuthenticationError`, and other errors to `APIError`. Tools raise `ValidationError` for bad input.
 
 ### API documentation
 
@@ -288,9 +288,9 @@ This section is machine-maintained. Hand-written text lives outside the markers.
 The repository exposes the same capability surface in several places. A tool or resource change must keep them aligned:
 
 - MCP tools — live registry at runtime
-- Native MCP prompts — `src/prompts/catalog.py` lists the tools each workflow reads
-- MCP resources — `src/main.py` registers them with `@mcp.resource("scheme://...")` URIs
-- A2A agent card — `agent-card.json`, generated from `src/a2a/capabilities.py`; it includes tools, prompts and resources
+- Native MCP prompts — `src/unifi_mcp_server/prompts/catalog.py` lists the tools each workflow reads
+- MCP resources — `src/unifi_mcp_server/main.py` registers them with `@mcp.resource("scheme://...")` URIs
+- A2A agent card — `agent-card.json`, generated from `src/unifi_mcp_server/a2a/capabilities.py`; it includes tools, prompts and resources
 - Operator and developer skills — `skills/<name>/SKILL.md`
 - API reference — `API.md` and `docs/UNIFI_API.md`
 
@@ -299,7 +299,7 @@ When you add, remove or rename a tool:
 1. Update `API.md` for the tool's parameters and an example.
 2. Update the relevant skill under `skills/<name>/SKILL.md`.
 3. If the skill is a developer skill, copy it to `.claude/skills/<name>/` and `.agents/skills/<name>/`. The `mintlify-docs` skill is the exception: its source of truth is `.mintlify/skills/mintlify-docs/SKILL.md`.
-4. If a prompt workflow reads the tool, update `src/prompts/catalog.py` and `docs/PROMPTS.md`.
+4. If a prompt workflow reads the tool, update `src/unifi_mcp_server/prompts/catalog.py` and `docs/PROMPTS.md`.
 5. Regenerate the agent card if the tool surface changed: `python scripts/generate_agent_card.py`.
 6. Run the drift guards: `pytest tests/unit/test_skill_tool_references.py tests/unit/test_skill_parameter_references.py tests/unit/test_agent_docs.py`.
 
@@ -330,8 +330,8 @@ When you add, remove or rename an MCP resource:
 
 | File | Source | Regenerate command | Gate |
 |---|---|---|---|
-| `agent-card.json` | `src/a2a/capabilities.py` + live tool registry | `python scripts/generate_agent_card.py` | `tests/unit/a2a/test_agent_card.py` |
-| Tool-tier snapshot (`tests/unit/fleet/test_tiers.py`) | `src/tool_registry.py` tier classification | `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py` | `tests/unit/fleet/test_tiers.py` |
+| `agent-card.json` | `src/unifi_mcp_server/a2a/capabilities.py` + live tool registry | `python scripts/generate_agent_card.py` | `tests/unit/a2a/test_agent_card.py` |
+| Tool-tier snapshot (`tests/unit/fleet/test_tiers.py`) | `src/unifi_mcp_server/tool_registry.py` tier classification | `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py` | `tests/unit/fleet/test_tiers.py` |
 | Developer skill copies | `skills/<name>/SKILL.md` | `cp skills/<name>/SKILL.md .claude/skills/<name>/SKILL.md && cp skills/<name>/SKILL.md .agents/skills/<name>/SKILL.md` | `tests/unit/test_agent_docs.py` |
 
 Never hand-edit `agent-card.json`. Always regenerate it from the source.
@@ -348,7 +348,7 @@ Never hand-edit `agent-card.json`. Always regenerate it from the source.
 
 - **Changing a tool name without updating the prompt catalog.** A prompt's `requirements` list gates whether the workflow is advertised. A renamed tool makes the workflow disappear from `prompts/list` without an obvious error. Run `pytest tests/unit/prompts/test_prompt_catalog.py` to catch it.
 - **Forgetting to copy a developer skill.** `tests/unit/test_agent_docs.py` fails when `.claude/skills/<name>/SKILL.md` or `.agents/skills/<name>/SKILL.md` differs from `skills/<name>/SKILL.md`. Copy after editing.
-- **Hand-editing `agent-card.json`.** The next regeneration will silently overwrite it, and `test_agent_card.py` will fail if the hand edit does not match the generator. Edit `src/a2a/capabilities.py` or `src/a2a/agent_card.py` instead.
+- **Hand-editing `agent-card.json`.** The next regeneration will silently overwrite it, and `test_agent_card.py` will fail if the hand edit does not match the generator. Edit `src/unifi_mcp_server/a2a/capabilities.py` or `src/unifi_mcp_server/a2a/agent_card.py` instead.
 - **Writing tool or module counts in prose.** The skill-reference guard checks counts stated in skills and the README against the live registry. Use "the live registry" or the verification command instead of a number.
 
 <!-- omh:agent-instructions:end -->

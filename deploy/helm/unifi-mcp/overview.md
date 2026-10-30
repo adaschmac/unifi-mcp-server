@@ -67,10 +67,10 @@ a Redis operator) for high availability.
   liveness and readiness probes use `GET /healthz`, which needs no token
   and reveals nothing. A change to the non-secret settings restarts the
   pods. After changing the Secret, run `kubectl rollout restart`.
-- **Worker Deployment** (fleet). Runs `python -m src.worker` for health
+- **Worker Deployment** (fleet). Runs `python -m unifi_mcp_server.worker` for health
   checks and snapshots. Without `REDIS_URL`, keep one worker.
 - **Migration Job** (fleet). A pre-install and pre-upgrade hook that runs
-  `python -m src.fleet.cli migrate`. The servers refuse to start on an old
+  `python -m unifi_mcp_server.fleet.cli migrate`. The servers refuse to start on an old
   schema.
 - **Retention CronJob** (fleet, with `audit.retentionDays`). Archives
   expired audit records to a PersistentVolumeClaim, then deletes them. Only

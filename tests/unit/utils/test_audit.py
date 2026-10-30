@@ -1,4 +1,4 @@
-"""Unit tests for src/utils/audit.py."""
+"""Unit tests for src/unifi_mcp_server/utils/audit.py."""
 
 import json
 from pathlib import Path
@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.utils.audit import AuditLogger, audit_action, get_audit_logger, log_audit
+from unifi_mcp_server.utils.audit import AuditLogger, audit_action, get_audit_logger, log_audit
 
 
 class TestAuditLoggerInit:
@@ -333,7 +333,7 @@ class TestGetAuditLogger:
     def test_get_audit_logger_returns_instance(self, tmp_path):
         """Test get_audit_logger returns an AuditLogger instance."""
         # Reset global state
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -344,7 +344,7 @@ class TestGetAuditLogger:
 
     def test_get_audit_logger_singleton(self, tmp_path):
         """Test get_audit_logger returns same instance on subsequent calls."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -360,7 +360,7 @@ class TestLogAudit:
 
     def test_log_audit_basic(self, tmp_path):
         """Test log_audit convenience function."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -381,7 +381,7 @@ class TestLogAudit:
 
     def test_log_audit_with_all_params(self, tmp_path):
         """Test log_audit with all parameters."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -410,7 +410,7 @@ class TestAuditAction:
     @pytest.mark.asyncio
     async def test_audit_action_basic(self, tmp_path):
         """Test audit_action basic functionality."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -438,7 +438,7 @@ class TestAuditAction:
     @pytest.mark.asyncio
     async def test_audit_action_with_details(self, tmp_path):
         """Test audit_action with additional details."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -464,7 +464,7 @@ class TestAuditAction:
     @pytest.mark.asyncio
     async def test_audit_action_no_audit_log_file(self, tmp_path):
         """Test audit_action when settings has no audit_log_file."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -482,7 +482,7 @@ class TestAuditAction:
     @pytest.mark.asyncio
     async def test_audit_action_none_details(self, tmp_path):
         """Test audit_action with None details."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -630,7 +630,7 @@ class TestAuditErrorRedaction:
     def test_redaction_runs_before_encryption(self, tmp_path):
         from cryptography.fernet import Fernet, MultiFernet
 
-        from src.utils.audit_encryption import decrypt_field
+        from unifi_mcp_server.utils.audit_encryption import decrypt_field
 
         cipher = MultiFernet([Fernet(Fernet.generate_key())])
         log_path = tmp_path / "audit.log"
@@ -663,7 +663,7 @@ class TestAuditLogEnabledFlag:
     @pytest.mark.asyncio
     async def test_disabled_suppresses_the_write(self, tmp_path):
         """audit_action writes nothing when auditing is disabled."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 
@@ -685,7 +685,7 @@ class TestAuditLogEnabledFlag:
     @pytest.mark.asyncio
     async def test_enabled_still_writes(self, tmp_path):
         """The default remains enabled."""
-        import src.utils.audit as audit_module
+        import unifi_mcp_server.utils.audit as audit_module
 
         audit_module._audit_logger = None
 

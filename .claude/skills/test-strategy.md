@@ -26,9 +26,9 @@ Ask the user which module they want to improve, or analyze recent coverage repor
 
 **Priority Modules (from TEST_COVERAGE_ROADMAP.md Sprint 1):**
 
-- `src/tools/clients.py` - Currently 15.91%, Target: 70%
-- `src/tools/networks.py` - Currently 19.83%, Target: 70%
-- `src/tools/sites.py` - Currently 25.00%, Target: 70%
+- `src/unifi_mcp_server/tools/clients.py` - Currently 15.91%, Target: 70%
+- `src/unifi_mcp_server/tools/networks.py` - Currently 19.83%, Target: 70%
+- `src/unifi_mcp_server/tools/sites.py` - Currently 25.00%, Target: 70%
 
 ### Step 2: Analyze Current Coverage
 
@@ -40,7 +40,7 @@ Run coverage analysis to identify:
 - Functions with no tests
 
 ```bash
-pytest tests/unit/test_[module].py --cov=src/tools/[module] --cov-report=term-missing
+pytest tests/unit/test_[module].py --cov=src/unifi_mcp_server/tools/[module] --cov-report=term-missing
 ```
 
 ### Step 3: Categorize Missing Tests
@@ -72,8 +72,8 @@ Based on existing tests in the codebase:
 ```python
 import pytest
 from unittest.mock import AsyncMock, patch
-from src.tools.[module] import [function_name]
-from src.models.[model] import [Model]
+from unifi_mcp_server.tools.[module] import [function_name]
+from unifi_mcp_server.models.[model] import [Model]
 
 @pytest.mark.asyncio
 @pytest.mark.unit
@@ -181,7 +181,7 @@ If test file doesn't exist, create it:
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from src.tools.[module] import (
+from unifi_mcp_server.tools.[module] import (
     function1,
     function2,
     function3
@@ -223,7 +223,7 @@ pytest tests/unit/test_[module].py -v
 After implementing tests, verify coverage increased:
 
 ```bash
-pytest tests/unit/test_[module].py --cov=src/tools/[module] --cov-report=term-missing --cov-report=html
+pytest tests/unit/test_[module].py --cov=src/unifi_mcp_server/tools/[module] --cov-report=term-missing --cov-report=html
 ```
 
 Check HTML report for detailed line-by-line coverage:
@@ -256,16 +256,16 @@ Before marking tests complete, verify:
 
 **Target**: 40-50% coverage increase per module
 
-- [ ] `src/tools/clients.py` (15.91% → 70%)
+- [ ] `src/unifi_mcp_server/tools/clients.py` (15.91% → 70%)
   - [ ] list_clients test scenarios
   - [ ] get_client test scenarios
   - [ ] search_clients test scenarios
   - [ ] get_client_statistics test scenarios
-- [ ] `src/tools/networks.py` (19.83% → 70%)
+- [ ] `src/unifi_mcp_server/tools/networks.py` (19.83% → 70%)
   - [ ] list_networks test scenarios
   - [ ] get_network test scenarios
   - [ ] get_network_statistics test scenarios
-- [ ] `src/tools/sites.py` (25.00% → 70%)
+- [ ] `src/unifi_mcp_server/tools/sites.py` (25.00% → 70%)
   - [ ] list_sites test scenarios
   - [ ] get_site test scenarios
   - [ ] get_site_statistics test scenarios

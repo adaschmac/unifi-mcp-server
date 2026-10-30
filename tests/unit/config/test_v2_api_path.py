@@ -6,7 +6,7 @@ The v2 API is only available on local gateways, not cloud.
 
 import pytest
 
-from src.config.config import Settings
+from unifi_mcp_server.config.config import Settings
 
 
 class TestGetV2ApiPath:

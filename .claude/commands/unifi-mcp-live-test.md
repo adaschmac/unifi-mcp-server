@@ -72,10 +72,10 @@ else
 fi
 
 # Check MCP server exists
-if [ -f src/main.py ]; then
-  echo "✅ MCP server found (src/main.py)"
+if [ -f src/unifi_mcp_server/main.py ]; then
+  echo "✅ MCP server found (src/unifi_mcp_server/main.py)"
 else
-  echo "❌ src/main.py not found"
+  echo "❌ src/unifi_mcp_server/main.py not found"
   exit 1
 fi
 
@@ -201,9 +201,9 @@ from datetime import datetime
 sys.path.insert(0, os.getcwd())
 
 async def run_tests():
-    from src.config.config import Settings, APIType
+    from unifi_mcp_server.config.config import Settings, APIType
     # Import tools - using correct function names that actually exist
-    from src.tools import sites, devices, clients, wifi
+    from unifi_mcp_server.tools import sites, devices, clients, wifi
 
     try:
         settings = Settings()
@@ -230,7 +230,7 @@ async def run_tests():
 
     # Add Cloud-specific tests
     if settings.api_type == APIType.CLOUD:
-        from src.tools import site_manager, networks
+        from unifi_mcp_server.tools import site_manager, networks
         tools.extend([
             ("list_all_sites", site_manager.list_all_sites_aggregated, {}),
             ("list_vlans", networks.list_vlans, {}),

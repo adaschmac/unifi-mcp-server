@@ -1,4 +1,4 @@
-"""Shared per-controller connections (src/api/pool.py)."""
+"""Shared per-controller connections (src/unifi_mcp_server/api/pool.py)."""
 
 import asyncio
 from typing import Any
@@ -6,10 +6,10 @@ from typing import Any
 import httpx
 import pytest
 
-from src.api.client import UniFiClient
-from src.api.pool import CircuitOpenError, ClientPool, active_pool
-from src.config.config import Settings
-from src.utils.exceptions import APIError, NetworkError
+from unifi_mcp_server.api.client import UniFiClient
+from unifi_mcp_server.api.pool import CircuitOpenError, ClientPool, active_pool
+from unifi_mcp_server.config.config import Settings
+from unifi_mcp_server.utils.exceptions import APIError, NetworkError
 
 
 def _settings(monkeypatch: pytest.MonkeyPatch, host: str = "10.0.0.1", **env: str) -> Settings:

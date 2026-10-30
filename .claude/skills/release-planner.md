@@ -137,7 +137,7 @@ Based on completion status, define what's included:
 - [ ] CHANGELOG.md has release notes
 - [ ] Version numbers updated in:
   - [ ] `pyproject.toml`
-  - [ ] `src/__init__.py`
+  - [ ] `src/unifi_mcp_server/__init__.py`
   - [ ] `README.md`
   - [ ] `DEVELOPMENT_PLAN.md`
 - [ ] Migration guides written (if breaking changes)
@@ -355,7 +355,7 @@ def generate_changelog_entry(version, commits):
 git checkout -b release/v0.2.0
 
 # Update version in pyproject.toml
-# Update version in src/__init__.py
+# Update version in src/unifi_mcp_server/__init__.py
 # Update README.md with version
 # Update DEVELOPMENT_PLAN.md progress
 

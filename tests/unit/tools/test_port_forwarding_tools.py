@@ -4,14 +4,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.port_forwarding as pf_module
-from src.tools.port_forwarding import (
+import unifi_mcp_server.tools.port_forwarding as pf_module
+from unifi_mcp_server.tools.port_forwarding import (
     create_port_forward,
     delete_port_forward,
     list_port_forwards,
     update_port_forward,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture

@@ -23,8 +23,8 @@ from typing import Any
 
 import pytest
 
-import src.tools
-from src.utils.tool_kind import declared_kind, read_tool, write_tool
+import unifi_mcp_server.tools
+from unifi_mcp_server.utils.tool_kind import declared_kind, read_tool, write_tool
 
 #: HTTP verbs that change state when called as a client method.
 WRITE_VERBS = frozenset({"post", "put", "patch", "delete"})
@@ -98,7 +98,10 @@ def _resolve(node: ast.expr, scope: dict[str, Any]) -> Any:
 
 
 def _is_ours(obj: Any) -> bool:
-    return inspect.isfunction(obj) and (obj.__module__ or "").split(".")[0] in ("src", __name__)
+    return inspect.isfunction(obj) and (obj.__module__ or "").split(".")[0] in (
+        "unifi_mcp_server",
+        __name__,
+    )
 
 
 def write_calls(fn: Any, *, allow_post: bool = False) -> list[str]:
@@ -188,10 +191,10 @@ def _cell_is_set(cell: Any) -> bool:
 
 def _read_tools() -> list[tuple[str, Any]]:
     tools = []
-    for info in pkgutil.iter_modules(src.tools.__path__):
+    for info in pkgutil.iter_modules(unifi_mcp_server.tools.__path__):
         if info.name.startswith("_"):
             continue
-        module = importlib.import_module(f"src.tools.{info.name}")
+        module = importlib.import_module(f"unifi_mcp_server.tools.{info.name}")
         for name, fn in inspect.getmembers(module, inspect.iscoroutinefunction):
             if name.startswith("_") or fn.__module__ != module.__name__:
                 continue

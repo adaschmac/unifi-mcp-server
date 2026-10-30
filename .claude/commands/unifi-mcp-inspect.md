@@ -47,7 +47,7 @@ The MCP Inspector is a web-based UI for testing MCP servers, making API calls, a
 2. Start MCP Inspector:
 
    ```bash
-   npx @modelcontextprotocol/inspector uv run src/main.py
+   npx @modelcontextprotocol/inspector uv run src/unifi_mcp_server/main.py
    ```
 
    - Run in background if user requests
@@ -118,7 +118,7 @@ Environment Check:
 ✓ UniFi Host: https://192.168.2.1
 
 Starting Inspector:
-$ npx @modelcontextprotocol/inspector uv run src/main.py
+$ npx @modelcontextprotocol/inspector uv run src/unifi_mcp_server/main.py
 
 Inspector running at: http://localhost:5173
 

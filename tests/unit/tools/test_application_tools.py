@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.application as app_module
-from src.tools.application import get_application_info
+import unifi_mcp_server.tools.application as app_module
+from unifi_mcp_server.tools.application import get_application_info
 
 
 @pytest.fixture

@@ -11,15 +11,15 @@ from fastmcp import Client, FastMCP
 from fastmcp.exceptions import ToolError
 from fastmcp.tools import Tool
 
-import src.tools
-from src.config.config import APIType, Settings
-from src.fleet import ControllerProfile, EnvRegistry
-from src.fleet.router import FleetRouter, current_controller
-from src.fleet.tools import register_fleet_tools
-from src.tool_registry import _make_tool_wrapper, register_module_tools
-from src.utils import tool_kind
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
-from src.utils.metrics import MetricsRegistry
+import unifi_mcp_server.tools
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet import ControllerProfile, EnvRegistry
+from unifi_mcp_server.fleet.router import FleetRouter, current_controller
+from unifi_mcp_server.fleet.tools import register_fleet_tools
+from unifi_mcp_server.tool_registry import _make_tool_wrapper, register_module_tools
+from unifi_mcp_server.utils import tool_kind
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.metrics import MetricsRegistry
 
 from .test_router import StaticRegistry
 
@@ -134,7 +134,7 @@ class TestWithRouter:
 
     async def test_records_per_controller_call_count(self, base, fleet, monkeypatch):
         registry = MetricsRegistry()
-        monkeypatch.setattr("src.tool_registry.METRICS", registry)
+        monkeypatch.setattr("unifi_mcp_server.tool_registry.METRICS", registry)
         enabled = base.model_copy(update={"metrics_enabled": True})
         wrapped = _make_tool_wrapper(read_tool, enabled, FleetRouter(enabled, fleet.registry))
 
@@ -216,8 +216,8 @@ def _legacy_wrapper(fn: Any) -> Any:
 async def test_every_tool_schema_only_gains_the_controller_field(base: Settings):
     mcp = FastMCP("schema-test")
     originals: dict[str, Any] = {}
-    for info in pkgutil.iter_modules(src.tools.__path__):
-        module = importlib.import_module(f"src.tools.{info.name}")
+    for info in pkgutil.iter_modules(unifi_mcp_server.tools.__path__):
+        module = importlib.import_module(f"unifi_mcp_server.tools.{info.name}")
         for name in register_module_tools(mcp, module, base):
             originals[name] = getattr(module, name)
 

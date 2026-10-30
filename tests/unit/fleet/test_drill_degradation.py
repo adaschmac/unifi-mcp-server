@@ -23,16 +23,16 @@ import pytest
 
 pytest.importorskip("sqlalchemy")
 
-from src.api.pool import ClientPool  # noqa: E402
-from src.config.config import APIType, Settings  # noqa: E402
-from src.fleet import ControllerProfile  # noqa: E402
-from src.fleet.db import audit_store  # noqa: E402
-from src.fleet.db.schema import make_engine  # noqa: E402
-from src.fleet.db.snapshots import SnapshotStore  # noqa: E402
-from src.fleet.fleet_tools import build_snapshot_tools  # noqa: E402
-from src.worker import runner  # noqa: E402
-from src.worker.runner import Worker  # noqa: E402
-from src.worker.shards import RedisShards, SoloShards  # noqa: E402
+from unifi_mcp_server.api.pool import ClientPool  # noqa: E402
+from unifi_mcp_server.config.config import APIType, Settings  # noqa: E402
+from unifi_mcp_server.fleet import ControllerProfile  # noqa: E402
+from unifi_mcp_server.fleet.db import audit_store  # noqa: E402
+from unifi_mcp_server.fleet.db.schema import make_engine  # noqa: E402
+from unifi_mcp_server.fleet.db.snapshots import SnapshotStore  # noqa: E402
+from unifi_mcp_server.fleet.fleet_tools import build_snapshot_tools  # noqa: E402
+from unifi_mcp_server.worker import runner  # noqa: E402
+from unifi_mcp_server.worker.runner import Worker  # noqa: E402
+from unifi_mcp_server.worker.shards import RedisShards, SoloShards  # noqa: E402
 
 from .test_router import StaticRegistry  # noqa: E402
 
@@ -115,8 +115,10 @@ class TestPostgresDown:
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         # The controller answers; recording the result is what fails.
-        monkeypatch.setattr("src.api.client.UniFiClient.authenticate", AsyncMock())
-        monkeypatch.setattr("src.api.client.UniFiClient.get", AsyncMock(return_value={}))
+        monkeypatch.setattr("unifi_mcp_server.api.client.UniFiClient.authenticate", AsyncMock())
+        monkeypatch.setattr(
+            "unifi_mcp_server.api.client.UniFiClient.get", AsyncMock(return_value={})
+        )
         now = [0.0]
         worker = Worker(
             settings,

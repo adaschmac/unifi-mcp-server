@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.api.protect_client import ProtectClient
-from src.config import APIType
-from src.utils.exceptions import AuthenticationError
+from unifi_mcp_server.api.protect_client import ProtectClient
+from unifi_mcp_server.config import APIType
+from unifi_mcp_server.utils.exceptions import AuthenticationError
 
 
 @pytest.fixture
@@ -155,7 +155,7 @@ def _recorder(status=200, **response_kwargs):
 class TestProtectClientPooling:
     @pytest.mark.asyncio
     async def test_reuses_pooled_connection_and_releases_it(self, mock_settings):
-        from src.api.pool import active_pool
+        from unifi_mcp_server.api.pool import active_pool
 
         pool = MagicMock()
         connection = MagicMock()
@@ -220,7 +220,7 @@ class TestProtectClientHttp:
 
     @pytest.mark.asyncio
     async def test_error_status_raises_api_error(self, mock_settings):
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.utils.exceptions import APIError
 
         _, handler = _recorder(status=403, text="forbidden")
         client = _mock_transport_client(mock_settings, handler)
@@ -230,7 +230,7 @@ class TestProtectClientHttp:
 
     @pytest.mark.asyncio
     async def test_undecodable_body_raises_api_error(self, mock_settings):
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.utils.exceptions import APIError
 
         _, handler = _recorder(text="<html>")
         client = _mock_transport_client(mock_settings, handler)
@@ -242,7 +242,7 @@ class TestProtectClientHttp:
     async def test_transport_error_wrapped(self, mock_settings):
         import httpx
 
-        from src.utils.exceptions import APIError
+        from unifi_mcp_server.utils.exceptions import APIError
 
         def handler(request):
             raise httpx.ConnectError("down", request=request)

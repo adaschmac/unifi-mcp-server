@@ -4,15 +4,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.traffic_matching_lists as tml_module
-from src.tools.traffic_matching_lists import (
+import unifi_mcp_server.tools.traffic_matching_lists as tml_module
+from unifi_mcp_server.tools.traffic_matching_lists import (
     create_traffic_matching_list,
     delete_traffic_matching_list,
     get_traffic_matching_list,
     list_traffic_matching_lists,
     update_traffic_matching_list,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -56,7 +56,7 @@ async def test_list_traffic_matching_lists_success(mock_settings):
         ]
     }
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.authenticate = AsyncMock()
         mock_client.resolve_site_id = AsyncMock(return_value="default")
@@ -84,7 +84,7 @@ async def test_list_traffic_matching_lists_pagination(mock_settings):
         ]
     }
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.authenticate = AsyncMock()
         mock_client.resolve_site_id = AsyncMock(return_value="default")
@@ -104,7 +104,7 @@ async def test_list_traffic_matching_lists_pagination(mock_settings):
 async def test_list_traffic_matching_lists_empty(mock_settings):
     mock_response = {"data": []}
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.authenticate = AsyncMock()
         mock_client.resolve_site_id = AsyncMock(return_value="default")
@@ -130,7 +130,7 @@ async def test_get_traffic_matching_list_success(mock_settings):
         }
     }
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.authenticate = AsyncMock()
         mock_client.resolve_site_id = AsyncMock(return_value="default")
@@ -155,7 +155,7 @@ async def test_get_traffic_matching_list_direct_response(mock_settings):
         "items": ["2001:db8::1", "2001:db8::2"],
     }
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.authenticate = AsyncMock()
         mock_client.resolve_site_id = AsyncMock(return_value="default")
@@ -196,8 +196,8 @@ async def test_create_traffic_matching_list_success(mock_settings):
         }
     }
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
-        with patch("src.tools.traffic_matching_lists.log_audit"):
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.traffic_matching_lists.log_audit"):
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.resolve_site_id = AsyncMock(return_value="default")
@@ -222,7 +222,7 @@ async def test_create_traffic_matching_list_success(mock_settings):
 
 @pytest.mark.asyncio
 async def test_create_traffic_matching_list_dry_run(mock_settings):
-    with patch("src.tools.traffic_matching_lists.log_audit"):
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.log_audit"):
         result = await create_traffic_matching_list(
             "default",
             "IPV4_ADDRESSES",
@@ -299,8 +299,8 @@ async def test_update_traffic_matching_list_success(mock_settings):
         }
     }
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
-        with patch("src.tools.traffic_matching_lists.log_audit"):
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.traffic_matching_lists.log_audit"):
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(return_value=mock_get_response)
@@ -324,7 +324,7 @@ async def test_update_traffic_matching_list_success(mock_settings):
 
 @pytest.mark.asyncio
 async def test_update_traffic_matching_list_dry_run(mock_settings):
-    with patch("src.tools.traffic_matching_lists.log_audit"):
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.log_audit"):
         result = await update_traffic_matching_list(
             "default",
             "tml-1",
@@ -410,8 +410,8 @@ async def test_delete_traffic_matching_list_success(mock_settings):
     }
     mock_delete_response = {}
 
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
-        with patch("src.tools.traffic_matching_lists.log_audit"):
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.traffic_matching_lists.log_audit"):
             mock_client = AsyncMock()
             mock_client.authenticate = AsyncMock()
             mock_client.get = AsyncMock(return_value=mock_get_response)
@@ -434,7 +434,7 @@ async def test_delete_traffic_matching_list_success(mock_settings):
 
 @pytest.mark.asyncio
 async def test_delete_traffic_matching_list_dry_run(mock_settings):
-    with patch("src.tools.traffic_matching_lists.log_audit"):
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.log_audit"):
         result = await delete_traffic_matching_list(
             "default",
             "tml-1",
@@ -484,7 +484,7 @@ SITE_UUID = "88f7af54-98f8-306a-a1c7-c9349722b1f6"
 
 @pytest.fixture
 def local_settings(monkeypatch):
-    from src.config import Settings
+    from unifi_mcp_server.config import Settings
 
     monkeypatch.setenv("UNIFI_API_KEY", "test-api-key")
     monkeypatch.setenv("UNIFI_API_TYPE", "local")
@@ -497,7 +497,7 @@ async def test_list_traffic_matching_lists_local_mode_uses_local_integration_api
     local_settings,
 ):
     """The Network integration API serves traffic-matching-lists on the local console too."""
-    with patch("src.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
+    with patch("unifi_mcp_server.tools.traffic_matching_lists.UniFiClient") as mock_client_class:
         client = AsyncMock()
         client.resolve_site_id = AsyncMock(return_value=SITE_UUID)
         client.get = AsyncMock(

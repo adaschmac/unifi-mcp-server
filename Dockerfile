@@ -68,9 +68,8 @@ WORKDIR /app
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 
-# Copy application code
-COPY --chown=mcp:mcp src ./src
-COPY --chown=mcp:mcp pyproject.toml README.md ./
+# The application is the installed `unifi_mcp_server` package in /opt/venv;
+# no source tree is copied, so nothing can shadow it.
 
 # Create directories for logs and config
 RUN mkdir -p /app/logs /app/config && \
@@ -81,10 +80,10 @@ USER mcp
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import sys; from src.config import Settings; Settings(); sys.exit(0)" || exit 1
+    CMD python -c "import sys; from unifi_mcp_server.config import Settings; Settings(); sys.exit(0)" || exit 1
 
 # Expose MCP server port (default 3000, configurable via MCP_SERVER_PORT)
 EXPOSE 3000
 
 # Default command - run via FastMCP
-CMD ["python", "-m", "src.main"]
+CMD ["python", "-m", "unifi_mcp_server.main"]

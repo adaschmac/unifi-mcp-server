@@ -1,4 +1,4 @@
-"""Settings.verify_ssl to httpx verify= (src/api/tls.py)."""
+"""Settings.verify_ssl to httpx verify= (src/unifi_mcp_server/api/tls.py)."""
 
 import ssl
 
@@ -6,9 +6,9 @@ import certifi
 import httpx
 import pytest
 
-from src.api.client import UniFiClient
-from src.api.tls import httpx_verify
-from src.config.config import Settings
+from unifi_mcp_server.api.client import UniFiClient
+from unifi_mcp_server.api.tls import httpx_verify
+from unifi_mcp_server.config.config import Settings
 
 
 class TestHttpxVerify:

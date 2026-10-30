@@ -4,8 +4,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.reference_data as ref_module
-from src.tools.reference_data import list_countries, list_device_tags, list_radius_profiles
+import unifi_mcp_server.tools.reference_data as ref_module
+from unifi_mcp_server.tools.reference_data import (
+    list_countries,
+    list_device_tags,
+    list_radius_profiles,
+)
 
 
 @pytest.fixture

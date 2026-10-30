@@ -204,27 +204,27 @@ A technical claim in the documentation must trace to implementation. Before
 changing one, inspect the code it describes. For this project, that means:
 
 - **Exact tool names, signatures, defaults and return shapes.** Tools are
-  plain `async def` functions in `src/tools/*.py`; there is no `@mcp.tool()`
+  plain `async def` functions in `src/unifi_mcp_server/tools/*.py`; there is no `@mcp.tool()`
   decorator. Read the function, not a summary of it.
 - **Registration and availability.** A module is registered in
-  `_LOCAL_TOOL_MODULES` or `_CLOUD_TOOL_MODULES` in `src/main.py`.
+  `_LOCAL_TOOL_MODULES` or `_CLOUD_TOOL_MODULES` in `src/unifi_mcp_server/main.py`.
   `UNIFI_PROFILE` narrows the set via `_PROFILE_MODULES`. An unknown profile
   logs a warning and loads everything.
 - **Read vs write.** Every tool carries `@read_tool` or `@write_tool` from
-  `src/utils/tool_kind.py`. `UNIFI_READ_ONLY` registers only read tools;
+  `src/unifi_mcp_server/utils/tool_kind.py`. `UNIFI_READ_ONLY` registers only read tools;
   `UNIFI_DRY_RUN` forces dry runs. Write tools take `confirm` and `dry_run`,
   and call `validate_confirmation()` before any request.
-- **Risk tiers and audit.** `tool_tier()` in `src/tool_registry.py` returns
+- **Risk tiers and audit.** `tool_tier()` in `src/unifi_mcp_server/tool_registry.py` returns
   `read`, `write` or `destructive`. `delete_`, `remove_` and `bulk_delete_`
   prefixes and the `DESTRUCTIVE_TOOLS` set are destructive. Every mutating
-  call is audited by the registry wrapper. Roles in `src/access.py` are
+  call is audited by the registry wrapper. Roles in `src/unifi_mcp_server/access.py` are
   `viewer`, `operator`, `admin` and `fleet-admin`, mapped to tiers by
   `ROLE_TIERS`.
 - **API modes.** `local`, `cloud-v1` and `cloud-ea` (`APIType` in
-  `src/config/config.py`). Local is the only mode with the full surface.
+  `src/unifi_mcp_server/config/config.py`). Local is the only mode with the full surface.
   `CLOUD` is a legacy alias for `cloud-ea`.
 - **Environment variables.** 65 `validation_alias` values are defined in
-  `src/config/config.py`. Read them there; `.env.example` is the documented
+  `src/unifi_mcp_server/config/config.py`. Read them there; `.env.example` is the documented
   list. Never invent a key.
 - **Deployment interfaces.** `docker-compose*.yml`, `deploy/ansible/` and
   `deploy/helm/unifi-mcp/`.
@@ -249,7 +249,7 @@ Count from the running server, not from a grep:
 .venv/bin/python - <<'PY'
 import os, asyncio
 os.environ.update(UNIFI_API_KEY="x", UNIFI_API_TYPE="local", UNIFI_LOCAL_HOST="192.0.2.1")
-import src.main as M
+import unifi_mcp_server.main as M
 async def go():
     print("tools:", len(await M.mcp.list_tools()))
 asyncio.run(go())
@@ -323,7 +323,7 @@ git diff --stat v0.6.1..HEAD -- '*.md' '*.mdx' docs.json
 ```
 
 Check, for every changed surface: whether `API.md` describes the change, whether
-`README.md` and `.env.example` still agree with `src/config/config.py`, whether
+`README.md` and `.env.example` still agree with `src/unifi_mcp_server/config/config.py`, whether
 `CHANGELOG.md` has the entry, whether the version and tool counts across
 `README.md`, `CLAUDE.md`, `docs/SKILLS.md` and `index.mdx` still agree, and
 whether the navigation still resolves.
@@ -648,8 +648,8 @@ Inspected 2026-10-24.
   `docs.json`, `.mintignore`, `.mintlify/`, `index.mdx`, `docs/SKILLS.md`,
   `commands.md`, `Makefile`, `package.json`, `pyproject.toml`, `pytest.ini`,
   `.pre-commit-config.yaml`, `.github/workflows/`, `tests/unit/test_agent_docs.py`,
-  `src/main.py`, `src/tool_registry.py`, `src/access.py`, `src/utils/tool_kind.py`,
-  `src/config/config.py`, `src/fleet/fleet_tools.py`, `src/fleet/tools.py`,
+  `src/unifi_mcp_server/main.py`, `src/unifi_mcp_server/tool_registry.py`, `src/unifi_mcp_server/access.py`, `src/unifi_mcp_server/utils/tool_kind.py`,
+  `src/unifi_mcp_server/config/config.py`, `src/unifi_mcp_server/fleet/fleet_tools.py`, `src/unifi_mcp_server/fleet/tools.py`,
   and the `skills/`, `.claude/skills/` and `.agents/skills/` trees.
 - **The deployed site**, read-only: `https://docs.hashgrid.net`,
   `https://docs.hashgrid.net/skill.md`, `https://docs.hashgrid.net/llms.txt`,

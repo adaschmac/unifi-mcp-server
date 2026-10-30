@@ -11,8 +11,8 @@ from typing import Any
 
 import pytest
 
-from src.utils import audit_verify
-from src.utils.audit_verify import GENESIS, file_sha256, read_manifest, verify_records
+from unifi_mcp_server.utils import audit_verify
+from unifi_mcp_server.utils.audit_verify import GENESIS, file_sha256, read_manifest, verify_records
 
 verify_cli = audit_verify.main
 
@@ -20,9 +20,9 @@ sqlalchemy = pytest.importorskip("sqlalchemy")
 
 from sqlalchemy import text  # noqa: E402
 
-from src.fleet.db import audit_store, retention  # noqa: E402
-from src.fleet.db.audit_store import PostgresAuditSink  # noqa: E402
-from src.fleet.db.retention import RetentionRefusedError, purge_expired  # noqa: E402
+from unifi_mcp_server.fleet.db import audit_store, retention  # noqa: E402
+from unifi_mcp_server.fleet.db.audit_store import PostgresAuditSink  # noqa: E402
+from unifi_mcp_server.fleet.db.retention import RetentionRefusedError, purge_expired  # noqa: E402
 
 CHAIN_KEY = b"retention-chain-key"  # pragma: allowlist secret
 A, B = "a" * 32, "b" * 32
@@ -80,7 +80,7 @@ async def _purge(engine: Any, tmp_path: Path, **kwargs: Any) -> retention.Retent
 
 class TestVerifyWithStarts:
     def _records(self, seqs: range) -> list[tuple[str, str]]:
-        from src.utils.audit import seal_record
+        from unifi_mcp_server.utils.audit import seal_record
 
         out, prev = [], GENESIS[1]
         for seq in range(seqs.stop):
@@ -246,7 +246,7 @@ class TestReviewFixes:
     async def test_the_admin_event_is_written_with_the_delete(
         self, migrated_engine: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from src.utils.audit import AuditLogger
+        from unifi_mcp_server.utils.audit import AuditLogger
 
         await _fill(migrated_engine, A, [40, 1])
         audit = AuditLogger(tmp_path / "audit.log")
@@ -264,7 +264,7 @@ class TestReviewFixes:
     async def test_a_failed_admin_event_deletes_nothing(
         self, migrated_engine: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from src.utils.audit import AuditLogger, AuditUnavailableError
+        from unifi_mcp_server.utils.audit import AuditLogger, AuditUnavailableError
 
         await _fill(migrated_engine, A, [40, 1])
 
@@ -295,7 +295,7 @@ class TestReviewFixes:
         assert len(list((tmp_path / "archive").iterdir())) == 2
 
     async def test_archive_check_keeps_files_when_the_database_cannot_answer(self) -> None:
-        from src.fleet.db.schema import make_engine
+        from unifi_mcp_server.fleet.db.schema import make_engine
 
         engine = make_engine("postgresql://nobody@127.0.0.1:1/none")
         try:
@@ -306,7 +306,7 @@ class TestReviewFixes:
     async def test_downgrade_is_refused_after_retention(
         self, migrated_engine: Any, tmp_path: Path
     ) -> None:
-        from src.fleet.db.schema import downgrade
+        from unifi_mcp_server.fleet.db.schema import downgrade
 
         await _fill(migrated_engine, A, [40, 1])
         await _purge(migrated_engine, tmp_path)
@@ -450,7 +450,7 @@ class TestCli:
         database_url: str,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
-        from src.fleet.cli import main
+        from unifi_mcp_server.fleet.cli import main
 
         self._env(monkeypatch, tmp_path, database_url)
         monkeypatch.delenv("UNIFI_AUDIT_RETENTION_DAYS", raising=False)
@@ -464,7 +464,7 @@ class TestCli:
         database_url: str,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
-        from src.fleet.cli import main
+        from unifi_mcp_server.fleet.cli import main
 
         self._env(monkeypatch, tmp_path, database_url)
         monkeypatch.setenv("UNIFI_READ_ONLY", "true")
@@ -481,7 +481,7 @@ class TestCli:
     ) -> None:
         import asyncio
 
-        from src.fleet.cli import main
+        from unifi_mcp_server.fleet.cli import main
 
         self._env(monkeypatch, tmp_path, database_url)
         monkeypatch.setenv("UNIFI_AUDIT_RETENTION_DAYS", "30")
@@ -519,7 +519,7 @@ class TestCli:
     ) -> None:
         import asyncio
 
-        from src.fleet.cli import main
+        from unifi_mcp_server.fleet.cli import main
 
         self._env(monkeypatch, tmp_path, database_url)
         monkeypatch.delenv("UNIFI_AUDIT_CHAIN_KEY")
@@ -538,7 +538,7 @@ class TestCli:
     ) -> None:
         import asyncio
 
-        from src.fleet.cli import main
+        from unifi_mcp_server.fleet.cli import main
 
         self._env(monkeypatch, tmp_path, database_url)
         await _fill(migrated_engine, A, [400, 300])

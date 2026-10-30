@@ -1,5 +1,5 @@
 """Match-target helpers, zone resolution, update target overrides and delete
-paths in src/tools/firewall_policies.py.
+paths in src/unifi_mcp_server/tools/firewall_policies.py.
 
 The client mock sets ``_site_uuid_to_name`` to a real dict: on a bare
 ``AsyncMock`` its ``.get`` returns an un-awaited coroutine, which then ends up
@@ -13,9 +13,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.config.config import Settings
-from src.tools import firewall_policies as fp
-from src.utils.exceptions import ResourceNotFoundError
+from unifi_mcp_server.config.config import Settings
+from unifi_mcp_server.tools import firewall_policies as fp
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError
 
 POLICY_ID = "682a0e42220317278bb0b2cb"
 ZONE_INTERNAL = "682a0e42220317278bb0b2c5"  # pragma: allowlist secret
@@ -78,7 +78,7 @@ def _client(get: Any = None) -> AsyncMock:
 
 
 def _patch(client: AsyncMock):
-    patcher = patch("src.tools.firewall_policies.UniFiClient")
+    patcher = patch("unifi_mcp_server.tools.firewall_policies.UniFiClient")
     mock_cls = patcher.start()
     mock_cls.return_value.__aenter__.return_value = client
     return patcher
@@ -405,7 +405,7 @@ class TestDeleteFirewallPolicy:
         client = _client(_policy())
         patcher = _patch(client)
         try:
-            with patch("src.tools.firewall_policies.log_audit") as audit:
+            with patch("unifi_mcp_server.tools.firewall_policies.log_audit") as audit:
                 result = await fp.delete_firewall_policy(
                     POLICY_ID, "default", local_settings, confirm=True
                 )

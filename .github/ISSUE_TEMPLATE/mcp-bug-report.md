@@ -41,11 +41,11 @@ The MCP tool `[tool_name]` failed when tested against the **[environment]** envi
 2. Start MCP server:
 
    ```bash
-   uv run src/main.py
+   uv run src/unifi_mcp_server/main.py
    ```
 
 3. Test the tool:
-   - Via MCP Inspector: `npx @modelcontextprotocol/inspector uv run src/main.py`
+   - Via MCP Inspector: `npx @modelcontextprotocol/inspector uv run src/unifi_mcp_server/main.py`
    - Via command: `/unifi-mcp-live-test`
    - Other method: [describe]
 
@@ -95,8 +95,8 @@ The tool failed with the error message shown above.
 
 <!-- List any files that may be related to this bug -->
 
-- `src/tools/[tool_name].py`
-- `src/models/[model_name].py`
+- `src/unifi_mcp_server/tools/[tool_name].py`
+- `src/unifi_mcp_server/models/[model_name].py`
 - `tests/unit/test_[tool_name].py`
 - Configuration file: `.env`
 

@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.backups as backups_module
-from src.tools.backups import (
+import unifi_mcp_server.tools.backups as backups_module
+from unifi_mcp_server.tools.backups import (
     delete_backup,
     download_backup,
     get_backup_details,
@@ -18,7 +18,7 @@ from src.tools.backups import (
     trigger_backup,
     validate_backup,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture

@@ -1,16 +1,16 @@
-"""Unit tests for src/tools/networks.py."""
+"""Unit tests for src/unifi_mcp_server/tools/networks.py."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools.networks import (
+from unifi_mcp_server.tools.networks import (
     get_network_details,
     get_network_statistics,
     get_subnet_info,
     list_vlans,
 )
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ class TestGetNetworkDetails:
         network_id = "net-123"
         response = {"data": [make_network(network_id=network_id, name="Main Network")]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_network_details("site-1", network_id, mock_settings)
@@ -91,7 +91,7 @@ class TestGetNetworkDetails:
         network_id = "net-456"
         response = [make_network(network_id=network_id)]
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_network_details("site-1", network_id, mock_settings)
@@ -102,7 +102,7 @@ class TestGetNetworkDetails:
     async def test_get_network_details_not_found(self, mock_settings):
         response = {"data": [make_network(network_id="other-net")]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             with pytest.raises(ResourceNotFoundError):
@@ -125,7 +125,7 @@ class TestListVlans:
             ]
         }
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_vlans("site-1", mock_settings)
@@ -136,7 +136,7 @@ class TestListVlans:
     async def test_list_vlans_list_response(self, mock_settings):
         response = [make_network(network_id="net-1")]
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_vlans("site-1", mock_settings)
@@ -147,7 +147,7 @@ class TestListVlans:
     async def test_list_vlans_with_limit(self, mock_settings):
         response = {"data": [make_network(network_id=f"net-{i}", vlan_id=i) for i in range(10)]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_vlans("site-1", mock_settings, limit=5)
@@ -158,7 +158,7 @@ class TestListVlans:
     async def test_list_vlans_with_offset(self, mock_settings):
         response = {"data": [make_network(network_id=f"net-{i}", vlan_id=i) for i in range(10)]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_vlans("site-1", mock_settings, offset=3, limit=2)
@@ -170,7 +170,7 @@ class TestListVlans:
     async def test_list_vlans_empty(self, mock_settings):
         response = {"data": []}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await list_vlans("site-1", mock_settings)
@@ -189,7 +189,7 @@ class TestGetSubnetInfo:
         network_id = "net-123"
         response = {"data": [make_network(network_id=network_id)]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_subnet_info("site-1", network_id, mock_settings)
@@ -206,7 +206,7 @@ class TestGetSubnetInfo:
         network_id = "net-456"
         response = [make_network(network_id=network_id)]
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_subnet_info("site-1", network_id, mock_settings)
@@ -217,7 +217,7 @@ class TestGetSubnetInfo:
     async def test_get_subnet_info_not_found(self, mock_settings):
         response = {"data": [make_network(network_id="other-net")]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             with pytest.raises(ResourceNotFoundError):
@@ -231,7 +231,7 @@ class TestGetSubnetInfo:
         del network["dhcpd_stop"]
         response = {"data": [network]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client([response])
 
             result = await get_subnet_info("site-1", network_id, mock_settings)
@@ -263,7 +263,7 @@ class TestGetNetworkStatistics:
             ]
         }
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(
                 [networks_response, clients_response]
             )
@@ -288,7 +288,7 @@ class TestGetNetworkStatistics:
         networks_response = [make_network(network_id="net-1", vlan_id=1)]
         clients_response = [make_client_on_network("net-1")]
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(
                 [networks_response, clients_response]
             )
@@ -316,7 +316,7 @@ class TestGetNetworkStatistics:
         }
         clients_response = {"data": [make_client_on_network("net-1")]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(
                 [networks_response, clients_response]
             )
@@ -337,7 +337,7 @@ class TestGetNetworkStatistics:
             "data": [make_client_on_network("net-1", tx_bytes=700, rx_bytes=300, wired=True)]
         }
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(
                 [networks_response, clients_response]
             )
@@ -352,7 +352,7 @@ class TestGetNetworkStatistics:
         networks_response = {"data": [make_network(network_id="net-1", vlan_id=1)]}
         clients_response = {"data": []}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(
                 [networks_response, clients_response]
             )
@@ -367,7 +367,7 @@ class TestGetNetworkStatistics:
         networks_response = {"data": []}
         clients_response = {"data": []}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(
                 [networks_response, clients_response]
             )
@@ -386,7 +386,7 @@ class TestGetNetworkStatistics:
         networks_response = {"data": [make_network(network_id="net-1", vlan_id=1)]}
         clients_response = {"data": [{"mac": "00:11:22:33:44:55", "vlan": 1}]}
 
-        with patch("src.tools.networks.UniFiClient") as mock_client_class:
+        with patch("unifi_mcp_server.tools.networks.UniFiClient") as mock_client_class:
             mock_client_class.return_value = create_mock_client(
                 [networks_response, clients_response]
             )

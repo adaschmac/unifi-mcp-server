@@ -16,10 +16,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.tools import acls, radius, traffic_flows, vouchers, wifi
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.tools import acls, radius, traffic_flows, vouchers, wifi
+from unifi_mcp_server.utils.exceptions import ValidationError
 
-TOOLS_DIR = pathlib.Path(__file__).resolve().parents[3] / "src" / "tools"
+TOOLS_DIR = pathlib.Path(__file__).resolve().parents[3] / "src" / "unifi_mcp_server" / "tools"
 
 # Modules deliberately exempt:
 #   site_manager - four tools take ``site_id: str | None``; the validator
@@ -127,7 +127,7 @@ async def test_hostile_site_id_is_rejected(tool, hostile: str) -> None:
     settings = MagicMock()
     settings.log_level = "INFO"
 
-    with patch("src.api.client.UniFiClient") as client_cls:
+    with patch("unifi_mcp_server.api.client.UniFiClient") as client_cls:
         client_cls.return_value.__aenter__ = AsyncMock()
         with pytest.raises(ValidationError):
             await tool(site_id=hostile, settings=settings)
@@ -137,7 +137,7 @@ async def test_hostile_site_id_is_rejected(tool, hostile: str) -> None:
 @pytest.mark.asyncio
 async def test_legitimate_site_ids_are_accepted() -> None:
     """The real site ID forms must keep working."""
-    from src.utils.validators import validate_site_id
+    from unifi_mcp_server.utils.validators import validate_site_id
 
     # The 24-hex form is the legacy ObjectId; 507f191e... is the synthetic value
     # already used elsewhere in this suite.

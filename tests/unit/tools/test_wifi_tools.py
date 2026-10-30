@@ -4,9 +4,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-import src.tools.wifi as wifi_module
-from src.tools.wifi import create_wlan, delete_wlan, get_wlan_statistics, list_wlans, update_wlan
-from src.utils.exceptions import ResourceNotFoundError, ValidationError
+import unifi_mcp_server.tools.wifi as wifi_module
+from unifi_mcp_server.tools.wifi import (
+    create_wlan,
+    delete_wlan,
+    get_wlan_statistics,
+    list_wlans,
+    update_wlan,
+)
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture
@@ -1118,7 +1124,7 @@ async def test_update_wlan_roaming_assistant(mock_settings):
 @pytest.mark.asyncio
 async def test_update_wlan_roaming_rssi_bounds(mock_settings):
     """An out-of-range roaming threshold fails before any network call."""
-    from src.utils.exceptions import ValidationError
+    from unifi_mcp_server.utils.exceptions import ValidationError
 
     with patch.object(wifi_module, "UniFiClient") as client_cls:
         for bad in (-95, -50, 0):

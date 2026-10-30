@@ -151,7 +151,7 @@ are refused; `MCP_AUTH_TOKEN` keeps working.
 
 ## Fleet workers
 
-`python -m src.worker` (same image, different command) keeps a snapshot of
+`python -m unifi_mcp_server.worker` (same image, different command) keeps a snapshot of
 the fleet in Postgres, so the snapshot tools below answer without the API
 replicas polling every controller (other tools, and `fleet_fanout`, still
 call controllers live):

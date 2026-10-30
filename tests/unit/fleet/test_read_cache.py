@@ -11,14 +11,14 @@ fakeredis = pytest.importorskip("fakeredis")
 
 from fastmcp.server.auth import AccessToken  # noqa: E402
 
-from src.access import PermissionDeniedError  # noqa: E402
-from src.cache import CacheConfig, ReadCache  # noqa: E402
-from src.config.config import APIType, Settings  # noqa: E402
-from src.fleet import ControllerProfile  # noqa: E402
-from src.fleet.router import FleetRouter  # noqa: E402
-from src.tool_registry import _make_tool_wrapper  # noqa: E402
-from src.utils import tool_kind  # noqa: E402
-from src.utils.metrics import MetricsRegistry  # noqa: E402
+from unifi_mcp_server.access import PermissionDeniedError  # noqa: E402
+from unifi_mcp_server.cache import CacheConfig, ReadCache  # noqa: E402
+from unifi_mcp_server.config.config import APIType, Settings  # noqa: E402
+from unifi_mcp_server.fleet import ControllerProfile  # noqa: E402
+from unifi_mcp_server.fleet.router import FleetRouter  # noqa: E402
+from unifi_mcp_server.tool_registry import _make_tool_wrapper  # noqa: E402
+from unifi_mcp_server.utils import tool_kind  # noqa: E402
+from unifi_mcp_server.utils.metrics import MetricsRegistry  # noqa: E402
 
 from .test_router import StaticRegistry  # noqa: E402
 
@@ -41,7 +41,7 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Any, redis_port: int) ->
     monkeypatch.setenv("UNIFI_LOCAL_HOST", "192.168.2.1")
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(tmp_path / "audit.log"))
     monkeypatch.setenv("REDIS_URL", f"redis://127.0.0.1:{redis_port}/0")
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 
@@ -56,7 +56,7 @@ async def cache(settings: Settings) -> ReadCache:
 @pytest.fixture
 def metrics(monkeypatch: pytest.MonkeyPatch) -> MetricsRegistry:
     registry = MetricsRegistry()
-    monkeypatch.setattr("src.cache.METRICS", registry)
+    monkeypatch.setattr("unifi_mcp_server.cache.METRICS", registry)
     return registry
 
 
@@ -273,7 +273,7 @@ class TestOnlyAfterAuthorization:
                 "controller_labels": {"group": "retail"},
             },
         )
-        monkeypatch.setattr("src.access.get_access_token", lambda: token)
+        monkeypatch.setattr("unifi_mcp_server.access.get_access_token", lambda: token)
         with pytest.raises(PermissionDeniedError):
             await read("default", controller="branch")
 
@@ -282,7 +282,7 @@ class TestSchema:
     def test_only_cached_reads_gain_fresh(self, settings, router, cache):
         import inspect
 
-        from src.tools import devices
+        from unifi_mcp_server.tools import devices
 
         cached = _make_tool_wrapper(devices.search_devices, settings, router, read_cache=cache)
         statistics = _make_tool_wrapper(

@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.config import Settings, TransportMode
+from unifi_mcp_server.config import Settings, TransportMode
 
 _BASE_ENV = {
     "UNIFI_API_KEY": "test-key",
@@ -25,12 +25,12 @@ _BASE_ENV = {
 
 
 def _reload_main(**extra_env):
-    """Re-import src.main with a clean module cache under a known env."""
+    """Re-import unifi_mcp_server.main with a clean module cache under a known env."""
     for mod_name in list(sys.modules):
-        if mod_name == "src.main" or mod_name.startswith("src.main."):
+        if mod_name == "unifi_mcp_server.main" or mod_name.startswith("unifi_mcp_server.main."):
             del sys.modules[mod_name]
     with patch.dict("os.environ", {**_BASE_ENV, **extra_env}, clear=False):
-        return importlib.import_module("src.main")
+        return importlib.import_module("unifi_mcp_server.main")
 
 
 def _settings(**extra_env) -> Settings:
@@ -115,7 +115,7 @@ def test_build_auth_provider_refuses_misspelled_role_prefix(prefix) -> None:
 
 
 def test_unknown_word_prefix_warns_but_stays_one_token(caplog) -> None:
-    with caplog.at_level("WARNING", logger="src.config.config"):
+    with caplog.at_level("WARNING", logger="unifi_mcp_server.config.config"):
         settings = _settings(MCP_AUTH_TOKEN="readonly:s3cr3t")
         assert settings.mcp_auth_token_roles == {"readonly:s3cr3t": "fleet-admin"}
     assert "not a role" in caplog.text
@@ -123,15 +123,15 @@ def test_unknown_word_prefix_warns_but_stays_one_token(caplog) -> None:
 
 
 def test_token_without_word_prefix_does_not_warn(caplog) -> None:
-    with caplog.at_level("WARNING", logger="src.config.config"):
+    with caplog.at_level("WARNING", logger="unifi_mcp_server.config.config"):
         settings = _settings(MCP_AUTH_TOKEN="0f3a:9b2c,plain")
         assert settings.mcp_auth_token_roles == {"0f3a:9b2c": "fleet-admin", "plain": "fleet-admin"}
     assert "not a role" not in caplog.text
 
 
 def test_auth_token_roles_match_access_roles() -> None:
-    from src.access import ROLES
-    from src.config.config import AUTH_TOKEN_ROLES
+    from unifi_mcp_server.access import ROLES
+    from unifi_mcp_server.config.config import AUTH_TOKEN_ROLES
 
     assert tuple(AUTH_TOKEN_ROLES) == tuple(ROLES)
 
@@ -340,7 +340,7 @@ def test_a2a_routes_not_registered_for_stdio() -> None:
     assert not any(p.startswith("/a2a/") for p in paths)
 
 
-# Restore a pristine src.main for any later tests in the session.
+# Restore a pristine unifi_mcp_server.main for any later tests in the session.
 def teardown_module(module) -> None:  # noqa: D401
     _reload_main()
 

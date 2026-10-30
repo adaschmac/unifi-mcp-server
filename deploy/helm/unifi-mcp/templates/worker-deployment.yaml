@@ -1,5 +1,5 @@
 {{- if .Values.fleet.enabled }}
-# Health checks and site/inventory snapshots (python -m src.worker). With
+# Health checks and site/inventory snapshots (python -m unifi_mcp_server.worker). With
 # REDIS_URL in the Secret several workers split the controllers; without
 # it run exactly one.
 apiVersion: apps/v1
@@ -35,7 +35,7 @@ spec:
         - name: worker
           image: {{ include "unifi-mcp.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: [python, -m, src.worker]
+          command: [python, -m, unifi_mcp_server.worker]
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           env:

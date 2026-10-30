@@ -14,9 +14,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import APIType, Settings
-from src.tools import mac_tags as mt
-from src.utils.exceptions import DuplicateResourceError, ResourceNotFoundError, ValidationError
+from unifi_mcp_server.config import APIType, Settings
+from unifi_mcp_server.tools import mac_tags as mt
+from unifi_mcp_server.utils.exceptions import (
+    DuplicateResourceError,
+    ResourceNotFoundError,
+    ValidationError,
+)
 
 TAG_ID = "5f1e2d3c4b5a697886950413"
 OTHER_TAG_ID = "5f1e2d3c4b5a697886950414"
@@ -67,7 +71,7 @@ def _mock_client(get_response: Any = None) -> AsyncMock:
 
 
 def _patch_client(client: AsyncMock):
-    return patch("src.tools.mac_tags.UniFiClient", return_value=client)
+    return patch("unifi_mcp_server.tools.mac_tags.UniFiClient", return_value=client)
 
 
 # --------------------------------------------------------------------------- #
@@ -222,7 +226,7 @@ class TestCreateMacTag:
     async def test_creates_tag(self, local_settings: MagicMock) -> None:
         client = _mock_client(get_response={"data": []})
         client.post.return_value = {"data": [_tag()]}
-        with _patch_client(client), patch("src.tools.mac_tags.log_audit") as audit:
+        with _patch_client(client), patch("unifi_mcp_server.tools.mac_tags.log_audit") as audit:
             result = await mt.create_mac_tag(
                 "Lobby APs", [MAC_A, MAC_B], "default", local_settings, confirm="true"
             )
@@ -343,7 +347,7 @@ class TestUpdateMacTag:
     async def test_add_and_remove_members(self, local_settings: MagicMock) -> None:
         client = _mock_client(get_response={"data": [_tag()]})
         client.put.return_value = {"data": [_tag(members=[MAC_B, MAC_C])]}
-        with _patch_client(client), patch("src.tools.mac_tags.log_audit") as audit:
+        with _patch_client(client), patch("unifi_mcp_server.tools.mac_tags.log_audit") as audit:
             result = await mt.update_mac_tag(
                 TAG_ID,
                 "default",
@@ -480,7 +484,7 @@ class TestDeleteMacTag:
     @pytest.mark.asyncio
     async def test_deletes(self, local_settings: MagicMock) -> None:
         client = _mock_client()
-        with _patch_client(client), patch("src.tools.mac_tags.log_audit") as audit:
+        with _patch_client(client), patch("unifi_mcp_server.tools.mac_tags.log_audit") as audit:
             result = await mt.delete_mac_tag(TAG_ID, "default", local_settings, confirm=True)
         assert result == {"status": "success", "tag_id": TAG_ID, "action": "deleted"}
         assert client.delete.call_args.args[0] == f"/ea/sites/default/rest/tag/{TAG_ID}"
@@ -496,7 +500,7 @@ class TestDeleteMacTag:
 
 class TestRegistration:
     def test_write_tools_are_classified_mutating(self) -> None:
-        from src.tool_registry import is_mutating_tool
+        from unifi_mcp_server.tool_registry import is_mutating_tool
 
         assert not is_mutating_tool(mt.list_mac_tags)
         assert not is_mutating_tool(mt.get_mac_tag)

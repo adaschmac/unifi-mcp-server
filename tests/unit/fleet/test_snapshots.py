@@ -8,11 +8,15 @@ pytest.importorskip("sqlalchemy")
 
 from sqlalchemy import text  # noqa: E402
 
-from src.config.config import APIType  # noqa: E402
-from src.fleet.credentials import CredentialCipher  # noqa: E402
-from src.fleet.db.snapshots import DeviceRecord, SiteRecord, SnapshotStore  # noqa: E402
-from src.fleet.db.store import FleetStore  # noqa: E402
-from src.utils.exceptions import ResourceNotFoundError  # noqa: E402
+from unifi_mcp_server.config.config import APIType  # noqa: E402
+from unifi_mcp_server.fleet.credentials import CredentialCipher  # noqa: E402
+from unifi_mcp_server.fleet.db.snapshots import (  # noqa: E402
+    DeviceRecord,
+    SiteRecord,
+    SnapshotStore,
+)
+from unifi_mcp_server.fleet.db.store import FleetStore  # noqa: E402
+from unifi_mcp_server.utils.exceptions import ResourceNotFoundError  # noqa: E402
 
 KEY = "hq-api-key-0123456789"  # pragma: allowlist secret
 

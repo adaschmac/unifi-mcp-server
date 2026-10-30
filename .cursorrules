@@ -263,7 +263,7 @@ WEBHOOK_SECRET=your-secret  # Enable webhook HMAC verification
 
 ```bash
 # Development
-uv run mcp dev src/main.py      # Run with MCP Inspector
+uv run mcp dev src/unifi_mcp_server/main.py      # Run with MCP Inspector
 
 # Testing
 pytest                          # Run all tests

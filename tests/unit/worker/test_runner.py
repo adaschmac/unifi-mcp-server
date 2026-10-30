@@ -10,10 +10,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from src.config.config import APIType, Settings
-from src.fleet.registry import ControllerProfile
-from src.worker import runner
-from src.worker.runner import Worker, first_offset
+from unifi_mcp_server.config.config import APIType, Settings
+from unifi_mcp_server.fleet.registry import ControllerProfile
+from unifi_mcp_server.worker import runner
+from unifi_mcp_server.worker.runner import Worker, first_offset
 
 KEY = "k"  # pragma: allowlist secret
 
@@ -283,7 +283,7 @@ class TestRun:
 
 class TestPool:
     def test_an_empty_pool_passed_in_is_kept(self, settings: Settings) -> None:
-        from src.api.pool import ClientPool
+        from unifi_mcp_server.api.pool import ClientPool
 
         pool = ClientPool()
         assert len(pool) == 0  # falsy, which once made the worker replace it

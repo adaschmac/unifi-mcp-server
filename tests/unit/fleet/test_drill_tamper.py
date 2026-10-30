@@ -23,9 +23,9 @@ from typing import Any
 
 import pytest
 
-from src.utils.audit import AuditLogger
-from src.utils.audit_verify import main as verify_cli
-from src.utils.audit_verify import parse_head, verify_file
+from unifi_mcp_server.utils.audit import AuditLogger
+from unifi_mcp_server.utils.audit_verify import main as verify_cli
+from unifi_mcp_server.utils.audit_verify import parse_head, verify_file
 
 CHAIN_KEY = b"drill-chain-key"  # pragma: allowlist secret
 RECORDS = 6
@@ -39,8 +39,8 @@ sqlalchemy = pytest.importorskip("sqlalchemy")
 
 from sqlalchemy import text  # noqa: E402
 
-from src.fleet.db import audit_store  # noqa: E402
-from src.fleet.db.audit_store import PostgresAuditSink  # noqa: E402
+from unifi_mcp_server.fleet.db import audit_store  # noqa: E402
+from unifi_mcp_server.fleet.db.audit_store import PostgresAuditSink  # noqa: E402
 
 
 async def _fill(engine: Any, chain_id: str = "a" * 32, count: int = RECORDS) -> None:
@@ -304,7 +304,7 @@ class TestColumnCheck:
     }
 
     def _problems(self, entry: Any) -> list[str]:
-        from src.fleet.db.audit_store import _column_problems
+        from unifi_mcp_server.fleet.db.audit_store import _column_problems
 
         return _column_problems(entry)
 
@@ -342,7 +342,7 @@ async def test_siem_anchors_catch_records_and_heads_rewritten_together(
     migrated_engine: Any, tmp_path: Path
 ) -> None:
     """The 5a limit closed: anchors exported to a SIEM are outside the database."""
-    from src.utils.siem import SiemForwarder, load_anchors
+    from unifi_mcp_server.utils.siem import SiemForwarder, load_anchors
 
     class Collector:
         name = "collector"

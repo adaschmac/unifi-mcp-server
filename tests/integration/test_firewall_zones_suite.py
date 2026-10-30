@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 
-from src.tools import firewall_zones
-from src.utils import ValidationError
 from tests.integration.test_harness import TestEnvironment, TestSuite
+from unifi_mcp_server.tools import firewall_zones
+from unifi_mcp_server.utils import ValidationError
 
 # Test resource prefix
 TEST_PREFIX = "TEST_INTEGRATION_"

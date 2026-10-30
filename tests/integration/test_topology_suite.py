@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from src.tools import topology
 from tests.integration.test_harness import TestEnvironment, TestHarness, TestSuite
+from unifi_mcp_server.tools import topology
 
 
 @pytest.mark.integration

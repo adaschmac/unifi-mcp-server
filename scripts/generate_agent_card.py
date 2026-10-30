@@ -40,10 +40,11 @@ def main() -> int:
     """
     os.environ.update(ENVIRONMENT)
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-    import src.main as main
-    from src.a2a.agent_card import build_agent_card
-    from src.config import Settings
+    import unifi_mcp_server.main as main
+    from unifi_mcp_server.a2a.agent_card import build_agent_card
+    from unifi_mcp_server.config import Settings
 
     card = build_agent_card(main.mcp, Settings())
     # The skills are sorted by name so the artifact does not depend on the

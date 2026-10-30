@@ -12,11 +12,19 @@ pytest.importorskip("sqlalchemy")
 from fastmcp.server.auth import AccessToken  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
-from src.config.config import APIType, Settings  # noqa: E402
-from src.fleet.db.snapshots import DeviceRecord, SiteRecord, SnapshotStore  # noqa: E402
-from src.fleet.fleet_tools import USG_GATED_REASON, build_snapshot_tools, version_key  # noqa: E402
-from src.fleet.postgres_registry import PostgresRegistry  # noqa: E402
-from src.utils.exceptions import ValidationError  # noqa: E402
+from unifi_mcp_server.config.config import APIType, Settings  # noqa: E402
+from unifi_mcp_server.fleet.db.snapshots import (  # noqa: E402
+    DeviceRecord,
+    SiteRecord,
+    SnapshotStore,
+)
+from unifi_mcp_server.fleet.fleet_tools import (  # noqa: E402
+    USG_GATED_REASON,
+    build_snapshot_tools,
+    version_key,
+)
+from unifi_mcp_server.fleet.postgres_registry import PostgresRegistry  # noqa: E402
+from unifi_mcp_server.utils.exceptions import ValidationError  # noqa: E402
 
 KEY = "fleet-key-0123456789"  # pragma: allowlist secret
 
@@ -31,7 +39,7 @@ def settings(
     monkeypatch.setenv("UNIFI_AUDIT_LOG_PATH", str(tmp_path / "audit.log"))
     monkeypatch.setenv("UNIFI_FLEET_WORKER_HEALTH_SECONDS", "60")
     monkeypatch.setenv("DATABASE_URL", database_url)
-    monkeypatch.setattr("src.utils.audit._audit_logger", None)
+    monkeypatch.setattr("unifi_mcp_server.utils.audit._audit_logger", None)
     return Settings()
 
 
@@ -104,7 +112,7 @@ def _as(monkeypatch: pytest.MonkeyPatch, role: str, **claims: Any) -> None:
         scopes=[],
         claims={"token_id": "tok-1", "name": "t", "role": role, **claims},
     )
-    monkeypatch.setattr("src.access.get_access_token", lambda: token)
+    monkeypatch.setattr("unifi_mcp_server.access.get_access_token", lambda: token)
 
 
 def test_version_key_orders_numerically() -> None:

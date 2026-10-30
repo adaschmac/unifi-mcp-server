@@ -30,7 +30,7 @@ You maintain documentation for the UniFi MCP Server: API reference, README, CONT
 ## Workflow
 
 1. Audit existing docs against current code; list outdated or missing sections
-2. Scan `src/tools/` for undocumented or under-documented functions
+2. Scan `src/unifi_mcp_server/tools/` for undocumented or under-documented functions
 3. Generate/update tool docs with real parameters, returns, and a working example
 4. Write or refresh manual sections (overviews, guides, troubleshooting)
 5. Verify links work and code examples actually run

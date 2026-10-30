@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The package now installs as `unifi_mcp_server` instead of a top-level `src`.** The wheel put a package literally named `src` into `site-packages`, where any other distribution doing the same (a common mistake) would overwrite it or be overwritten. The code moved to `src/unifi_mcp_server/` (standard src layout) and every import, `python -m` command, Docker `CMD`/healthcheck, Compose, Helm and Ansible command, and doc path follows. The runtime image now runs the installed package and no longer copies the source tree to `/app/src`. **Migration:** replace `python -m src.<module>` with `python -m unifi_mcp_server.<module>` (for example `python -m unifi_mcp_server.fleet.cli migrate`) and `from src.… import` with `from unifi_mcp_server.… import`. The `unifi-mcp-server` console script and the distribution name are unchanged.
+
 ### Security
 
 - **`download_backup` no longer writes into the working directory, and never replaces a file.** The tool is a read tool, so it stays available under `UNIFI_READ_ONLY`, and `UNIFI_BACKUP_DOWNLOAD_DIR` defaulted to `.`: an MCP client that started the server inside a project checkout got a full controller backup (every Wi-Fi key, VPN key and admin hash) written there, and an `output_path` such as `pyproject.toml` truncated that file. Downloads are now off until `UNIFI_BACKUP_DOWNLOAD_DIR` is set to an absolute directory, and the file is created with `O_EXCL`, so an existing file is refused. **Migration:** set `UNIFI_BACKUP_DOWNLOAD_DIR` to an absolute path to keep using `download_backup`.

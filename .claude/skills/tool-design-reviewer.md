@@ -54,7 +54,7 @@ Review relevant documentation for context:
 - `README.md` - Tool categorization and organization
 - `mcp-builder` skill - MCP best practices
 - `AGENTS.md` - Safety and security requirements
-- Existing tools in `src/tools/` - Similar tool patterns
+- Existing tools in `src/unifi_mcp_server/tools/` - Similar tool patterns
 
 ## Phase 2: Tool Design Review
 
@@ -327,8 +327,8 @@ async def create_firewall_zone(
 
 **Find Similar Tools:**
 
-1. Check `src/tools/firewall.py` for firewall-related tools
-2. Check `src/tools/zbf_matrix.py` for ZBF tools
+1. Check `src/unifi_mcp_server/tools/firewall.py` for firewall-related tools
+2. Check `src/unifi_mcp_server/tools/zbf_matrix.py` for ZBF tools
 3. Check tools with similar operations (create, delete, list)
 
 **Consistency Checklist:**
@@ -482,9 +482,9 @@ After reviewing the design, provide recommendations:
 
 **Recommendations:**
 
-1. **Implement the tool** in `src/tools/[module].py`
+1. **Implement the tool** in `src/unifi_mcp_server/tools/[module].py`
 2. **Write tests first** (TDD) using `test-strategy` skill
-3. **Add to MCP server** in `src/main.py`
+3. **Add to MCP server** in `src/unifi_mcp_server/main.py`
 4. **Update documentation** using `api-doc-generator` skill
 5. **Run quality checks** with `/lint`, `/format`, `/test`
 
@@ -493,7 +493,7 @@ After reviewing the design, provide recommendations:
 Provide this template to the user:
 
 ```python
-# src/tools/firewall_zones.py
+# src/unifi_mcp_server/tools/firewall_zones.py
 
 @mcp.tool()
 async def [tool_name](
@@ -569,7 +569,7 @@ Load these when needed:
 
 - `API.md` - Existing tool documentation patterns
 - `README.md` - Tool organization and categorization
-- `src/tools/*.py` - Existing tool implementations
+- `src/unifi_mcp_server/tools/*.py` - Existing tool implementations
 - `AGENTS.md` - Safety and security requirements
 - `mcp-builder` skill - MCP best practices
 - `DEVELOPMENT_PLAN.md` - Feature requirements and roadmap

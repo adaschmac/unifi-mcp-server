@@ -47,7 +47,7 @@ The project leverages the following key technologies:
 
 The project follows a structure similar to the reference implementation from `sirkirby/unifi-network-mcp` [1]. Key structural conventions are outlined below:
 
-> The server merges settings from **environment variables**, an optional `.env` file, and `src/config/config.yaml` (listed in order of precedence).
+> The server merges settings from **environment variables**, an optional `.env` file, and `src/unifi_mcp_server/config/config.yaml` (listed in order of precedence).
 
 - **Configuration:** Configuration should be managed through a combination of environment variables, a `.env` file for local development, and a default `config.yaml` file. This provides flexibility for different environments.
 - **API Interaction:** All interactions with the UniFi Network API should be encapsulated within a dedicated helper function. This function will handle request signing, error handling, and response parsing, ensuring a single, reliable point of interaction with the API.

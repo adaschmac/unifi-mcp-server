@@ -11,7 +11,7 @@ import pathlib
 
 import pytest
 
-from src.prompts import (
+from unifi_mcp_server.prompts import (
     PROMPT_NAMES,
     WORKFLOWS,
     PromptArgumentError,
@@ -20,9 +20,9 @@ from src.prompts import (
     render_workflow,
     validate_arguments,
 )
-from src.prompts.catalog import _req
-from src.prompts.registry import _registered_prompt_names, _registered_tool_names
-from src.prompts.templates import OPERATING_CONTRACT, REPORT_STRUCTURE
+from unifi_mcp_server.prompts.catalog import _req
+from unifi_mcp_server.prompts.registry import _registered_prompt_names, _registered_tool_names
+from unifi_mcp_server.prompts.templates import OPERATING_CONTRACT, REPORT_STRUCTURE
 
 #: Every tool the catalog names must exist. The registry would otherwise
 #: advertise a workflow whose evidence tools are not registered anywhere.
@@ -60,7 +60,7 @@ def _load_real_tools() -> None:
     os.environ.setdefault("UNIFI_LOCAL_HOST", "192.0.2.1")
     os.environ.setdefault("AGNOST_ENABLED", "false")
     sys.path.insert(0, ".")
-    import src.main as main
+    import unifi_mcp_server.main as main
 
     names = set(_registered_tool_names(main.mcp))
     # The fleet read tools register only with DATABASE_URL set, so collect

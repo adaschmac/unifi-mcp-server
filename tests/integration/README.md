@@ -135,7 +135,7 @@ python tests/integration/run_all_tests.py --dry-run
 ```python
 # tests/integration/test_myfeature_suite.py
 from tests.integration.test_harness import TestSuite
-from src.tools import myfeature
+from unifi_mcp_server.tools import myfeature
 
 async def test_my_feature(settings, env):
     """Test my feature."""

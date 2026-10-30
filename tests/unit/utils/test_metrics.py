@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.utils.metrics import MetricsRegistry, _escape_label
+from unifi_mcp_server.utils.metrics import MetricsRegistry, _escape_label
 
 
 def _record(
@@ -138,7 +138,7 @@ def test_controller_calls_are_counted_per_controller() -> None:
 
 
 def test_controller_label_cardinality_is_capped(monkeypatch) -> None:
-    monkeypatch.setattr("src.utils.metrics.MAX_CONTROLLER_LABELS", 2)
+    monkeypatch.setattr("unifi_mcp_server.utils.metrics.MAX_CONTROLLER_LABELS", 2)
     registry = MetricsRegistry()
     for name in ("a", "b", "c", "d", "a"):
         registry.record_controller_call(name)

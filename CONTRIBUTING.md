@@ -447,7 +447,7 @@ pytest -m integration
 Use the MCP Inspector to manually test tools and resources:
 
 ```bash
-uv run mcp dev src/main.py
+uv run mcp dev src/unifi_mcp_server/main.py
 ```
 
 Then open `http://localhost:5173` in your browser.

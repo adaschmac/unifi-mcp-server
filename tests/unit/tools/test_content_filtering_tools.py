@@ -13,9 +13,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.config import APIType, Settings
-from src.tools import content_filtering as cf
-from src.utils.exceptions import APIError, ResourceNotFoundError
+from unifi_mcp_server.config import APIType, Settings
+from unifi_mcp_server.tools import content_filtering as cf
+from unifi_mcp_server.utils.exceptions import APIError, ResourceNotFoundError
 
 FILTER_ID = "65a1b2c3d4e5f60718293a4b"
 SITE_UUID = "88f7af54-98f8-306a-a1c7-c9349722b1f6"
@@ -56,7 +56,7 @@ def _mock_client(get_response: Any = None, put_response: Any = None) -> AsyncMoc
 
 
 def _patch_client(client: AsyncMock):
-    return patch("src.tools.content_filtering.UniFiClient", return_value=client)
+    return patch("unifi_mcp_server.tools.content_filtering.UniFiClient", return_value=client)
 
 
 def _profile(**overrides: Any) -> dict[str, Any]:
@@ -225,7 +225,10 @@ class TestUpdateContentFilter:
     @pytest.mark.asyncio
     async def test_applies_full_object_and_audits(self, local_settings: MagicMock) -> None:
         client = _mock_client([_profile()], put_response=_profile(enabled=False))
-        with _patch_client(client), patch("src.tools.content_filtering.log_audit") as audit:
+        with (
+            _patch_client(client),
+            patch("unifi_mcp_server.tools.content_filtering.log_audit") as audit,
+        ):
             result = await cf.update_content_filter(
                 FILTER_ID, "default", local_settings, enabled=False, confirm=True
             )
@@ -242,7 +245,7 @@ class TestUpdateContentFilter:
     @pytest.mark.asyncio
     async def test_non_dict_put_response(self, local_settings: MagicMock) -> None:
         client = _mock_client([_profile()], put_response=[])
-        with _patch_client(client), patch("src.tools.content_filtering.log_audit"):
+        with _patch_client(client), patch("unifi_mcp_server.tools.content_filtering.log_audit"):
             result = await cf.update_content_filter(
                 FILTER_ID, "default", local_settings, enabled=True, confirm=True
             )
@@ -255,7 +258,7 @@ class TestUpdateContentFilter:
         client.put.side_effect = ResourceNotFoundError("resource", "x")
         with (
             _patch_client(client),
-            patch("src.tools.content_filtering.log_audit") as audit,
+            patch("unifi_mcp_server.tools.content_filtering.log_audit") as audit,
             pytest.raises(ResourceNotFoundError, match=FILTER_ID),
         ):
             await cf.update_content_filter(
@@ -286,7 +289,10 @@ class TestDeleteContentFilter:
     async def test_deletes_and_audits(self, local_settings: MagicMock) -> None:
         client = _mock_client()
         client.is_authenticated = False
-        with _patch_client(client), patch("src.tools.content_filtering.log_audit") as audit:
+        with (
+            _patch_client(client),
+            patch("unifi_mcp_server.tools.content_filtering.log_audit") as audit,
+        ):
             result = await cf.delete_content_filter(
                 FILTER_ID, "default", local_settings, confirm=True
             )
@@ -303,7 +309,7 @@ class TestDeleteContentFilter:
         client.delete.side_effect = APIError("boom")
         with (
             _patch_client(client),
-            patch("src.tools.content_filtering.log_audit") as audit,
+            patch("unifi_mcp_server.tools.content_filtering.log_audit") as audit,
             pytest.raises(APIError),
         ):
             await cf.delete_content_filter(FILTER_ID, "default", local_settings, confirm=True)

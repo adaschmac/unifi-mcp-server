@@ -71,12 +71,12 @@ This document contains verified endpoints for UniFi Network v10.0.156+.
 
 ```bash
 # Example: For a new device tool, read existing device tools
-Read: src/tools/devices.py
-Read: src/tools/device_control.py
+Read: src/unifi_mcp_server/tools/devices.py
+Read: src/unifi_mcp_server/tools/device_control.py
 
 # For network tools:
-Read: src/tools/networks.py
-Read: src/tools/network_config.py
+Read: src/unifi_mcp_server/tools/networks.py
+Read: src/unifi_mcp_server/tools/network_config.py
 
 # For testing patterns:
 Read: tests/unit/tools/test_devices_tools.py
@@ -144,7 +144,7 @@ Document your plan covering:
 
 ### 2.1 Create Pydantic Models (if needed)
 
-**Location**: `src/models/{feature}.py`
+**Location**: `src/unifi_mcp_server/models/{feature}.py`
 
 ```python
 from enum import Enum
@@ -182,9 +182,9 @@ class YourResponseModel(BaseModel):
 
 ### 2.2 Implement the MCP Tool
 
-**Location**: `src/tools/{category}.py` (or a new module for a new feature area)
+**Location**: `src/unifi_mcp_server/tools/{category}.py` (or a new module for a new feature area)
 
-Tools are plain async functions. Every public `async def` in a module that `src/main.py` lists becomes a tool; there is no `@mcp.tool()` decorator. Each tool declares `@read_tool` or `@write_tool` (`src/utils/tool_kind.py`); registration fails without one, and `UNIFI_READ_ONLY` registers only read tools. The registry passes `settings` and hides it from the tool's public signature. Name helpers with a leading `_` so they are not registered.
+Tools are plain async functions. Every public `async def` in a module that `src/unifi_mcp_server/main.py` lists becomes a tool; there is no `@mcp.tool()` decorator. Each tool declares `@read_tool` or `@write_tool` (`src/unifi_mcp_server/utils/tool_kind.py`); registration fails without one, and `UNIFI_READ_ONLY` registers only read tools. The registry passes `settings` and hides it from the tool's public signature. Name helpers with a leading `_` so they are not registered.
 
 A read tool:
 
@@ -274,19 +274,19 @@ Build paths with the `Settings` helpers (`get_integration_path`, `get_protect_in
 
 - [ ] Public `async def` with `settings: Settings`, declared `@read_tool` or `@write_tool`; helpers start with `_`
 - [ ] Google-style docstring that lists every argument (MCP clients show it)
-- [ ] Input validation with `src/utils/validators.py`
+- [ ] Input validation with `src/unifi_mcp_server/utils/validators.py`
 - [ ] Write tools: `confirm` and `dry_run`, `validate_confirmation()` first, dry run returned before any request
 - [ ] Optional update arguments default to `None`
 - [ ] No audit code in the tool (the registry wrapper audits every write)
-- [ ] Errors from `src/utils/exceptions.py` (`ValidationError` for bad input); no broad `except` that hides the cause
+- [ ] Errors from `src/unifi_mcp_server/utils/exceptions.py` (`ValidationError` for bad input); no broad `except` that hides the cause
 
 ### 2.3 Register the Module
 
-**Location**: `src/main.py`
+**Location**: `src/unifi_mcp_server/main.py`
 
 - A new function in an existing module needs no registration.
 - A new module: import it, add it to `_LOCAL_TOOL_MODULES` or `_CLOUD_TOOL_MODULES`, and add it to the `UNIFI_PROFILE` sets that should include it.
-- Regenerate the risk-tier snapshot: `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py`. Destructive tools need a `delete_`, `remove_` or `bulk_delete_` prefix or an entry in `DESTRUCTIVE_TOOLS` (`src/tool_registry.py`). A write tool with a risky word in its name needs an entry in `DESTRUCTIVE_TOOLS` or `RISKY_NAME_EXEMPTIONS`.
+- Regenerate the risk-tier snapshot: `UPDATE_TOOL_TIERS=1 pytest tests/unit/fleet/test_tiers.py`. Destructive tools need a `delete_`, `remove_` or `bulk_delete_` prefix or an entry in `DESTRUCTIVE_TOOLS` (`src/unifi_mcp_server/tool_registry.py`). A write tool with a risky word in its name needs an entry in `DESTRUCTIVE_TOOLS` or `RISKY_NAME_EXEMPTIONS`.
 
 ### 2.4 Follow Code Quality Standards
 
@@ -294,14 +294,14 @@ Build paths with the `Settings` helpers (`get_integration_path`, `get_protect_in
 
 ```bash
 # Format code
-black src/tools/your_file.py
-isort src/tools/your_file.py
+black src/unifi_mcp_server/tools/your_file.py
+isort src/unifi_mcp_server/tools/your_file.py
 
 # Lint
-ruff check src/tools/your_file.py --fix
+ruff check src/unifi_mcp_server/tools/your_file.py --fix
 
 # Type check
-mypy src/tools/your_file.py
+mypy src/unifi_mcp_server/tools/your_file.py
 ```
 
 ---
@@ -328,9 +328,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.config import Settings
-from src.tools.your_category import update_your_resource
-from src.utils.exceptions import ValidationError
+from unifi_mcp_server.config import Settings
+from unifi_mcp_server.tools.your_category import update_your_resource
+from unifi_mcp_server.utils.exceptions import ValidationError
 
 
 @pytest.fixture
@@ -353,7 +353,7 @@ def _client(client_class, **responses):
 
 
 async def test_update_sends_only_changed_fields(settings):
-    with patch("src.tools.your_category.UniFiClient") as client_class:
+    with patch("unifi_mcp_server.tools.your_category.UniFiClient") as client_class:
         client = _client(client_class, put={"data": [{"_id": "abc", "name": "new"}]})
 
         await update_your_resource("default", "abc", settings, name="new", confirm=True)
@@ -362,14 +362,14 @@ async def test_update_sends_only_changed_fields(settings):
 
 
 async def test_update_refuses_without_confirm(settings):
-    with patch("src.tools.your_category.UniFiClient") as client_class:
+    with patch("unifi_mcp_server.tools.your_category.UniFiClient") as client_class:
         with pytest.raises(ValidationError, match="confirm"):
             await update_your_resource("default", "abc", settings, name="new")
     client_class.assert_not_called()
 
 
 async def test_update_dry_run_makes_no_request(settings):
-    with patch("src.tools.your_category.UniFiClient") as client_class:
+    with patch("unifi_mcp_server.tools.your_category.UniFiClient") as client_class:
         result = await update_your_resource("default", "abc", settings, name="new", dry_run=True)
     assert result["dry_run"] is True
     client_class.assert_not_called()
@@ -397,10 +397,10 @@ async def test_update_dry_run_makes_no_request(settings):
 pytest tests/unit/test_your_category.py -v
 
 # Run with coverage
-pytest tests/unit/test_your_category.py --cov=src/tools/your_category --cov-report=term-missing
+pytest tests/unit/test_your_category.py --cov=src/unifi_mcp_server/tools/your_category --cov-report=term-missing
 
 # Ensure coverage meets target (85%+)
-pytest tests/unit/test_your_category.py --cov=src/tools/your_category --cov-report=html
+pytest tests/unit/test_your_category.py --cov=src/unifi_mcp_server/tools/your_category --cov-report=html
 open htmlcov/index.html  # Review coverage report
 ```
 
@@ -552,7 +552,7 @@ pre-commit run --all-files
 
 ```bash
 # Start MCP Inspector
-uv run mcp dev src/main.py
+uv run mcp dev src/unifi_mcp_server/main.py
 
 # Open http://localhost:5173
 # Test your new tool with real inputs
@@ -597,13 +597,13 @@ To update an existing skill, edit `skills/<name>/SKILL.md` and re-copy the devel
 
 The A2A agent card and capability manifest are derived from the live tool registry, but several hand-written sources shape what they advertise:
 
-- `src/a2a/capabilities.py` — capability names, module-to-domain map (`_MODULE_DOMAINS`), and the advertised API modes.
-- `src/a2a/agent_card.py` — the card shape and safety-requirement logic.
+- `src/unifi_mcp_server/a2a/capabilities.py` — capability names, module-to-domain map (`_MODULE_DOMAINS`), and the advertised API modes.
+- `src/unifi_mcp_server/a2a/agent_card.py` — the card shape and safety-requirement logic.
 - `agent-card.json` — the committed reference artifact.
 
 When you add a tool in a new domain, change a tool's tier, or add/change an MCP resource:
 
-1. Update `_MODULE_DOMAINS` in `src/a2a/capabilities.py` if the module is not already mapped.
+1. Update `_MODULE_DOMAINS` in `src/unifi_mcp_server/a2a/capabilities.py` if the module is not already mapped.
 2. Regenerate the reference card:
 
    ```bash
@@ -623,7 +623,7 @@ Never hand-edit `agent-card.json`; the generator overwrites it and `test_agent_c
 
 If a prompt workflow reads the new or changed tool:
 
-1. Update `src/prompts/catalog.py` — the workflow's `evidence` and `requirements` tool lists.
+1. Update `src/unifi_mcp_server/prompts/catalog.py` — the workflow's `evidence` and `requirements` tool lists.
 2. Update `docs/PROMPTS.md` with the workflow's purpose and parameters.
 3. Verify with:
 
@@ -635,7 +635,7 @@ A renamed tool can make a workflow disappear from `prompts/list` because the wor
 
 ### 6.4 Updating MCP resources
 
-MCP resources are registered in `src/main.py` with `@mcp.resource("scheme://...")` URI templates. They are advertised through the MCP handshake and included in the A2A agent card.
+MCP resources are registered in `src/unifi_mcp_server/main.py` with `@mcp.resource("scheme://...")` URI templates. They are advertised through the MCP handshake and included in the A2A agent card.
 
 When you add, remove or rename a resource:
 
@@ -705,7 +705,7 @@ Before submitting:
 
 ### Integration
 
-- [ ] Tool registered in src/main.py
+- [ ] Tool registered in src/unifi_mcp_server/main.py
 - [ ] Imports organized correctly
 - [ ] No circular dependencies
 - [ ] Compatible with existing tools
@@ -730,12 +730,12 @@ Copy a real tool rather than a sketch:
 
 | Pattern | Copy from |
 |---------|-----------|
-| Read tool, legacy API | `list_wlans` in `src/tools/wifi.py` |
-| Read tool, integration API | `list_acl_rules` in `src/tools/acls.py` |
-| Write tool with a partial update | `update_protect_relay` in `src/tools/protect_relays.py` |
-| Read-modify-write update | `update_port_profile` in `src/tools/port_profiles.py` |
-| Paginated list | `list_protect_relays` in `src/tools/protect_relays.py` (uses `validate_limit_offset()`) |
-| Data across many controllers | `fleet_fanout` in `src/fleet/fleet_tools.py` (reads only) |
+| Read tool, legacy API | `list_wlans` in `src/unifi_mcp_server/tools/wifi.py` |
+| Read tool, integration API | `list_acl_rules` in `src/unifi_mcp_server/tools/acls.py` |
+| Write tool with a partial update | `update_protect_relay` in `src/unifi_mcp_server/tools/protect_relays.py` |
+| Read-modify-write update | `update_port_profile` in `src/unifi_mcp_server/tools/port_profiles.py` |
+| Paginated list | `list_protect_relays` in `src/unifi_mcp_server/tools/protect_relays.py` (uses `validate_limit_offset()`) |
+| Data across many controllers | `fleet_fanout` in `src/unifi_mcp_server/fleet/fleet_tools.py` (reads only) |
 
 ---
 
@@ -757,10 +757,10 @@ Copy a real tool rather than a sketch:
 
 ### Code Examples
 
-- `src/tools/devices.py` - Device management examples
-- `src/tools/firewall.py` - Firewall rule management patterns
-- `src/tools/firewall_policies.py` - Zone-Based Firewall policies
-- `src/tools/qos.py` - QoS profile management examples
+- `src/unifi_mcp_server/tools/devices.py` - Device management examples
+- `src/unifi_mcp_server/tools/firewall.py` - Firewall rule management patterns
+- `src/unifi_mcp_server/tools/firewall_policies.py` - Zone-Based Firewall policies
+- `src/unifi_mcp_server/tools/qos.py` - QoS profile management examples
 - `tests/unit/tools/test_protect_relays.py` - Write-gate and dry-run test examples
 
 ---
