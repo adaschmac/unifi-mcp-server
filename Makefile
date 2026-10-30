@@ -83,8 +83,8 @@ ci: lint typecheck security docs-coverage pre-commit test-cov ## Run every block
 ##@ Run
 
 .PHONY: run
-run: ## Start the MCP server (reads configuration from .env)
-	$(UV) run --frozen unifi-mcp-server
+run: ## Start the MCP server (reads configuration from .env via UNIFI_ENV_FILE)
+	UNIFI_ENV_FILE=.env $(UV) run --frozen unifi-mcp-server
 
 .PHONY: inspect
 inspect: ## Open the server in the MCP Inspector (needs Node.js)

@@ -89,6 +89,7 @@ Rules for them:
 - The Redis read cache covers only the `networks` and `wifi` modules (`CACHED_MODULES` in `src/cache.py`). Tool names containing "statistics" are never cached.
 - Any write that is not a dry run clears every cached read for that controller. A write tool needs no cache code of its own.
 - `src/tools/wifi.py` passes WLAN output through `_redact_wlan()`. Keep that for any tool that returns WLAN records, because they contain passphrases.
+- `src/tools/site_vpn.py` passes VPN output through `_redact_vpn()`, which masks the IPsec pre-shared key. Do the same for any new tool that returns `networkconf` VPN records.
 
 ## Tests
 

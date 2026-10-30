@@ -215,3 +215,53 @@ class TestSiteIdTranslation:
         path = f"/ea/sites/{self.SITE_UUID}/rest/networkconf/{VPN_ID}"
         mock_client.get.assert_awaited_once_with(path)
         assert mock_client.put.await_args.args[0] == path
+
+
+PSK = "IpsecPreShared2026"  # pragma: allowlist secret
+
+
+class TestPreSharedKeyRedaction:
+    """The IPsec pre-shared key never reaches the MCP client."""
+
+    async def test_list_redacts_psk(self, mock_settings):
+        vpn = {**make_vpn(), "x_ipsec_pre_shared_key": PSK}
+        mock_client = create_mock_client([vpn])
+        with patch("src.tools.site_vpn.UniFiClient", return_value=mock_client):
+            result = await list_site_to_site_vpns("default", mock_settings)
+        assert result[0]["x_ipsec_pre_shared_key"] == "***REDACTED***"
+        assert PSK not in repr(result)
+
+    async def test_get_redacts_psk(self, mock_settings):
+        vpn = {**make_vpn(), "x_ipsec_pre_shared_key": PSK}
+        mock_client = create_mock_client([vpn])
+        with patch("src.tools.site_vpn.UniFiClient", return_value=mock_client):
+            result = await get_site_to_site_vpn("default", VPN_ID, mock_settings)
+        assert result["x_ipsec_pre_shared_key"] == "***REDACTED***"
+        assert PSK not in repr(result)
+
+    async def test_missing_psk_stays_none(self, mock_settings):
+        mock_client = create_mock_client([make_vpn()])
+        with patch("src.tools.site_vpn.UniFiClient", return_value=mock_client):
+            result = await get_site_to_site_vpn("default", VPN_ID, mock_settings)
+        assert result["x_ipsec_pre_shared_key"] is None
+
+    async def test_update_sends_psk_but_does_not_echo_it(self, mock_settings):
+        vpn = make_vpn()
+        mock_client = create_mock_client(vpn)
+        with patch("src.tools.site_vpn.UniFiClient", return_value=mock_client):
+            result = await update_site_to_site_vpn(
+                "default", VPN_ID, mock_settings, x_ipsec_pre_shared_key=PSK, confirm=True
+            )
+        sent = mock_client.put.call_args[0][1]
+        assert sent["x_ipsec_pre_shared_key"] == PSK
+        assert result["updates"]["x_ipsec_pre_shared_key"] == "***REDACTED***"
+        assert PSK not in repr(result)
+
+    async def test_dry_run_does_not_echo_psk(self, mock_settings):
+        mock_client = create_mock_client(make_vpn())
+        with patch("src.tools.site_vpn.UniFiClient", return_value=mock_client):
+            result = await update_site_to_site_vpn(
+                "default", VPN_ID, mock_settings, x_ipsec_pre_shared_key=PSK, dry_run=True
+            )
+        assert result["updates"]["x_ipsec_pre_shared_key"] == "***REDACTED***"
+        assert PSK not in repr(result)

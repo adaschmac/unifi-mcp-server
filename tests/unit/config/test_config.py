@@ -485,6 +485,7 @@ class TestDocumentedSettings:
         "UNIFI_AUDIT_CHAIN_KEY",
         "UNIFI_AUDIT_LOG_KEY",
         "UNIFI_AUDIT_ENCRYPTION_KEY",
+        "UNIFI_ENV_FILE",
         "UNIFI_FLEET_CREDENTIAL_KEY",
         "UNIFI_PROFILE",
     }

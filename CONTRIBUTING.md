@@ -88,6 +88,8 @@ Create a `.env` file for local development:
 cp .env.example .env
 ```
 
+The server reads it only when `UNIFI_ENV_FILE` names it (`make run` does this for you). It never picks up a `.env` from the working directory on its own, because an MCP client may start it inside a project you do not control.
+
 #### Obtain Your UniFi API Key
 
 Before configuring the environment, you need to obtain an API key:

@@ -147,6 +147,8 @@ Keep `-i` and do not add `-d`: the client talks to the server over the container
 | `UNIFI_SITE_MANAGER_ENABLED` | Enable the cloud tools (Site Manager, Mobility, InnerSpace, Carrier) | `false` |
 | `UNIFI_PROFILE` | Register only one group of tools ([profiles](#tool-profiles-and-safety-controls)) | all |
 | `UNIFI_READ_ONLY` / `UNIFI_DRY_RUN` | Read-only or preview-only server | `false` |
+| `UNIFI_ENV_FILE` | Dotenv file to read settings from. The server never reads a `.env` it finds in the working directory | unset |
+| `UNIFI_BACKUP_DOWNLOAD_DIR` | Absolute directory `download_backup` writes into. Unset disables downloads | unset |
 | `DEBUG` | Registers `debug_api_request` (raw GET/DELETE, destructive tier, removed by read-only). Leave unset in production | unset |
 | `MCP_SERVER_TRANSPORT` | `stdio`, `streamable_http`, `http` or `sse` | `stdio` |
 | `MCP_AUTH_TOKEN` | Bearer token, required on network transports; `viewer:<token>` (or `operator:`, `admin:`) limits a token's role | — |
@@ -410,7 +412,7 @@ git clone https://github.com/enuno/unifi-mcp-server.git
 cd unifi-mcp-server
 make install    # uv sync from uv.lock with the dev extra (no activation needed)
 make hooks      # pre-commit and commit-msg hooks
-cp .env.example .env   # then set UNIFI_API_KEY and, for local mode, UNIFI_LOCAL_HOST
+cp .env.example .env   # then set UNIFI_API_KEY and, for local mode, UNIFI_LOCAL_HOST (make run reads it)
 
 make test       # unit tests
 make ci         # every blocking CI check: lint, typecheck, security, docs coverage, tests with the 80% gate

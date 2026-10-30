@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **`download_backup` no longer writes into the working directory, and never replaces a file.** The tool is a read tool, so it stays available under `UNIFI_READ_ONLY`, and `UNIFI_BACKUP_DOWNLOAD_DIR` defaulted to `.`: an MCP client that started the server inside a project checkout got a full controller backup (every Wi-Fi key, VPN key and admin hash) written there, and an `output_path` such as `pyproject.toml` truncated that file. Downloads are now off until `UNIFI_BACKUP_DOWNLOAD_DIR` is set to an absolute directory, and the file is created with `O_EXCL`, so an existing file is refused. **Migration:** set `UNIFI_BACKUP_DOWNLOAD_DIR` to an absolute path to keep using `download_backup`.
+- **Settings no longer read a `.env` from the working directory.** An MCP client chooses that directory, and a `.env` in an untrusted project could fill in any setting left unset (`UNIFI_LOCAL_VERIFY_SSL`, `UNIFI_LOCAL_CA_FILE`, `UNIFI_AUDIT_SIEM_TARGETS`, the backup directory). A dotenv file is now read only from the path in `UNIFI_ENV_FILE`; process environment variables still take precedence over it. `make run` sets `UNIFI_ENV_FILE=.env`. Docker Compose is unaffected (it passes variables in `environment:`). **Migration:** if you relied on `.env` discovery, set `UNIFI_ENV_FILE` to its path.
+- **Site-to-site VPN tools no longer return the IPsec pre-shared key.** `list_site_to_site_vpns` and `get_site_to_site_vpn` returned `x_ipsec_pre_shared_key` in plaintext, including in read-only mode, and `update_site_to_site_vpn` echoed the key it was given. All three now return `***REDACTED***` when a key is set.
+
 ## [0.7.0] - 2026-10-29
 
 ### Added
